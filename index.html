@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:m="http://www.w3.org/1998/Math/MathML">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Kinome Toolbox</title>
+        <link rel="stylesheet" href="css/bootstrap-theme.min.css"/>
+        <link rel="stylesheet" href="css/bootstrap.min.css" />
+        <link rel="stylesheet" href="css/jqmath-0.2.0.min.css" />
+        <!-- Custom styles for this template -->
+        <style>
+            body {
+              min-height: 100px;
+              padding-top: 70px;
+            }
+            .scrollable-menu {
+                height: auto;
+                max-height: 200px;
+                overflow-x: hidden;
+            }
+        </style>
+    </head>
+    <body class=" hasGoogleVoiceExt">
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="toHome navbar-brand" href="#">Kinome Toolbox</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li id="home_click" class="active"><a class="toHome" href="#">Home</a></li>
+            <li><a id="about_click" href="#">About</a></li>
+            <li id="menu-drop-active" class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Analyses Avaliable<span class="caret"></span></a>
+              <ul id="analysesMenu" class="scrollable-menu dropdown-menu">
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div id="status" class="container">
+
+    </div> <!-- /container -->
+
+    <div id="main_page" class="container">
+        <div class="text-center alert alert-info"><h2>We are loading Data and Scripts, Please Wait...</h2></div>
+    </div> <!-- /container -->
+
+    <div id="about_tab" style="display:none;" class="container">
+        <div class="text-center alert alert-info"><h2>Welcome to about! More coming soon!</h2></div>
+    </div> 
+  
+
+</body>
+    <div>
+        <script src="./js/client/general/jquery-3.1.0.min.js"></script>
+        <script src="./js/client/general/bootstrap.min.js"></script>
+        <script src="./js/client/general/jqmath-etc-0.2.0.min.js"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="./js/client/web_namespace.js"></script>
+        <script src="./js/client/parseURL.js"></script>
+    </div>
+</html>

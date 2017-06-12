@@ -1,0 +1,44 @@
+{
+    name: 'hyperbolic_3_parameter',
+    stringified: "1/[1/(vi*[x-Xo])+1/Ymax]",
+    func: function (xVector, P) {
+        return (1 / (1 / (P[0] * (xVector[0] - P[1])) + 1 / P[2]));
+    },
+    setInitial: function (x_vector, y_values) {
+        var vi, Ym, c, yMax;
+
+        yMax = Math.max.apply(null, y_values);
+
+        if (y_values.length > 3) {
+            vi = 0.16174 * y_values[1] + 0.0061933 * y_values[3];
+        } else {
+            //For the off chance that < 3 values exist for a
+            // give line, this will allow us to get initial values
+            // for as few as 1 value.
+            vi = 0.16989 * y_values[1];
+        }
+        if (yMax < 400) {
+            Ym = 1.6974 * yMax;
+        } else if (y_values.length > 7) {
+            Ym = 7.8725 * y_values[4] + 1.7523 * y_values[6];
+            Ym = Ym > 1100
+                ? Ym - 1063
+                : Ym;
+        } else {
+            //This is for when there are only 2 or so values
+            // that are good, really >3 are required, but this gets
+            // us a return value at least
+            Ym = y_values[1] * 29.329;
+        }
+        c = 27.6;
+                //Determined by looking at the distribution of
+                // this value in well fit results.
+        return [vi, c, Ym];
+    },
+    description: 'For fitting postwash data',
+    mathType: "y(c)={y_{max}·v_{i}·(c-c_0)}/{y_{max}+v_{i}·(c-c_0)}",
+    mathParams: ['v_i', 'c_0', 'y_{max}'],
+    displayEq: function (params) {
+        return "{" + (params[2]).toFixed(3) + " · " + (params[0]).toFixed(3) + " · (c - " + (params[1]).toFixed(3)  + ")}/{" + (params[2]).toFixed(3) +  " + " + (params[0]).toFixed(3) + " · (c - " + (params[1]).toFixed(3)  + ")}";
+    }
+}

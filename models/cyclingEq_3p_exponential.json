@@ -1,0 +1,44 @@
+{
+    name: 'exponential_3_parameter',
+    stringified: "ymax(1-e^(-c*x-x0))",
+    func: function (xVector, P) {
+        //X must be represented as a vector ( [[1,2,4, ...], [2, ....], ... ])
+        // in order to be fit using fmincon, initial conditions are determined
+        // this way below for consistancy.
+
+        return (P[0] * (1 - Math.pow(Math.E, -1 * P[1] * (xVector[0] - P[2]))));
+    },
+    setInitial: function (x_vector, y_values) {
+        var Ym;
+
+        if (y_values.length > 20) {
+            //All the data
+            Ym = 2.5118 * y_values[3] + 0.81856 * y_values[20];
+            Ym = Ym > 30
+                ? Ym - 23.043
+                : Ym;
+        } else if (y_values.length > 6) {
+            //First 6 points
+            Ym = 0.61537 * y_values[2] + 2.7256 * y_values[5];
+            Ym = Ym > 30
+                ? Ym - 23.845
+                : Ym;
+        } else if (y_values.length > 2) {
+            //Only the first 3 points
+            Ym = 5.5937 * y_values[2];
+        } else {
+            //Only two points
+            Ym = 10.836 * y_values[1];
+        }
+        // From testing we found that the best exponential term to start with
+        // is 0.015, the best x shift to start with is 27.5, Ym is the only
+        // intersting parameter that seems to vary directly with the y_vals
+        return [Ym, 0.015, 27.5];
+    },
+    description: 'For fitting postwash data',
+    mathType: "y(c)=y_{max}(1-e^{-k*(c-c_0)})",
+    displayEq: function (params) {
+        return "" + (params[0]).toFixed(3) +  "(1-e^{-" + (params[1]).toFixed(3) + "(c-" + (params[2]).toFixed(3) + ")})";
+    },
+    mathParams: ['y_{max}', 'k', 'c_0']
+}

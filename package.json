@@ -1,0 +1,35 @@
+{
+  "name": "kinome_toolbox",
+  "version": "1.0.0",
+  "description": "Package to allow both client side and server side analysis of PamChip Kinome Peptide arrays.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adussaq/kinome_toolbox.git"
+  },
+  "keywords": [
+    "kinome",
+    "kinomics",
+    "pamgene",
+    "pamchip",
+    "microarray"
+  ],
+  "author": "Alex M Dussaq <adussaq@uab.edu> (http://alexdussaq.info)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/adussaq/kinome_toolbox/issues"
+  },
+  "homepage": "https://github.com/adussaq/kinome_toolbox#readme",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "fs": "0.0.1-security",
+    "optimist": "^0.6.1",
+    "progress": "^2.0.0",
+    "prompt": "^1.0.0",
+    "webworker-threads": "^0.7.11"
+  }
+}
