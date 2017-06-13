@@ -111,7 +111,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         page[0].show({
             duration: 0,
             complete: function () {
-                $(this).trigger('isVisible');
+                page[0].onshow();
             }
         });
         page[1].addClass('active');
@@ -147,6 +147,12 @@ as urls this works by assuming jQuery is present and that Promises exist
             style: "display: none",
             id: 'div' + tabID
         }).appendTo('body');
+        ret.onshow = function (myFunc) {
+            myFunc();
+            this.onshow = function () {
+                return;
+            };
+        };
         li = $('<li>');
         a = $('<a>', {
             href: '#',
