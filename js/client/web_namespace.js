@@ -164,8 +164,8 @@ as urls this works by assuming jQuery is present and that Promises exist
             arr.onshow = function () {
                 return;
             };
-        }
-        pages.push([ret, li]);
+        };
+        pages.push(arr);
 
         return ret;
     };
