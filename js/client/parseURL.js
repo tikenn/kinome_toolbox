@@ -9,7 +9,7 @@
     requires = [require('enrich_kinome')];
 
     getParameter = function (name) {
-        var url = location.href, regex, match, matches = [];
+        var url = decodeURIComponent(location.href), regex, match, matches = [];
 
         //Deal with open close brackets in name
         name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
@@ -23,6 +23,8 @@
             matches.push(match[1]);
             match = regex.exec(url);
         }
+
+        console.log(name, matches, url);
 
         return matches;
     };
