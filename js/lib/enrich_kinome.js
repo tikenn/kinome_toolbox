@@ -268,7 +268,7 @@
                 exposure_list = Object.keys(exposure_object).map(mult1);
             };
 
-            level_up = function () {
+            level_up = function (equation_str) {
                 /*
                     This is designed for level 1 data, and will only be added on to it.
                     Essentially it clones the level one data, dropping the extra
@@ -287,6 +287,10 @@
                 delete start.signal;
                 delete start.signal_valid;
 
+                if (typeof equation_str !== "string") {
+                    console.error("No equation string passed in, please pass in a string with the needed parts. Example: https://github.com/adussaq/kinome_toolbox/blob/master/models/cyclingEq_3p_hyperbolic.jseq");
+                }
+
                 start.linear = {
                     signal: [],
                     background: [],
@@ -295,7 +299,8 @@
                 start.kinetic = {
                     signal: [],
                     background: [],
-                    exposures: []
+                    exposures: [],
+                    equation_string: equation_str
                 };
 
                 start.level = start.level.replace(/^1/, "2");

@@ -3,8 +3,8 @@
 (function (exports) {
     "use strict";
 
-    var getParameter, data, code, getSTRINGS, dataPromiseArray, requires,
-            getDATA, getDataParameters, strings, getScript, writeError;
+    var getParameter, data, code, getSTRINGS, dataPromiseArray, requires, styles,
+            getDATA, getDataParameters, strings, getScript, writeError, getSTYLES;
 
     requires = [require('enrich_kinome')];
 
@@ -65,6 +65,20 @@
         }).catch(writeError(dataURL));
     };
 
+    getSTYLES = function (dataURL) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: dataURL,
+                dataType: "text",
+                success: function (css) {
+                    $('<style type="text/css"></style>').html(css).appendTo('head');
+                    resolve();
+                },
+                error: reject
+            });
+        }).catch(writeError(dataURL));
+    };
+
     getDATA = function (dataURLArr) {
         var i, promises = [], ajaxPromise;
 
@@ -112,6 +126,7 @@
 
     //get the parameters
     strings = getParameter('text');
+    styles = getParameter('style');
     data = getDataParameters(decodeURIComponent(location.href));
     code = getParameter('code');
 
@@ -131,7 +146,7 @@
                 url: strings[ind]
             };
         });
-    });
+    }).concat(styles.map(getSTYLES));
 
     //make sure requires are met for getting data and then code.
     Promise.all(requires).then(function () {

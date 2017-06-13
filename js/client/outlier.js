@@ -9,7 +9,7 @@
     var div, buildPage, requires, fitCurvesWorker, equationURL, startFits, displayData, non_linear_model;
 
     fitCurvesWorker = "./js/lib/fitCurvesWorker.min.js";
-    equationURL = "./models/cyclingEq_3p_hyperbolic.json";
+    equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
 
     requires = [KINOME.loadStrings(equationURL), require('amd_ww'), require('enrich_kinome'), require('outlier')];
 
