@@ -635,10 +635,10 @@
                 //now find spotCol and spotRow
                 for (j = 0; found < 2 && j < oneRet.length; j += 1) {
                     if (oneRet[j].key.match(/spotRow/i)) {
-                        row = oneRet[j].value;
+                        row = parseInt(oneRet[j].value, 10);
                         found += 1;
                     } else if (oneRet[j].key.match(/spotCol/i)) {
-                        col = oneRet[j].value;
+                        col = parseInt(oneRet[j].value, 10);
                         found += 1;
                     }
                 }

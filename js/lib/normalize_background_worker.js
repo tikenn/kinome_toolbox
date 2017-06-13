@@ -301,6 +301,11 @@
 
             for (x = 0; x < signal.length; x += 1) {
                 for (y = 0; y < signal[x].length; y += 0) {
+                    for (i = x - wind; i < x + wind + 1; i += 1) {
+                        for (j = y - wind; j < y + wind + 1; j += 1) {
+
+                        }
+                    }
 
                 }
             }
@@ -465,13 +470,13 @@
                 return row.map(clean);
             });
 
-            //first shift the minimum to 0.
+            //first shift the minimum to 1.
             minimum = Math.min(
                 signal.map(function (row) {
-                    return row.map(clean).reduce(getminimum);
+                    return row.reduce(getminimum);
                 }).reduce(getminimum),
                 background.map(function (row) {
-                    return row.map(clean).reduce(getminimum);
+                    return row.reduce(getminimum);
                 }).reduce(getminimum)
             ) - 1;
             signal = signal.map(function (row) {
