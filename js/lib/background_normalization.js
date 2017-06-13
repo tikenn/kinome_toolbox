@@ -14,7 +14,54 @@
 
     normalize_background = function (worker) {
         return function (data) {
-            return [data, worker];
+            if (!data.get || typeof data.get !== 'function') {
+                throw "Data object does not have get function attached. Use get_kinome.js to add this on.";
+            }
+            /*
+                idea here is to generate two arrays based on, then send them to the worker.
+            */
+
+            var peptides, cycle, exposure, i, j, k, img, x, y;
+            cycle = data.list('cycles');
+            exposure = data.list('exposures');
+
+
+            for (i = 0; i < cycle.length; i += 1) {
+                for (j = 0; j < exposure.length; j += 1) {
+                    peptides = data.get({cycle: cycle[i], exposure: exposure[j]});
+                    img = {
+                        background: [],
+                        signal: [],
+                        name: []
+                    };
+                    for (k = 0; k < peptides.length; k += 1) {
+                        x = peptides[k].spot_row - 1;
+                        y = peptides[k].spot_col - 1;
+                        img.background[x] = img.background[x] || [];
+                        img.signal[x] = img.signal[x] || [];
+                        img.name[x] = img.name[x] || [];
+                        img.name[x][y] = peptides[k].peptide;
+                        if (peptides[k].background_valid) {
+                            //if background is valid, keep going
+                            img.background[x][y] = peptides[k].background;
+                            if (peptides[k].signal_valid) {
+                                img.signal[x][y] = peptides[k].signal;
+                            } else {
+                                img.signal[x][y] = NaN;
+                                //Other option is to set this to 10x background. Works well for high signal spots... Not so well for lower signal. Although this is already shifted, which may help.
+                            }
+                        } else {
+                            img.background[x][y] = NaN;
+                            img.signal[x][y] = NaN;
+                        }
+                    }
+                    //Now that I have set this up, send it to the worker
+                    console.log(img);
+                }
+
+            }
+            return data;
+
         };
     };
 
@@ -81,10 +128,10 @@
 
             //start up the workers
             num_thread = input_params.number_threads || undefined;
-            worker = input_params.amd_ww.start({
-                filename: input_params.worker,
-                num_workers: num_thread
-            });
+            // worker = input_params.amd_ww.start({
+            //     filename: input_params.worker,
+            //     num_workers: num_thread
+            // });
 
             console.log('\nStarting fits for background normalization.\n');
 

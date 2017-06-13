@@ -286,8 +286,8 @@
     }());
 
     smooth_background = (function () {
-        var getPositions, getValueByDistanceMatrix, numericalSort, getSlice,
-                wind = 1, valid_values, transform;
+        var linearize, getminimum, getValueByDistanceMatrix, numericalSort, getSlice,
+                wind = 1, valid_values, clean, transform;
         // wind: the number of spaces going around each spot to consider in the
         // linear model.
 
@@ -295,33 +295,15 @@
             return a * 1 - b * 1;
         };
 
-        getPositions = function (peps) {
-            var i, x, y, posArr, obj = {
-                position: [],
-                peptide: []
-            };
-            for (i = 0; i < peps.length; i += 1) {
-                posArr = peps[i].split('_');
-                if (posArr[0] * 1 > 0 && posArr[1] * 1 > 0) {
-                    x = posArr[0] * 1 - 1;
-                    y = posArr[1] * 1 - 1;
-                    if (x >= 0 && y >= 0) {
-                        obj.position[x] = obj.position[x] || [];
-                        obj.position[x][y] = i;
-                        obj.peptide[i] = [x, y];
-                    }
-                }
-            }
-            return obj;
-        };
-
-        getValueByDistanceMatrix = function (positions, dataObj, specInd, img_ind) {
+        linearize = function (signal, background) {
             var i, j, pep, x, y, dist, avgNeighbor = {}, neighbor_pep, abort, forglob = {}, multiplier,
                     matrix = [], dists, miniMatrix, X_vals, y_vals, signalifValid, min_background;
 
-            min_background = dataObj.min_background;
-            // min_background = 0;
-            dataObj = dataObj.slice;
+            for (x = 0; x < signal.length; x += 1) {
+                for (y = 0; y < signal[x].length; y += 0) {
+
+                }
+            }
 
             for (pep = 0; pep < positions.peptide.length; pep += 1) {
                 signalifValid = dataObj.data.signal[pep];
@@ -437,50 +419,6 @@
             return {X: X_vals, y: y_vals, minimum: min_background};
         };
 
-        valid_values = function (dataObj) {
-            var i, j;
-            if (!dataObj.data.hasOwnProperty('signal_valid')) {
-                dataObj.data.signal_valid = [];
-                dataObj.data.background_valid = [];
-                for (i = 0; i < dataObj.data.signal.length; i += 1) {
-                    dataObj.data.signal_valid[i] = [];
-                    dataObj.data.background_valid[i] = [];
-                    for (j = 0; j < dataObj.data.signal[i].length; j += 1) {
-                        dataObj.data.signal_valid[i][j] =
-                                dataObj.data.signal[i][j] < 4095
-                            ? 1
-                            : 0;
-                        dataObj.data.background_valid[i][j] =
-                                dataObj.data.background[i][j] < 4095
-                            ? 1
-                            : 0;
-                    }
-                }
-            }
-            return dataObj;
-        };
-
-        getSlice = function (dataObj, ind) {
-            var min, i, j, ret = {data: {}}, dataKeys = Object.keys(dataObj.data);
-            min = Infinity;
-            ret.exposure = dataObj.exposure[ind];
-            ret.cycle = dataObj.cycle[ind];
-            for (j = 0; j < dataKeys.length; j += 1) { // by signal type
-                ret.data[dataKeys[j]] = [];
-                for (i = 0; i < dataObj.data[dataKeys[j]].length; i += 1) { // by peptide
-                    ret.data[dataKeys[j]].push(
-                        dataObj.data[dataKeys[j]][i].slice(ind, ind + 1)[0]
-                    );
-                    if (dataKeys[j] === 'background' || dataKeys[j] === 'signal') {
-                        if (dataObj.data.background_valid[i][ind] && dataObj.data.signal_valid[i][ind]) {
-                            min = Math.min(min, dataObj.data[dataKeys[j]][i].slice(ind, ind + 1)[0]);
-                        }
-                    }
-                }
-            }
-            // console.log(ret);
-            return {slice: ret, min_background: min};
-        };
 
         transform = function (t_obj) {
             var retVal = 0, i;
@@ -501,25 +439,54 @@
             return retVal + t_obj.minimum;
         };
 
-        return function (dataObj, specInd) {
-            //return function (peptideList) {
-            var positions, distances, i, j, peptideList,// fit2, smallFits = [],
-                    fit, allFits = [], allDistances = [], finalObj;
-            // This expects the peptide list to be a single list in an array
-            // and the dataObj to be a single object
-            // console.log(dataObj);
-            peptideList = dataObj.peptides;
-            //Get neighbor array
-            positions = getPositions(peptideList);
-            finalObj = JSON.parse(JSON.stringify(dataObj));
+        getminimum = function (a, b) {
+            if (isNaN(a)) {
+                return b;
+            }
+            if (isNaN(b)) {
+                return a;
+            }
+            return Math.min(a, b);
+        };
 
-            //change some parts of this final object
-            finalObj.data_id = finalObj.data_id || [];
-            finalObj.data_id.push({
-                document_id: finalObj[ID],
-                script: DATA.scripts
+        clean = function (x) {
+            //just cleans things up a bit
+            return parseInt(x, 10);
+        };
+
+        //main function
+        return function (signal, background) {
+            var points, minimum;
+            //first clean the data a bit
+            signal = signal.map(function (row) {
+                return row.map(clean);
             });
-            delete finalObj[ID];
+            background = background.map(function (row) {
+                return row.map(clean);
+            });
+
+            //first shift the minimum to 0.
+            minimum = Math.min(
+                signal.map(function (row) {
+                    return row.map(clean).reduce(getminimum);
+                }).reduce(getminimum),
+                background.map(function (row) {
+                    return row.map(clean).reduce(getminimum);
+                }).reduce(getminimum)
+            ) - 1;
+            signal = signal.map(function (row) {
+                return row.map(function (x) {
+                    return x - minimum;
+                });
+            });
+            background = background.map(function (row) {
+                return row.map(function (x) {
+                    return x - minimum;
+                });
+            });
+
+            //now get the parts for the linear model
+            points = linearize(signal, background);
 
             //Add in validity stuff
             finalObj = valid_values(finalObj);

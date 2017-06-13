@@ -55,8 +55,8 @@
                                     signal_valid: that.signal_valid[img_ind][pep_ind],
                                     background: that.background[img_ind][pep_ind],
                                     background_valid: that.background_valid[img_ind][pep_ind],
-                                    spot_row: peptide_object[peps[i]].row,
-                                    spot_column: peptide_object[peps[i]].col,
+                                    spot_row: peptide_object[peps[i]].row * 1,
+                                    spot_col: peptide_object[peps[i]].col * 1,
                                     set: set_function(img_ind, pep_ind, that),
                                     more: more_function(img_ind, peptide_object[peps[i]])
                                 });
@@ -484,8 +484,8 @@
                                 type: types[i],
                                 signal: that[types[i]].signal[fit_ind][pep_ind],
                                 background: that[types[i]].background[fit_ind][pep_ind],
-                                spot_row: peptide_object[peps[k]].row,
-                                spot_column: peptide_object[peps[k]].col,
+                                spot_row: peptide_object[peps[k]].row * 1,
+                                spot_col: peptide_object[peps[k]].col * 1,
                                 set: set_function(types[i], fit_ind, pep_ind, that),
                                 more: more_function(fit_ind, peptide_object[peps[k]])
                             };
@@ -626,9 +626,26 @@
 
         //These may be generalizable
         ret_full_pep_list = function () {
-            var i, ret = [], that = this;
+            var i, j, ret = [], that = this, oneRet, row, col, found;
             for (i = 0; i < that.length; i += 1) {
-                ret.push(peptide_object[that[i]].full);
+                found = 0;
+                //get one of them
+                oneRet = copy(peptide_object[that[i]].full);
+
+                //now find spotCol and spotRow
+                for (j = 0; found < 2 && j < oneRet.length; j += 1) {
+                    if (oneRet[j].key.match(/spotRow/i)) {
+                        row = oneRet[j].value;
+                        found += 1;
+                    } else if (oneRet[j].key.match(/spotCol/i)) {
+                        col = oneRet[j].value;
+                        found += 1;
+                    }
+                }
+
+                Object.defineProperty(oneRet, 'pos', {value: {spot_row: row, spot_col: col}, enumerable: false});
+                Object.defineProperty(oneRet, 'name', {value: that[i], enumerable: false});
+                ret.push(oneRet);
             }
             return ret;
         };
