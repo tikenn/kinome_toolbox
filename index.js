@@ -199,11 +199,11 @@ var fitCurvesWorker = './js/lib/fitCurvesWorker.js';
             fs.writeFile('lvl_1_0_0.out', data.lvl_1_0_0.map(function (x) {
                 return x.stringify();
             }).join('\n'), function () {
-                fs.writeFile('lvl_1_0_1.out', d.map(function (x) {
-                    return x.stringify();
+                fs.writeFile('lvl_1_0_1.out', d.map(function (y) {
+                    return y.stringify();
                 }).join('\n'), function () {
-                    fs.writeFile('names.out', data.name.map(function (x) {
-                        return JSON.stringify(x);
+                    fs.writeFile('names.out', data.name.map(function (z) {
+                        return JSON.stringify(z);
                     }).join('\n'), function () {
                         process.exit(0);
                     });

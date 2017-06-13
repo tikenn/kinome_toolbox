@@ -13,7 +13,7 @@
 
     var main, find_outliers_linear, linear_cutoff, kinetic_cutoff, get_models,
             lin_r2_cut, counts1 = {done: 0, total: 0}, counts2 = {done: 0, total: 0},
-            find_outliers_kinetic;//, blank;
+            find_outliers_kinetic, shiftToMin;//, blank;
 
     //These are constants determined by testing.
     linear_cutoff = 56.9441;
@@ -323,6 +323,50 @@
         };
     };
 
+    shiftToMin = function (data) {
+        var i, j, exposures = data.list('exposures'), getMinSignal, getMin, min,
+                minCycle, points;
+        getMinSignal = function (x) {
+            var mini = Infinity;
+            if (x.background_valid) {
+                mini = Math.min(mini, x.background);
+            }
+            if (x.signal_valid) {
+                Math.min(mini, x.signal);
+            }
+            return mini;
+        };
+        getMin = function (a, b) {
+            if (typeof a === "number" && typeof b === 'number') {
+                return Math.min(a, b);
+            }
+            if (typeof a === "number") {
+                return a;
+            }
+            if (typeof b === "number") {
+                return b;
+            }
+            return Infinity;
+        };
+
+        minCycle = data.list('cycles').reduce(getMin);
+        for (i = 0; i < exposures.length; i += 1) {
+            points = data.get({
+                cycle: minCycle,
+                exposure: exposures[i]
+            });
+            min = points.map(getMinSignal).reduce(getMin);
+            points = data.get({
+                exposure: exposures[i]
+            }); //This will get everything except post wash
+            for (j = 0; j < points.length; j += 1) {
+                points[j].set('signal', points[j].signal - min);
+                points[j].set('background', points[j].background - min);
+            }
+        }
+        return data;
+    };
+
     // blank = function () {
     //     //do nothing
     //     return;
@@ -369,7 +413,7 @@
                 num_workers: num_thread
             });
 
-            console.log('\nStarting linear fits for outlier detection.\n');
+            console.log('\nStarting fits for outlier detection.\n');
 
 
             linearPromise = Promise.all(filter_object.data.map(find_outliers_linear(
@@ -384,7 +428,6 @@
 
             // Once the linear are done, start the kinetic
             kineticPromise = linearPromise.then(function (d1) {
-                console.log('\nStarting kinetic fits for outlier detection.\n');
                 var p2 = Promise.all(d1.map(find_outliers_kinetic(
                     worker,
                     filter_object.equation
@@ -398,6 +441,7 @@
 
             // linearPromise.then(function (final_data) {
             kineticPromise.then(function (final_data) {
+                final_data = final_data.map(shiftToMin);
                 resolve(final_data);
             }).catch(function (err) {
                 reject(err);
