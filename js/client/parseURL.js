@@ -15,7 +15,7 @@
         name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
 
         //Find the part of interest
-        regex = new RegExp("(?:[\\?&]" + name + "=)([^&#]*)", 'g');
+        regex = new RegExp("(?:[\\?&]" + name + "=\")([^\"]*)\"", 'g');
 
         //actually find the regex stuff
         match = regex.exec(url);
