@@ -111,7 +111,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         page[0].show({
             duration: 0,
             complete: function () {
-                page[0].onshow();
+                page.onshow();
             }
         });
         page[1].addClass('active');
@@ -138,7 +138,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         //We need to add this to the list of avaliable, and set up a page for it.
 
         //Create a new tab for this
-        var ret, li, a, index, tabID = Math.random().toString().replace(/0\./, '');
+        var ret, li, a, index, arr, tabID = Math.random().toString().replace(/0\./, '');
 
         index = pages.length;
 
@@ -147,12 +147,6 @@ as urls this works by assuming jQuery is present and that Promises exist
             style: "display: none",
             id: 'div' + tabID
         }).appendTo('body');
-        ret.onshow = function (myFunc) {
-            myFunc();
-            this.onshow = function () {
-                return;
-            };
-        };
         li = $('<li>');
         a = $('<a>', {
             href: '#',
@@ -164,6 +158,13 @@ as urls this works by assuming jQuery is present and that Promises exist
         });
 
         $('#analysesMenu').append(li.append(a));
+        arr = [ret, li];
+        arr.onshow = function (myFunc) {
+            myFunc();
+            arr.onshow = function () {
+                return;
+            };
+        }
         pages.push([ret, li]);
 
         return ret;
