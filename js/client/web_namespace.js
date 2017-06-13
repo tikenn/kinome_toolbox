@@ -108,7 +108,12 @@ as urls this works by assuming jQuery is present and that Promises exist
 
     pages.show = function (i) {
         var page = pages[i];
-        page[0].show();
+        page[0].show({
+            duration: 0,
+            complete: function () {
+                $(this).trigger('isVisible');
+            }
+        });
         page[1].addClass('active');
         if (i > 1) {
             $('#menu-drop-active').addClass('active');

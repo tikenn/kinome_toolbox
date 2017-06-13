@@ -297,14 +297,51 @@
 
         linearize = function (signal, background) {
             var i, j, pep, x, y, dist, avgNeighbor = {}, neighbor_pep, abort, forglob = {}, multiplier,
-                    matrix = [], dists, miniMatrix, X_vals, y_vals, signalifValid, min_background;
+                    matrix = [], dists, miniMatrix, row, X_vals, y_vals, signalifValid, distances min_background, good;
 
             for (x = 0; x < signal.length; x += 1) {
                 for (y = 0; y < signal[x].length; y += 0) {
-                    for (i = x - wind; i < x + wind + 1; i += 1) {
-                        for (j = y - wind; j < y + wind + 1; j += 1) {
+                    good = true;
+                    if (!isNaN(signal[x][y]) && !isNaN(background[x][y])) {
+                        good = false;
+                    }
 
+                    avgNeighbor = {
+                        //set up the actual value as the first parameter
+                        '0': {
+                            value: signal[x][y],
+                            count: 1
                         }
+                    };
+
+                    //Now move through the window adding the other parts up
+                    for (i = x - wind; good && i < x + wind + 1; i += 1) {
+                        for (j = y - wind; good && j < y + wind + 1; j += 1) {
+                            dist = Math.pow(i - x, 2) + Math.pow(j - y, 2);
+                            if (dist) {
+                                avgNeighbor[dist] = avgNeighbor[dist] || {
+                                    value: 0,
+                                    count: 0
+                                };
+                                if (!isNaN(background[i][j])) {
+                                    avgNeighbor[dist].value += background[i][j];
+                                    avgNeighbor[dist].count += 1;
+                                } else {
+                                    good = false;
+                                }
+                            }
+                        }
+                    }
+                    if (good) {
+                        //add it to the model if all points are avaliable
+                        distances = Object.keys(avgNeighbor).sort(numericalSort);
+                        row = [];
+                        for (i = 0; i < distances.length; i += 1) {
+                            row.push(avgNeighbor[distances[i]].value /
+                                    avgNeighbor[distances[i]].count);
+                        }
+                        X_vals.push(row);
+                        y_vals.push()
                     }
 
                 }
@@ -339,13 +376,16 @@
                     //move around the position
                     avgNeighbor = {
                         //set up the actual value as the first parameter
-                        '0.1': {
+                        '0': {
                             value: signalifValid - min_background,
                             count: 1
                         }
                     };
                     for (i = x - wind; i <= x + wind; i += 1) {
                         for (j = y - wind; j <= y + wind; j += 1) {
+                            if (i === x && j === y) {
+                                break;
+                            }
                             //calulate how far away this is
                             dist = (Math.sqrt(Math.pow(i - x, 2) +
                                     Math.pow(j - y, 2))).toFixed(3);
