@@ -22,7 +22,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         //library based stuff
         shiftToMin: './js/web_main.js',
         amd_ww: './js/lib/amd_ww.3.1.0.min.js',
-        enrich_kinome: './js/lib/enrich_kinome.min.js',
+        enrich_kinome: './js/lib/enrich_kinome.js',
         outlier: './js/lib/quality_filtration.min.js',
 
         //webpage based stuff

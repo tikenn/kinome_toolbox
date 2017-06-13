@@ -151,7 +151,7 @@
 
                 //Do not append for post wash
                 if (x[0].cycle !== null) {
-                    data.append(x[0]);
+                    data.put(x[0]);
                 }
 
                 return true; //clears extra stuff from promise memory
