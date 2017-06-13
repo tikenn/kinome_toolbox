@@ -138,9 +138,9 @@
                         get_result = that.get({peptide: pep, cycle: cyc, exposure: exp});
                     }
 
-                    if (get_result.length === 0) {
-                        console.log({peptide: pep, cycle: cyc, exposure: exp});
-                    }
+                    // if (get_result.length === 0) {
+                    //     console.log({peptide: pep, cycle: cyc, exposure: exp});
+                    // }
 
                     //Either this point existed, or it now does, so set it.
                     get_result[0].set(type, val);
@@ -335,9 +335,9 @@
                 /*
                     This needs get get all the parameters passed in. They are:
                         //To add
-                        value: number
+                        signal|background: number
                         //To find it
-                        type: /signal_(linear|kinetic)|background_(linear|kinetic)/
+                        type: /linear|kinetic/
                         peptide: string
                         if linear :
                             cycle: null or number [Note: null === post wash]
@@ -346,32 +346,27 @@
                     This then adds the data to the data array, then the appropriate
                     slopes, cycle number, and meta data stuff
                 */
-                var that = this, val, pep, exp, cyc, get_result;
+                var that = this, val, pep, exp, cyc, get_result, type, val_t;
                 if (check_apppend_params(appendParams)) {
                     val = appendParams.value;
                     pep = appendParams.peptide;
                     cyc = appendParams.cycle;
                     exp = appendParams.exposure;
-
-                    exp = exp === null
-                        ? "Cycle Slope"
-                        : exp;
-                    cyc = cyc === null
-                        ? "Post Wash"
-                        : cyc;
+                    type = appendParams.type;
+                    val_t = appendParams.signal_type;
 
                     //Get started with easy option, already added this combo
-                    get_result = that.get({peptide: pep, type: appendParams.fit, cycle: cyc, exposure: exp});
+                    get_result = that.get({peptide: pep, type: type, cycle: cyc, exposure: exp});
                     if (get_result.length !== 1) {
                         //This point does not exist yet, we have to add stuff everywhere.
                         // Start with the data, this all has to grow at the same time.
-                        if (appendParams.fit === 'kinetic') {
+                        if (type === 'kinetic') {
                             that.kinetic.signal.push(blank_array(that.peptides.length));
                             that.kinetic.background.push(blank_array(that.peptides.length));
                             that.kinetic.exposures.push(typeof exp === 'string'
                                 ? null
                                 : exp);
-                        } else if (appendParams.fit === 'linear') {
+                        } else if (type === 'linear') {
                             that.linear.signal.push(blank_array(that.peptides.length));
                             that.linear.background.push(blank_array(that.peptides.length));
                             that.linear.cycles.push(typeof cyc === 'string'
@@ -382,15 +377,11 @@
                         //Now update the lists and redefine get result and continue on
                         define_lists(that);
 
-                        get_result = that.get({peptide: pep, type: appendParams.fit, cycle: cyc, exposure: exp});
-                    }
-
-                    if (get_result.length === 0) {
-                        console.log({type: appendParams.sig_type, peptide: pep, cycle: cyc, exposure: exp});
+                        get_result = that.get({peptide: pep, type: type, cycle: cyc, exposure: exp});
                     }
 
                     //Either this point existed, or it now does, so set it.
-                    get_result[0].set(appendParams.sig_type, val);
+                    get_result[0].set(val_t, val);
                     return true;
                 }
                 console.error('Failed to set, one or more parameters were missing or invalid.');
@@ -399,9 +390,15 @@
 
             set_function = function (type, fit_ind, pep_ind, data) {
                 return function (key, value) {
-                    key = key.toLowerCase();
-                    if (key.match(/^signal$|^background$/)) {
-                        data[type][key][fit_ind][pep_ind] = value;
+                    var that = this;
+                    if (typeof key === 'string') {
+                        key = key.toLowerCase();
+                        if (key.match(/^signal$|^background$/)) {
+                            data[type][key][fit_ind][pep_ind] = value;
+                            that[key] = value; //do this so the object itself is updated.
+                        } else {
+                            console.error("failed to set, key invalid");
+                        }
                     } else {
                         console.error("failed to set, key invalid");
                     }
@@ -439,7 +436,7 @@
                 //Now verify type
                 if (typeof types === 'string' && types.match(/kinetic|linear/i)) {
                     types = [types.toLowerCase()];
-                } else if ( //This is a mess, essentially if it is an array that matches the right terms, accept it.
+                } else if ( //This is a mess, essentially if it is not an array or it doesn't matches the right terms, deny it, and use the entire list.
                     !Array.isArray(types) ||
                     !types.map(function (x, i) {
                         types[i] = types[i].toLowerCase();
@@ -533,12 +530,64 @@
             };
 
             check_apppend_params = function (params) {
-                var splitType;
-                splitType = params.type.split(/_/);
-                params.fit = splitType[1];
-                params.sig_type = splitType[0];
-                console.log(params, "need to write check append params function");
-                return true;
+                /*
+                    This needs get get all the parameters passed in. They are:
+                        //To add
+                        signal|background: number
+                        //To find it
+                        type: /linear|kinetic/
+                        peptide: string
+                        if linear :
+                            cycle: null or number [Note: null === post wash]
+                        if kinetic:
+                            exposure: null or number [Note: null === cycle slope]
+                    This then adds the data to the data array, then the appropriate
+                    slopes, cycle number, and meta data stuff
+                */
+                var val, val_type, good = false;
+
+                params = params || {};
+
+                // fix cycle and exposure
+                params.exposure = params.exposure === null
+                    ? "Cycle Slope"
+                    : params.exposure;
+                params.cycle = params.cycle === null
+                    ? "Post Wash"
+                    : params.cycle;
+
+                //define value
+                if (params.hasOwnProperty('signal') && !params.hasOwnProperty('background')) {
+                    val = params.signal;
+                    val_type = 'signal';
+                } else if (!params.hasOwnProperty('signal') && params.hasOwnProperty('background')) {
+                    val = params.background;
+                    val_type = 'background';
+                }
+
+                //start checking
+                                //This is for value (background or signal pointed to something)
+                if (val_type) {
+                                //This checks for type (linear or kinetic)
+                    if (typeof params.type === 'string' && params.type.match(/^linear$|^kinetic$/)) {
+                                //This checks for a peptide
+                        if (typeof params.peptide === 'string' && peptide_object.hasOwnProperty(params.peptide)) {
+                                //now check for cycle or exposure
+                            if (params.type === 'linear' && (typeof params.cycle === "number" || params.cycle === "Post Wash")) {
+                                good = true;
+                            } else if (typeof params.exposure === "number" || params.exposure === "Cycle Slope") {
+                                good = true;
+                            }
+                        }
+                    }
+                }
+
+                //make a couple changes to params
+                params.signal_type = val_type;
+                params.value = val;
+
+                //return good or bad
+                return good;
             };
 
             list = function (list_term) {
@@ -580,7 +629,7 @@
         };
 
         verify_get_input = function (getParams) {
-            var peps, cycs, exps, i;
+            var peps, cycs, exps, i, ret;
             //make sure they are here at all
             getParams = getParams || {};
 
@@ -659,11 +708,15 @@
                 }
             }
 
-            return {
-                cycles: cycs,
-                exposures: exps,
-                peptides: peps
-            };
+            ret = copy(getParams);
+            ret.cycles = cycs;
+            ret.exposures = exps;
+            ret.peptides = peps;
+            delete ret.cycle;
+            delete ret.exposure;
+            delete ret.peptide;
+
+            return ret;
         };
 
         //These are general functions
