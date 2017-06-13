@@ -6,7 +6,7 @@
         The point of this is to run the quality filtration package. We will
         see how it goes.
     */
-    var div, buildPage, requires, fitCurvesWorker, equationURL, startFits, non_linear_model;
+    var div, buildPage, requires, fitCurvesWorker, equationURL, startFits, displayData, non_linear_model;
 
     fitCurvesWorker = "./js/lib/fitCurvesWorker.min.js";
     equationURL = "./models/cyclingEq_3p_hyperbolic.json";
@@ -60,8 +60,14 @@
         });
 
         filterPromise.then(function (data) {
+            displayData(data);
             console.log('all fit?', data);
         });
+    };
+
+    displayData = function (data) {
+        var options = {}, selected = {};
+        return [data, options, selected];
     };
 
     //Finally get things started

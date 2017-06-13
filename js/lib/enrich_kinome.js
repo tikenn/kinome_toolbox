@@ -12,7 +12,7 @@
         var get, copy, list, clone, define_lists, cycle_list, cycle_object,
                 exposure_list, mult1, peptide_list, peptide_object, exposure_object,
                 set_function, more_function, verify_get_input, append, blank_array,
-                check_apppend_params, stringify;
+                check_apppend_params, stringify, ret_full_pep_list;
         get = function (getParams) {
             var i, j, k, peps, cycs, exps, retArr = [], img_ind, pep_ind;
             /*
@@ -287,10 +287,13 @@
         };
 
         list = function (list_term) {
+            var ret;
             //just return copies of the list objects
             list_term = list_term || "";
             if (list_term.match(/peptide/i)) {
-                return copy(peptide_list);
+                ret = copy(peptide_list);
+                ret.more = ret_full_pep_list;
+                return ret;
             }
             if (list_term.match(/exposure/i)) {
                 return copy(exposure_list);
@@ -298,11 +301,21 @@
             if (list_term.match(/cycle/i)) {
                 return copy(cycle_list);
             }
-            return {
+            ret = {
                 peptides: copy(peptide_list),
                 exposures: copy(exposure_list),
                 cycles: copy(cycle_list)
             };
+            ret.peptides.more = ret_full_pep_list;
+            return ret;
+        };
+
+        ret_full_pep_list = function () {
+            var i, ret = [], that = this;
+            for (i = 0; i < that.length; i += 1) {
+                ret.push(peptide_object[that[i]].full);
+            }
+            return ret;
         };
 
         define_lists = function (object) {
