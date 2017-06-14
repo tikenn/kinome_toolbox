@@ -78,8 +78,8 @@ as urls this works by assuming jQuery is present and that Promises exist
     //Set up the save file function
     exports.save = (function () {
         var a = document.createElement("a");
+        a.setAttribute("style", "display: none");
         document.head.appendChild(a);
-        a.style = "display: none";
         return function (data, fileName) {
             var blob = new Blob([data], {type: "octet/stream"}),
                 url = window.URL.createObjectURL(blob);

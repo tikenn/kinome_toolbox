@@ -160,7 +160,7 @@
         };
 
         power_set = function (list) {
-        //http://codereview.stackexchange.com/questions/7001/generating-all-combinations-of-an-array
+            //http://codereview.stackexchange.com/questions/7001/generating-all-combinations-of-an-array
             var set = [], listSize = list.length,
                     combinationsCount = (1 << listSize), combination, i, j, check;
 
@@ -286,18 +286,19 @@
     }());
 
     smooth_background = (function () {
-        var linearize, getminimum, getValueByDistanceMatrix, numericalSort, getSlice,
-                wind = 1, valid_values, clean, transform;
+        var linearize, getminimum, numericalSort,
+                wind = 1, clean, transform;
         // wind: the number of spaces going around each spot to consider in the
         // linear model.
 
         numericalSort = function (a, b) {
+            //for a sort function
             return a * 1 - b * 1;
         };
 
         linearize = function (signal, background) {
-            var i, j, pep, x, y, dist, avgNeighbor = {}, neighbor_pep, abort, forglob = {}, multiplier,
-                    matrix = [], dists, miniMatrix, row, X_vals, y_vals, signalifValid, distances min_background, good;
+            var i, j, x, y, dist, avgNeighbor = {}, row, X_vals = [],
+                    y_vals = [], distances, good;
 
             for (x = 0; x < signal.length; x += 1) {
                 for (y = 0; y < signal[x].length; y += 0) {
@@ -341,127 +342,12 @@
                                     avgNeighbor[distances[i]].count);
                         }
                         X_vals.push(row);
-                        y_vals.push()
+                        y_vals.push(background[x][y]);
                     }
 
                 }
             }
-
-            for (pep = 0; pep < positions.peptide.length; pep += 1) {
-                signalifValid = dataObj.data.signal[pep];
-                abort = false;
-                if (!dataObj.data.signal_valid[pep]) {
-                    signalifValid = Math.max(signalifValid, dataObj.data.background[pep] / 0.1); //Value is from testing, not perfect, but better than ignoring the higher signals
-                    // signalifValid = signalifValid;
-                }
-                // if (positions.peptide[pep] && dataObj.data.signal_valid[pep]) {
-                if (positions.peptide[pep]) {
-                    // signalifValid = Math.log(signalifValid / dataObj.data.background[pep]) / Math.log(2);
-                    // if (positions.peptide[pep] &&
-                    //         dataObj.data.signal_valid[pep]) {
-                    //Get the current location
-
-                    forglob = {
-                        signal: dataObj.data.signal[pep],
-                        background: dataObj.data.background[pep],
-                        exposure: dataObj.exposure,
-                        cycle: dataObj.cycle,
-                        pep_index: pep,
-                        sample_ind: specInd,
-                        img_ind: img_ind
-                    };
-                    x = positions.peptide[pep][0];
-                    y = positions.peptide[pep][1];
-
-                    //move around the position
-                    avgNeighbor = {
-                        //set up the actual value as the first parameter
-                        '0': {
-                            value: signalifValid - min_background,
-                            count: 1
-                        }
-                    };
-                    for (i = x - wind; i <= x + wind; i += 1) {
-                        for (j = y - wind; j <= y + wind; j += 1) {
-                            if (i === x && j === y) {
-                                break;
-                            }
-                            //calulate how far away this is
-                            dist = (Math.sqrt(Math.pow(i - x, 2) +
-                                    Math.pow(j - y, 2))).toFixed(3);
-                            neighbor_pep = positions.position[i]
-                                ? positions.position[i][j]
-                                : undefined;
-                            //If the positions exists find the needed values.
-                            if (neighbor_pep !== undefined &&
-                                    dataObj.data.background_valid[neighbor_pep]) {
-
-                                //Get the appropriate peptide
-                                neighbor_pep = positions.position[i][j];
-
-                                //set up the results object
-                                avgNeighbor[dist] = avgNeighbor[dist] || {
-                                    value: 0,
-                                    count: 0
-                                };
-
-                                //Add one to the count to calc the average
-                                // avgNeighbor[dist].count += 1 + Math.max(Math.round(Math.log(dataObj.data.background[neighbor_pep])), 0);
-                                // avgNeighbor[dist].count += 1;
-                                // avgNeighbor[dist].count = 1;
-
-                                //v1
-                                multiplier = 1;
-
-                                //v2
-                                // multiplier = Math.max(1, Math.ceil(Math.log(dataObj.data.background[neighbor_pep])));
-
-                                //v7
-                                // multiplier = Math.max(dataObj.data.background[neighbor_pep], 1);
-
-                                //v8
-                                // multiplier = Math.pow(Math.max(dataObj.data.background[neighbor_pep], 1));
-
-                                avgNeighbor[dist].value +=
-                                        (dataObj.data.background[neighbor_pep] - min_background) * multiplier;
-                                avgNeighbor[dist].count += multiplier;
-
-                                forglob[dist] = forglob[dist] || [];
-                                forglob[dist].push(dataObj.data.background[neighbor_pep]);
-
-                            } else {
-                                abort = true;
-                            }
-                        }
-                    }
-                    //Now that the object is built add in the array
-                    dists = Object.keys(avgNeighbor).sort(numericalSort);
-                    miniMatrix = [];
-                    for (i = 0; i < dists.length; i += 1) {
-                        //v9 (v1 + add in stuff)
-                        // while (dists[i] * 1 > 0.9 && avgNeighbor[dists[i]].count < 4) { // only things at corners
-                        //     // console.log('here', avgNeighbor[dists[i]].count, avgNeighbor[dists[i]].value / avgNeighbor[dists[i]].count, min_background);
-                        //     avgNeighbor[dists[i]].count += 1;
-                        //     avgNeighbor[dists[i]].value += min_background;
-                        //     // console.log('here', avgNeighbor[dists[i]].count, avgNeighbor[dists[i]].value / avgNeighbor[dists[i]].count, min_background);
-                        // }
-                        miniMatrix.push(avgNeighbor[dists[i]].value /
-                                avgNeighbor[dists[i]].count);
-                    }
-                    if (!abort) {
-                        matrix.push(miniMatrix);
-                    }
-                }
-                glob2.push(forglob);
-            }
-            X_vals = [];
-            y_vals = [];
-            // console.log(matrix.length);
-            for (i = 0; i < matrix.length; i += 1) {
-                y_vals.push(matrix[i].shift());
-                X_vals.push(matrix[i]);
-            }
-            return {X: X_vals, y: y_vals, minimum: min_background};
+            return {X: X_vals, y: y_vals};
         };
 
 
@@ -532,6 +418,11 @@
 
             //now get the parts for the linear model
             points = linearize(signal, background);
+
+            //run the linear model
+            linearMod = linearfit(points.X, points.y);
+
+    //Stopped here
 
             //Add in validity stuff
             finalObj = valid_values(finalObj);
