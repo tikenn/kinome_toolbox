@@ -204,6 +204,8 @@
         });
     };
 
+    exports.loadStyle = getSTYLES;
+
     return exports;
 }(
     ("undefined" !== typeof module && module.exports)
