@@ -114,7 +114,7 @@
         };
 
         matrix_transpose = function (M) {
-            return M[0].map(function (col, i) {
+            return M[0].map(function (_, i) {
                 return M.map(function (row) {
                     return row[i];
                 });
@@ -217,8 +217,6 @@
                 ans.push(sol);
                 // }
             }
-
-            console.log(ans, X, y);
             max = {ret: false, val: 0};
             for (i = 0; i < ans.length; i += 1) {
                 if (ans[i] && ans[i].R2 > max.val) {
@@ -297,13 +295,12 @@
         };
 
         linearize = function (signal, background, name) {
-            var i, j, x, y, dist, avgNeighbor = {}, row, X_vals = [],
+            var i, j, x, y, dist, avgNeighbor = {}, row, X_vals = [], x_i, y_i,
                     y_vals = [], distances, good, all = [], possible;
-
             for (x = 0; x < signal.length; x += 1) {
-                for (y = 0; y < signal[x].length; y += 0) {
+                for (y = 0; y < signal[x].length; y += 1) {
                     good = true;
-                    if (!isNaN(signal[x][y]) && !isNaN(background[x][y])) {
+                    if (isNaN(signal[x][y]) || isNaN(background[x][y])) {
                         good = false;
                     }
 
@@ -316,16 +313,18 @@
                     };
 
                     //Now move through the window adding the other parts up
-                    for (i = x - wind; i < x + wind + 1; i += 1) {
-                        for (j = y - wind; j < y + wind + 1; j += 1) {
-                            dist = Math.pow(i - x, 2) + Math.pow(j - y, 2);
-                            if (dist) {
+                    for (i = -wind; i < wind + 1; i += 1) {
+                        for (j = -wind; j < wind + 1; j += 1) {
+                            x_i = x + i;
+                            y_i = y + j;
+                            dist = i * i + j * j;
+                            if (dist && background.hasOwnProperty(x_i) && background[x_i].hasOwnProperty(y_i)) {
                                 avgNeighbor[dist] = avgNeighbor[dist] || {
                                     value: 0,
                                     count: 0
                                 };
-                                if (!isNaN(background[i][j])) {
-                                    avgNeighbor[dist].value += background[i][j];
+                                if (!isNaN(background[x_i][y_i])) {
+                                    avgNeighbor[dist].value += background[x_i][y_i];
                                     avgNeighbor[dist].count += 1;
                                 } else {
                                     good = false;
@@ -343,6 +342,8 @@
                         if (avgNeighbor[distances[i]].count) {
                             row.push(avgNeighbor[distances[i]].value /
                                     avgNeighbor[distances[i]].count);
+                        } else if (i === 0) {
+                            row.push(NaN);
                         } else {
                             possible = false;
                         }
@@ -351,7 +352,8 @@
                     if (good) { //this data goes into the linear model
                         X_vals.push(row);
                         y_vals.push(background[x][y]);
-                    } else if (possible) { //this can be transformed
+                    }
+                    if (possible) { //this can be transformed
                         all.push({
                             data: row.concat(1),//for the constant
                             peptide: name[x][y]
@@ -363,17 +365,16 @@
             return {X: X_vals, y: y_vals, all: all};
         };
 
-
-        transform = function (data, params) {
+        transform = function (data, params, minimum) {
             var ret = [], val, i, j;
             // return
 
             for (i = 0; i < data.length; i += 1) {
-                val = 0;
+                val = minimum;
                 for (j = 1; j < params.length; j += 1) {
                     val += params[j] * data[i].data[j];
                 }
-                ret.push({value: val, peptide: data[i].peptide});
+                ret.push({background: val, peptide: data[i].peptide});
 
             }
             return ret;
@@ -391,12 +392,13 @@
 
         clean = function (x) {
             //just cleans things up a bit
-            return parseInt(x, 10);
+            return parseFloat(x);
         };
 
         //main function
-        return function (signal, background) {
-            var points, minimum;
+        return function (signal, background, peptides) {
+            var points, minimum, linearMod;
+
             //first clean the data a bit
             signal = signal.map(function (row) {
                 return row.map(clean);
@@ -426,91 +428,33 @@
             });
 
             //now get the parts for the linear model
-            points = linearize(signal, background);
+            points = linearize(signal, background, peptides);
 
             //run the linear model
             linearMod = linearfit(points.X, points.y);
 
             //Now go ahead and transform the values
-            final_background = transform(points, linearMod);
-
-            //Add in validity stuff
-            finalObj = valid_values(finalObj);
-
-            //I need to grab the data for each image now
-            for (i = 0; i < finalObj.cycle.length; i += 1) {
-                distances = getValueByDistanceMatrix(positions,
-                        getSlice(finalObj, i), specInd, i);
-                fit = linearfit(distances.X, distances.y);
-                // fit2 = linearfit(distances.X.map(return0), distances.y);
-                //subtract out the true background / intercept
-                // for (j = 0; j < distances.y.length; j += 1) {
-                //     distances.y[j] -= fit[fit.length - 1];
-                // }
-                // fits.X = fits.X.concat(distances.X);
-                // fits.y = fits.y.concat(distances.y);
-
-                //Save for transformation
-                allFits.push(fit); // each image
-                // smallFits.push(fit2);
-                allDistances.push(distances); // each image
-            }
-
-            //The general idea here is that on a chip by chip basis the
-            // only parameters that actually vary based on exposure time
-            // or cycle number is the intercept, the others just get closer
-            // to the true value with more signal positive data added in.
-            // so if we subtract out the intercept as we do above, then fit
-            // everything together we can get a better idea of the true
-            // parameters.
-            // No longer using the big fit idea...
-            // bigFit = linearfit(fits.X, fits.y);
-
-            //Now we need to apply the transformation
-            // stopped using bigFit concept, it was not as good as
-            // the case by case version and tended to over estimate things
-            for (i = 0; i < finalObj.data.signal.length; i += 1) { // each pep
-                for (j = 0; j < finalObj.cycle.length; j += 1) { // each img
-                    finalObj.data.background[i][j] = transform({
-                        // intercept1: allFits[j][allFits[j].length - 1],
-                        // params: bigFit,
-                        intercept1: 0,
-                        params: allFits[j].params,
-                        X: allDistances[j].X[allDistances[j].X.length -
-                                finalObj.data.signal.length + i],
-                        y: finalObj.data.background[i][j],
-                        minimum: allDistances[j].minimum
-                    });
-                    // if (!finalObj.data.background[i][j]) {
-                    //     console.log({
-                    //         // intercept1: allFits[j][allFits[j].length - 1],
-                    //         // params: bigFit,
-                    //         intercept1: 0,
-                    //         params: allFits[j].params,
-                    //         X: allDistances[j].X[allDistances[j].X.length -
-                    //                 finalObj.data.signal.length + i],
-                    //         y: finalObj.data.background[i][j]
-                    //     }, i, j, specInd);
-                    // }
-                }
-            }
-
-            // console.log(allFits);
-
-            // Return the result
-            // return {original: dataObj, final: finalObj, fits: allFits, smFits: smallFits};
-            return {original: dataObj, final: finalObj, fits: allFits};
-            // };
+            return {
+                data: transform(points.all, linearMod.params, minimum),
+                params: linearMod.params,
+                mod_R2: linearMod.R2
+            };
         };
     }());
 
     self.onmessage = function (event) {
-        //variable declarations
-
-        //variable definitions
+        var smoothed_data = smooth_background(event.data.signal, event.data.background, event.data.name);
 
         //return result
-        self.postMessage(event);
+        self.postMessage({
+            backgrounds: smoothed_data.data, //{peptide: _, background: _}
+            model_params: smoothed_data.params, // [signal (ignored), nearest neighbour avg, 2nd nearest neighbor avg, constant]
+            model_R2: smoothed_data.R2,
+            cycle: event.data.cycle,
+            exposure: event.data.exposure
+        });
+
+        return;
     };
 
     return smooth_background;

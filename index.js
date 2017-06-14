@@ -2,6 +2,7 @@
 var parser = require('./js/lib/parse_kinome_and_background.js'),
     add_get = require('./js/lib/enrich_kinome.js').enrich,
     filter = require('./js/lib/quality_filtration.js').filter,
+    normalize = require('./js/lib/background_normalization.js').normalize_background,
     amd_ww = require('./js/lib/amd_ww.3.1.0.js').amd_ww; //This requires webworker-threads
 
 //Requirements
@@ -12,15 +13,40 @@ var fs = require('fs'),
     ProgressBar = require('progress');
 
 //Functions
-var runanalyses, readFiles, parse_equation;
+var runanalyses, readFiles, parse_equation, stringify, writeFilePromise;
 
 //model url
-var model = './models/cyclingEq_3p_hyperbolic.json'; //references from main
+var model = './models/cyclingEq_3p_hyperbolic.jseq'; //references from main
+
+//workers
 var fitCurvesWorker = './js/lib/fitCurvesWorker.js';
+var normalizeWorker = './js/lib/normalize_background_worker.js';
+
+//file out path
+var fout = "";
 
 //define fuctions
 (function () {
     'use strict';
+
+    writeFilePromise = function (data, filename) {
+        return new Promise(function (resolve, reject) {
+            fs.writeFile(fout + filename, data, function (err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+    };
+
+    stringify = function (dataObj) {
+        if (typeof dataObj.stringify === 'function') {
+            return dataObj.stringify();
+        }
+        return JSON.stringify(dataObj);
+    };
 
     readFiles = function (backgroundFile, signalFile) {
         /*
@@ -85,46 +111,46 @@ var fitCurvesWorker = './js/lib/fitCurvesWorker.js';
                 }
 
                 prompt.start();
-                prompt.get({properties: {"0": {description: 'Continue? (Y)', type: "string", required: true, pattern: /Ye*s*/i, message: 'type "y" to continue.'}}}, function () {
-                    prompt.get(questions, function (err, results) {
-                        var ij;
-                        if (err) {
-                            console.error(err);
-                            return;
-                        }
-                        var resultKeys = Object.keys(results);
-                        for (i = 0; i < resultKeys.length; i += 1) {
-                            ij = resultKeys[i].split('_');
-                            name[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
-                            lvl_1_0_0[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
-                        }
-                        console.log(colors.red.underline('The following do not have an "Article Number". This is the design number for the chip used. Due to a bug PTK chips that have the Article Number "86312" often cannot export this number. If this you are using a PTK 86312 type "y". If you want to leave Article number out of the database (not recommended) type "skip"; otherwise type an article number for the chip.'));
-                        prompt.get(questions2, function (err, results) {
-                            if (err) {
-                                console.error(err);
-                                return;
-                            }
-                            resultKeys = Object.keys(results);
-                            for (i = 0; i < resultKeys.length; i += 1) {
-                                for (j = 0; j < barcodeIndexes[resultKeys[i]].length; j += 1) {
-                                    ij = barcodeIndexes[resultKeys[i]][j];
-                                    if (results[resultKeys[i]] === 'y') {
-                                        results[resultKeys[i]] = "86312";
-                                    }
-                                    if (results[resultKeys[i]] !== 'skip') {
-                                        name[ij].run_data.push({
-                                            key: 'Article Number',
-                                            value: results[resultKeys[i]]
-                                        });
-                                        lvl_1_0_0[ij].run_data.push({
-                                            key: 'Article Number',
-                                            value: results[resultKeys[i]]
-                                        });
-                                    }
-                                    delete name[ij].peptides;
-                                }
-                            }
-                            //continue on to the next stage...
+                // prompt.get({properties: {"0": {description: 'Continue? (Y)', type: "string", required: true, pattern: /Ye*s*/i, message: 'type "y" to continue.'}}}, function () {
+                //     prompt.get(questions, function (err, results) {
+                //         var ij;
+                //         if (err) {
+                //             console.error(err);
+                //             return;
+                //         }
+                //         var resultKeys = Object.keys(results);
+                //         for (i = 0; i < resultKeys.length; i += 1) {
+                //             ij = resultKeys[i].split('_');
+                //             name[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
+                //             lvl_1_0_0[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
+                //         }
+                //         console.log(colors.red.underline('The following do not have an "Article Number". This is the design number for the chip used. Due to a bug PTK chips that have the Article Number "86312" often cannot export this number. If this you are using a PTK 86312 type "y". If you want to leave Article number out of the database (not recommended) type "skip"; otherwise type an article number for the chip.'));
+                //         prompt.get(questions2, function (err, results) {
+                //             if (err) {
+                //                 console.error(err);
+                //                 return;
+                //             }
+                //             resultKeys = Object.keys(results);
+                //             for (i = 0; i < resultKeys.length; i += 1) {
+                //                 for (j = 0; j < barcodeIndexes[resultKeys[i]].length; j += 1) {
+                //                     ij = barcodeIndexes[resultKeys[i]][j];
+                //                     if (results[resultKeys[i]] === 'y') {
+                //                         results[resultKeys[i]] = "86312";
+                //                     }
+                //                     if (results[resultKeys[i]] !== 'skip') {
+                //                         name[ij].run_data.push({
+                //                             key: 'Article Number',
+                //                             value: results[resultKeys[i]]
+                //                         });
+                //                         lvl_1_0_0[ij].run_data.push({
+                //                             key: 'Article Number',
+                //                             value: results[resultKeys[i]]
+                //                         });
+                //                     }
+                //                     delete name[ij].peptides;
+                //                 }
+                //             }
+                //             //continue on to the next stage...
                             fs.readFile(model, 'utf8', function (err3, equation) {
                                 if (err3) {
                                     console.error(err3, 'failed to get equation');
@@ -135,9 +161,9 @@ var fitCurvesWorker = './js/lib/fitCurvesWorker.js';
                                     lvl_1_0_0: lvl_1_0_0
                                 });
                             });
-                        });
-                    });
-                });
+                //         });
+                //     });
+                // });
             });
         });
     };
@@ -178,7 +204,7 @@ var fitCurvesWorker = './js/lib/fitCurvesWorker.js';
                     }
                     bar.tick(counts.done - last);
                     last = counts.done;
-                }, 0.01); //For some reason I do not understand, the more often
+                }, 0.1); //For some reason I do not understand, the more often
                             //this checks the faster the analyses runs...
             };
         };
@@ -195,33 +221,48 @@ var fitCurvesWorker = './js/lib/fitCurvesWorker.js';
 
 
         filterPromise.then(function (d) {
-            // data.lvl_1_0_1 = add_get(d);
-            fs.writeFile('lvl_1_0_0.out', data.lvl_1_0_0.map(function (x) {
-                return x.stringify();
-            }).join('\n'), function () {
-                fs.writeFile('lvl_1_0_1.out', d.map(function (y) {
-                    return y.stringify();
-                }).join('\n'), function () {
-                    fs.writeFile('names.out', data.name.map(function (z) {
-                        return JSON.stringify(z);
-                    }).join('\n'), function () {
-                        process.exit(0);
-                    });
-                });
-            });
-            return;
-
+            data.lvl_1_0_1 = d;
         }).catch(function (err) {
             console.error('fitting failed', err);
+        }).then(function () {
+            //normalize background
+            return normalize({
+                amd_ww: amd_ww,
+                worker: normalizeWorker,
+                data: data.lvl_1_0_1,
+                update: barBuilder('smoothing background'),
+                number_threads: 64
+            });
+        }).then(function (d112) {
+            data.lvl_1_1_2 = d112;
+        }).catch(function (err) {
+            console.error(err);
+        }).then(function () {
+            //fit curves
+            return;
+        }).catch(function (err) {
+            console.error('curves failed to fit', err);
+        }).then(function () {
+            //write all of the files
+            var ps = [];
+            ps[0] = writeFilePromise(data.name.map(stringify).join('\n'), 'names.mdb');
+            ps[1] = writeFilePromise(data.lvl_1_0_0.map(stringify).join('\n'), 'lvl_1_0_0.mdb');
+            ps[2] = writeFilePromise(data.lvl_1_0_1.map(stringify).join('\n'), 'lvl_1_0_1.mdb');
+            ps[3] = writeFilePromise(data.lvl_1_1_2.map(stringify).join('\n'), 'lvl_1_1_2.mdb');
+
+            return Promise.all(ps).catch(function (err) {
+                console.error("A file failed to writes", err);
+            });
+        }).then(function () {
+            console.log('all done!');
+            process.exit(0);
         });
 
-        // filter.filter(data.lvl_1_0_0);
         return;
     };
 
     return colors;
 }());
-
 
 
 //actually start the program
@@ -230,9 +271,12 @@ if (myArgs.h || myArgs.help || !myArgs.b || !myArgs.s) {
             'Input files: background and signal files using -b and -s flags respectively. ' +
             'Database parameters: Specify database name using -d. ' +
             'Finally you may give an output directory and base with -o. ' +
-            'Output files will tag on <level>.json.');
+            'Output files will tag on <level>.mdb.');
 } else {
     readFiles(myArgs.b, myArgs.s);
+    if (myArgs.o) {
+        fout = myArgs.o;
+    }
 }
 
 // var backgroundFile = '../data_examples/_Export_Median_Background_170608121944.txt';

@@ -17,14 +17,35 @@
             if (!data.get || typeof data.get !== 'function') {
                 throw "Data object does not have get function attached. Use get_kinome.js to add this on.";
             }
+
+            if (data.level !== "1.0.1") {
+                throw "This is designed only for level 1.0.1 data. You passed in level: " + data.level;
+            }
             /*
                 idea here is to generate two arrays based on, then send them to the worker.
             */
 
-            var peptides, cycle, exposure, i, j, k, img, x, y;
+            var peptides, cycle, exposure, after_norm, i, j, k, img, x, y,
+                    promises = [];
+
+            data = data.clone();
+            data.level = '1.1.2';
             cycle = data.list('cycles');
             exposure = data.list('exposures');
 
+            after_norm = function (res) {
+                var l = 0, one;
+                for (l = 0; l < res.backgrounds.length; l += 1) {
+                    one = data.get({
+                        cycle: res.cycle,
+                        exposure: res.exposure,
+                        peptide: res.backgrounds[l].peptide
+                    })[0];
+                    one.set('background', res.backgrounds[l].background);
+                }
+                counts.done += 1;
+                return;
+            };
 
             for (i = 0; i < cycle.length; i += 1) {
                 for (j = 0; j < exposure.length; j += 1) {
@@ -32,7 +53,9 @@
                     img = {
                         background: [],
                         signal: [],
-                        name: []
+                        name: [],
+                        cycle: cycle[i],
+                        exposure: exposure[j]
                     };
                     for (k = 0; k < peptides.length; k += 1) {
                         x = peptides[k].spot_row - 1;
@@ -56,11 +79,13 @@
                         }
                     }
                     //Now that I have set this up, send it to the worker
-                    console.log(img);
+                    counts.total += 1;
+                    promises.push(worker.submit(img).then(after_norm));
                 }
-
             }
-            return data;
+            return Promise.all(promises).then(function () {
+                return data;
+            });
 
         };
     };
@@ -128,10 +153,10 @@
 
             //start up the workers
             num_thread = input_params.number_threads || undefined;
-            // worker = input_params.amd_ww.start({
-            //     filename: input_params.worker,
-            //     num_workers: num_thread
-            // });
+            worker = input_params.amd_ww.start({
+                filename: input_params.worker,
+                num_workers: num_thread
+            });
 
             console.log('\nStarting fits for background normalization.\n');
 
@@ -151,7 +176,7 @@
 
             // linearPromise.then(function (final_data) {
             backgroundPromise.then(function (final_data) {
-                final_data = final_data.map(shiftToMin);
+                final_data = final_data.map(shiftToMin); //takes it from 1.1.1 to 1.1.2
                 resolve(final_data);
             }).catch(function (err) {
                 reject(err);
