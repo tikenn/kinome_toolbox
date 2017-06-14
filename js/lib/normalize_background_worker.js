@@ -296,9 +296,9 @@
             return a * 1 - b * 1;
         };
 
-        linearize = function (signal, background) {
+        linearize = function (signal, background, name) {
             var i, j, x, y, dist, avgNeighbor = {}, row, X_vals = [],
-                    y_vals = [], distances, good;
+                    y_vals = [], distances, good, all = [], possible;
 
             for (x = 0; x < signal.length; x += 1) {
                 for (y = 0; y < signal[x].length; y += 0) {
@@ -316,8 +316,8 @@
                     };
 
                     //Now move through the window adding the other parts up
-                    for (i = x - wind; good && i < x + wind + 1; i += 1) {
-                        for (j = y - wind; good && j < y + wind + 1; j += 1) {
+                    for (i = x - wind; i < x + wind + 1; i += 1) {
+                        for (j = y - wind; j < y + wind + 1; j += 1) {
                             dist = Math.pow(i - x, 2) + Math.pow(j - y, 2);
                             if (dist) {
                                 avgNeighbor[dist] = avgNeighbor[dist] || {
@@ -333,41 +333,50 @@
                             }
                         }
                     }
-                    if (good) {
-                        //add it to the model if all points are avaliable
-                        distances = Object.keys(avgNeighbor).sort(numericalSort);
-                        row = [];
-                        for (i = 0; i < distances.length; i += 1) {
+
+                    //add it to the model if all points are avaliable
+                    distances = Object.keys(avgNeighbor).sort(numericalSort);
+                    row = [];
+                    possible = true;
+
+                    for (i = 0; possible && i < distances.length; i += 1) {
+                        if (avgNeighbor[distances[i]].count) {
                             row.push(avgNeighbor[distances[i]].value /
                                     avgNeighbor[distances[i]].count);
+                        } else {
+                            possible = false;
                         }
+                    }
+
+                    if (good) { //this data goes into the linear model
                         X_vals.push(row);
                         y_vals.push(background[x][y]);
+                    } else if (possible) { //this can be transformed
+                        all.push({
+                            data: row.concat(1),//for the constant
+                            peptide: name[x][y]
+                        });
                     }
 
                 }
             }
-            return {X: X_vals, y: y_vals};
+            return {X: X_vals, y: y_vals, all: all};
         };
 
 
-        transform = function (t_obj) {
-            var retVal = 0, i;
+        transform = function (data, params) {
+            var ret = [], val, i, j;
             // return
-            if (!t_obj.X) {
-                //Essentially if this is a reference peptide
-                retVal = t_obj.y;
-            } else {
-                retVal = t_obj.intercept1 +
-                        t_obj.params[t_obj.params.length - 1];
-                //leave out the first parameter, it is the signals contribution
-                // to itself, this also ignores the intercept parameter on the
-                // final value...
-                for (i = 1; i < t_obj.X.length; i += 1) {
-                    retVal += t_obj.params[i] * t_obj.X[i];
+
+            for (i = 0; i < data.length; i += 1) {
+                val = 0;
+                for (j = 1; j < params.length; j += 1) {
+                    val += params[j] * data[i].data[j];
                 }
+                ret.push({value: val, peptide: data[i].peptide});
+
             }
-            return retVal + t_obj.minimum;
+            return ret;
         };
 
         getminimum = function (a, b) {
@@ -422,7 +431,8 @@
             //run the linear model
             linearMod = linearfit(points.X, points.y);
 
-    //Stopped here
+            //Now go ahead and transform the values
+            final_background = transform(points, linearMod);
 
             //Add in validity stuff
             finalObj = valid_values(finalObj);

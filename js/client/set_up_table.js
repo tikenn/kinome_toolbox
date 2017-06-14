@@ -121,6 +121,9 @@
 
         for (i = 0; i < tableObject.header.length; i += 1) { //by entry
             $temp = $('<th>').appendTo($headerRow);
+            if (i > 0) {
+                $temp.addClass('hidden-xs');
+            }
             $temp = $('<select>', {class: 'form-control'}).appendTo($temp);
             for (j = 0; j < tableObject.header_options.length; j += 1) {
                 $opt = tableObject.header_options[j].clone();
@@ -151,6 +154,9 @@
         $row = $('<tr>').appendTo($elem);
         for (i = -2; i < tableObject.header.length; i += 1) { // make the select boxes
             $temp = $('<th>').appendTo($row);
+            if (i > 0) {
+                $temp.addClass('hidden-xs');
+            }
             $temp = $('<input>', {type: 'text', class: 'form-control'}).appendTo($temp);
             if (i > -2) {
                 $temp.attr('placeholder', 'regex filter');
@@ -323,6 +329,9 @@
                     //add in the other keys
                     for (i = 0; i < tableKeys.length; i += 1) {
                         temp = $('<td>').appendTo(row);
+                        if (i > 0) {
+                            temp.addClass('hidden-xs');
+                        }
                         tableText = data[tableIndex].database[tableKeys[i][0]] || "";
                         if (Array.isArray(tableText)) {
                             if (tableText.length < 4) {
