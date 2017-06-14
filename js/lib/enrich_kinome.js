@@ -12,7 +12,7 @@
             /*defined by level*/
         var get, list, define_lists, append, level_up,
             /*generalizable*/
-                clone, stringify,
+                clone, stringify, ID = "_id",
             /*Super objects*/
                 cycle_list, cycle_object,
                 peptide_list, peptide_object,
@@ -286,6 +286,7 @@
                 delete start.background_valid;
                 delete start.signal;
                 delete start.signal_valid;
+                delete start[ID];
 
                 if (typeof equation_str !== "string") {
                     console.error("No equation string passed in, please pass in a string with the needed parts. Example: https://github.com/adussaq/kinome_toolbox/blob/master/models/cyclingEq_3p_hyperbolic.jseq");
@@ -306,7 +307,7 @@
                 start.level = start.level.replace(/^1/, "2");
 
                 //get original length of cycle array
-                console.log('delete this part once updated the data struct');
+                console.warn('delete this part once updated the data struct');
                 for (i = 0; i < start.run_data.length; i += 1) {
                     if (start.run_data[i].key.match(/^cycle$/i)) {
                         point_count = start.run_data[i].value.length;
@@ -788,7 +789,9 @@
 
         clone = function () {
             //Uses simple p/s to return a getted version of the object
-            return exports.enrich(copy(this));
+            var newcopy = copy(this);
+            delete newcopy[ID];
+            return exports.enrich(newcopy);
         };
 
         mult1 = function (x) {
@@ -800,9 +803,11 @@
         };
 
         stringify = function () {
-            var that = this;
+            var that = this.clone();
             //idea here is just to round numbers to 6 decimal point then call
             // JSON.stringify.
+
+            delete that[ID];
 
             var keys, objs = [that], one, i;
 
@@ -822,6 +827,7 @@
                     }
                 }
             }
+
             return JSON.stringify(that);
         };
 

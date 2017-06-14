@@ -3,7 +3,8 @@ var parser = require('./js/lib/parse_kinome_and_background.js'),
     add_get = require('./js/lib/enrich_kinome.js').enrich,
     filter = require('./js/lib/quality_filtration.js').filter,
     normalize = require('./js/lib/background_normalization.js').normalize_background,
-    amd_ww = require('./js/lib/amd_ww.3.1.0.js').amd_ww; //This requires webworker-threads
+    amd_ww = require('./js/lib/amd_ww.3.1.0.js').amd_ww, //This requires webworker-threads
+    parameterize = require('./js/lib/parameterize_curves.js').parameterize;
 
 //Requirements
 var fs = require('fs'),
@@ -13,7 +14,7 @@ var fs = require('fs'),
     ProgressBar = require('progress');
 
 //Functions
-var runanalyses, readFiles, parse_equation, stringify, writeFilePromise;
+var timeoutPromise, runanalyses, readFiles, parse_equation, stringify, writeFilePromise;
 
 //model url
 var model = './models/cyclingEq_3p_hyperbolic.jseq'; //references from main
@@ -41,6 +42,12 @@ var fout = "";
         });
     };
 
+    timeoutPromise = function (d) {
+        return new Promise(function (resolve) {
+            resolve(d);
+        }, 1000);
+    }
+
     stringify = function (dataObj) {
         if (typeof dataObj.stringify === 'function') {
             return dataObj.stringify();
@@ -54,6 +61,8 @@ var fout = "";
             questions to verify the data look right and it opens files and it pareses
             files and it makes sure that the article numbers are correct.
             It ends by calling the runanalses function.
+
+            Should eventually write this as a promise architecture.
         */
         fs.readFile(backgroundFile, 'utf8', function (err1, background) {
             if (err1) {
@@ -209,7 +218,7 @@ var fout = "";
             };
         };
 
-        var filterPromise = filter({
+        filter({
             data: data.lvl_1_0_0,
             amd_ww: amd_ww,
             equation: data.equation,
@@ -217,12 +226,9 @@ var fout = "";
             number_threads: 64, //This can be obscenely high on servers
             linearUpdate: barBuilder('fitting linear'),
             kineticUpdate: barBuilder('fitting kinetic')
-        });
-
-
-        filterPromise.then(function (d) {
+        }).then(function (d) {
             data.lvl_1_0_1 = d;
-        }).catch(function (err) {
+        }).then(timeoutPromise).catch(function (err) {
             console.error('fitting failed', err);
         }).then(function () {
             //normalize background
@@ -235,20 +241,42 @@ var fout = "";
             });
         }).then(function (d112) {
             data.lvl_1_1_2 = d112;
-        }).catch(function (err) {
+        }).then(timeoutPromise).catch(function (err) {
             console.error(err);
         }).then(function () {
             //fit curves
-            return;
+            return parameterize({
+                data: data.lvl_1_0_1,
+                amd_ww: amd_ww,
+                equation: data.equation,
+                worker: fitCurvesWorker,
+                number_threads: 64,
+                update: barBuilder('building lvl 2.0.1')
+            });
+        }).then(timeoutPromise).then(function (res) {
+            //fit curves
+            data.lvl_2_0_1 = res;
+            return parameterize({
+                data: data.lvl_1_1_2,
+                amd_ww: amd_ww,
+                equation: data.equation,
+                worker: fitCurvesWorker,
+                number_threads: 64,
+                update: barBuilder('building lvl 2.1.2')
+            });
         }).catch(function (err) {
             console.error('curves failed to fit', err);
-        }).then(function () {
+        }).then(timeoutPromise).then(function (res) {
             //write all of the files
+            data.lvl_2_1_2 = res;
+            console.log('writing files');
             var ps = [];
             ps[0] = writeFilePromise(data.name.map(stringify).join('\n'), 'names.mdb');
             ps[1] = writeFilePromise(data.lvl_1_0_0.map(stringify).join('\n'), 'lvl_1_0_0.mdb');
             ps[2] = writeFilePromise(data.lvl_1_0_1.map(stringify).join('\n'), 'lvl_1_0_1.mdb');
             ps[3] = writeFilePromise(data.lvl_1_1_2.map(stringify).join('\n'), 'lvl_1_1_2.mdb');
+            ps[4] = writeFilePromise(data.lvl_2_0_1.map(stringify).join('\n'), 'lvl_2_0_1.mdb');
+            ps[5] = writeFilePromise(data.lvl_2_1_2.map(stringify).join('\n'), 'lvl_2_1_2.mdb');
 
             return Promise.all(ps).catch(function (err) {
                 console.error("A file failed to writes", err);

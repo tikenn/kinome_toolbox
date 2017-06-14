@@ -11,7 +11,7 @@
 
     */
 
-    var main, fit_curves, get_models, counts = {done: 0, total: 0};
+    var main, fit_curves, get_models;
 
     get_models = function (array, y_str, eq_string) {
         var i = 0, background = {
@@ -41,7 +41,7 @@
         };
     };
 
-    fit_curves = function (worker, equation) {
+    fit_curves = function (worker, equation, counts) {
         return function (data) {
             //check for get function
             if (!data.get || typeof data.get !== 'function') {
@@ -53,16 +53,17 @@
                     promises = [], post_linear, i, j;//, list = [];
 
             //clone the data object so we can make changes to it.
-            out = data.level_up();
+            out = data.level_up(equation);
 
             //define the callbacks for individual fits
             post_linear = function (x) {
+                var putObj;
                 /*
                     Comes back as [origin, result]
-                    orgin: {
+                    origin: {
                         peptide:
                         cycle:
-                        type:
+                        type: [signal | background]
                     }
                     result: {
                         parameters: [m, b]
@@ -79,19 +80,31 @@
                 */
 
                 counts.done += 1;
-                console.log('linear', x);
+                // console.log('linear', x);
 
                 //append the data to the out
+                putObj = {
+                    peptide: x[0].peptide,
+                    cycle: x[0].cycle,
+                    type: 'linear'
+                };
+                putObj[x[0].type] = {
+                    R2: x[1].R2,
+                    parameters: x[1].parameters
+                };
+
+                out.put(putObj);
 
                 return true; //clears extra stuff from promise memory
             };
 
             post_kinetic = function (x) {
+                var putObj;
                 /*
                     Comes back as [origin, result]
                     orgin: {
                         peptide:
-                        cycle:
+                        exposure:
                         type:
                     }
                     result: {
@@ -109,7 +122,22 @@
                 */
 
                 counts.done += 1;
-                console.log('kinetic', x);
+                // console.log('kinetic', x);
+
+                //append the data to the out
+                putObj = {
+                    peptide: x[0].peptide,
+                    exposure: x[0].exposure,
+                    type: 'kinetic'
+                };
+                putObj[x[0].type] = {
+                    R2: x[1].R2,
+                    parameters: x[1].parameters,
+                    WW: x[1].WWtest[0]
+                };
+
+                out.put(putObj);
+
                 return true; //clears extra stuff from promise memory
             };
 
@@ -154,7 +182,6 @@
                         }).then(post_kinetic));
                     }
                 }
-                return;
             }
 
             return Promise.all(promises).then(function () {
@@ -202,7 +229,7 @@
             // not then throw the error.
 
             //start up the workers
-            var worker, num_thread;
+            var worker, num_thread, counts = {done: 0, total: 0};
 
             num_thread = fit_object.number_threads || undefined;
             worker = fit_object.amd_ww.start({
@@ -210,15 +237,18 @@
                 num_workers: num_thread
             });
 
-            console.log('\nStarting fits for outlier detection.\n');
+            console.log('\nStarting fits for level 2 data.\n');
 
 
             Promise.all(fit_object.data.map(fit_curves(
                 worker,
-                fit_object.equation
+                fit_object.equation,
+                counts
             ))).catch(function (err) {
                 reject("Fitting failed" + err);
             }).then(function (fits) {
+                //Just to be sure this updates correctly.
+                counts.done = counts.total;
                 resolve(fits);
             });
 
@@ -229,7 +259,7 @@
         });
     };
 
-    exports.filter = main;
+    exports.parameterize = main;
 
     return exports;
 }(

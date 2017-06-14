@@ -10,9 +10,9 @@
 
     */
     // variable declarations
-    var main, shiftToMin, counts = {total: 0, done: 0}, normalize_background;
+    var main, shiftToMin, normalize_background;
 
-    normalize_background = function (worker) {
+    normalize_background = function (worker, counts) {
         return function (data) {
             if (!data.get || typeof data.get !== 'function') {
                 throw "Data object does not have get function attached. Use get_kinome.js to add this on.";
@@ -149,7 +149,7 @@
                 input_params.data = [input_params.data];
             }
 
-            var backgroundPromise, worker, num_thread;
+            var backgroundPromise, worker, num_thread, counts = {total: 0, done: 0};
 
             //start up the workers
             num_thread = input_params.number_threads || undefined;
@@ -164,7 +164,8 @@
             // if they all work then we will resolve with the solution, or if
             // not then throw the error.
             backgroundPromise = Promise.all(input_params.data.map(normalize_background(
-                worker
+                worker,
+                counts
             ))).catch(function (err) {
                 reject({message: "Background normalization failed:", error: err});
             });

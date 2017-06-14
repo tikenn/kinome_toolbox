@@ -111,7 +111,8 @@
             //run the sort operation and then return the final result
             spec.sort(sort).toArray(function (err, docs) {
                 assert.equal(err, null);
-                console.log("Found the following records", docs);
+                console.log('Found docs');
+               // console.log("Found the following records", docs);
                 response.send(docs);
             });
         });
@@ -156,7 +157,8 @@
             //run the sort operation and then return the final result
             spec.toArray(function (err, docs) {
                 assert.equal(err, null);
-                console.log("Found the following records", docs);
+                console.log('Found docs');
+                //console.log("Found the following records", docs);
                 //Only return the first object
                 response.send(docs[0]);
             });
@@ -164,15 +166,24 @@
     };
 
     //sets up the server stuff
-    var server = restify.createServer();
+    var server = restify.createServer({
+        accept: ['application/json', 'image/tif']
+    });
     server.use(restify.queryParser());
     server.use(restify.CORS({}));
-    server.get("/:db_name/:collection_name", grabDbName);
-    server.get("/:db_name/:collection_name/:doc_id", grabDocument);
+
+    server.get(/\/img\/kinome\/?.*/, restify.serveStatic({
+        directory: "./server_imgs"
+    }));
+
+    //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
+
+    server.get("/db/:db_name/:collection_name", grabDbName);
+    server.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
 
 
     //starts the server listening on port :8080
-    server.listen(8080, function () {
+    server.listen(8000, function () {
         console.log('%s listening at %s', server.name, server.url);
     });
 }());

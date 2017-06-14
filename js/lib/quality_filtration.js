@@ -12,8 +12,7 @@
     */
 
     var main, find_outliers_linear, linear_cutoff, kinetic_cutoff, get_models,
-            lin_r2_cut, counts1 = {done: 0, total: 0}, counts2 = {done: 0, total: 0},
-            find_outliers_kinetic, shiftToMin;//, blank;
+            lin_r2_cut, find_outliers_kinetic, shiftToMin;//, blank;
 
     //These are constants determined by testing.
     linear_cutoff = 56.9441;
@@ -48,7 +47,7 @@
         };
     };
 
-    find_outliers_linear = function (worker) {
+    find_outliers_linear = function (worker, counts1) {
         return function (data) {
             //check for get function
             if (!data.get || typeof data.get !== 'function') {
@@ -193,7 +192,7 @@
         };
     };
 
-    find_outliers_kinetic = function (worker, equation) {
+    find_outliers_kinetic = function (worker, equation, counts2) {
         return function (data) {
             //check for get function
             if (!data.get || typeof data.get !== 'function') {
@@ -405,7 +404,9 @@
             // not then throw the error.
 
             //start up the workers
-            var linearPromise, kineticPromise, worker, num_thread;
+            var linearPromise, kineticPromise, worker, num_thread,
+                    counts1 = {done: 0, total: 0},
+                    counts2 = {done: 0, total: 0};
 
             num_thread = filter_object.number_threads || undefined;
             worker = filter_object.amd_ww.start({
@@ -417,7 +418,8 @@
 
 
             linearPromise = Promise.all(filter_object.data.map(find_outliers_linear(
-                worker
+                worker,
+                counts1
             ))).catch(function (err) {
                 reject("Linear fit failed" + err);
             });
@@ -430,7 +432,8 @@
             kineticPromise = linearPromise.then(function (d1) {
                 var p2 = Promise.all(d1.map(find_outliers_kinetic(
                     worker,
-                    filter_object.equation
+                    filter_object.equation,
+                    counts2
                 )));
                 if (filter_object.hasOwnProperty("kineticUpdate") && typeof filter_object.kineticUpdate === 'function') {
                     filter_object.kineticUpdate(counts2);
