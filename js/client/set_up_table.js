@@ -13,62 +13,48 @@
     'use strict';
     var $page = KINOME.page, tableObject, tableWidth = 3, //number of dropdowns
             //functions
-            getNamesDatabase, getTableData, getHeader, addFirstHeaderRow,
+            getTableData, getHeader, addFirstHeaderRow,
             addSecondHeaderRow, buildTableBody, createPaginationDivs,
             buildLinks;
 
     //function definitions
-    getNamesDatabase = function () {
-        //this is overly convuluted to get getTableData to work every time.
-        // I could rewrite both functions to preform the same purpose
-        return KINOME.params.data.map(function (dataGroup) {
-            return dataGroup.value.map(function (sample) {
-                return {names: [sample], url: sample.data_origin_url};
-            });
-        }).reduce(function (a, b) {
-            return a.concat(b);
-        });
-    };
-
     getTableData = function (names) {
-        var i, j, k, retArray = [], entry, id = '_id', tempObj, headerStart = {}, headerPossible = {};
+        var i, k, retArray = [], entry, id = '_id', tempObj, headerStart = {}, headerPossible = {};
         for (i = 0; i < names.length; i += 1) {
-            for (j = 0; j < names[i].names.length; j += 1) {
-                entry = names[i].names[j];
-                tempObj = {url: names[i].url, database: {}, table: {}};
-                tempObj.table.name = entry.name;
-                tempObj.table.group = undefined;
-                tempObj.table.id = entry[id];
+            entry = names[i];
+            tempObj = {url: names[i].url, database: {}, table: {}};
+            tempObj.table.name = entry.name;
+            tempObj.table.group = undefined;
+            tempObj.table.id = entry[id];
 
-                //sample data part of entry
-                for (k = 0; k < entry.sample_data.length; k += 1) {
-                    if (tempObj.database[entry.sample_data[k].key]) {
-                        tempObj.database[entry.sample_data[k].key] = [
-                            tempObj.database[entry.sample_data[k].key],
-                            entry.sample_data[k].value
-                        ];
-                    } else {
-                        tempObj.database[entry.sample_data[k].key] =
-                                entry.sample_data[k].value;
-                        headerStart[entry.sample_data[k].key] = 1;
-                    }
+            //sample data part of entry
+            for (k = 0; k < entry.sample_data.length; k += 1) {
+                if (tempObj.database[entry.sample_data[k].key]) {
+                    tempObj.database[entry.sample_data[k].key] = [
+                        tempObj.database[entry.sample_data[k].key],
+                        entry.sample_data[k].value
+                    ];
+                } else {
+                    tempObj.database[entry.sample_data[k].key] =
+                            entry.sample_data[k].value;
+                    headerStart[entry.sample_data[k].key] = 1;
+                }
 
-                }
-                //machine data part of entry
-                for (k = 0; k < entry.run_data.length; k += 1) {
-                    if (tempObj.database[entry.run_data[k].key]) {
-                        tempObj.database[entry.run_data[k].key] = [
-                            tempObj.database[entry.run_data[k].key],
-                            entry.run_data[k].value
-                        ];
-                    } else {
-                        tempObj.database[entry.run_data[k].key] =
-                                entry.run_data[k].value;
-                        headerPossible[entry.run_data[k].key] = 1;
-                    }
-                }
-                retArray.push(tempObj);
             }
+            //machine data part of entry
+            for (k = 0; k < entry.run_data.length; k += 1) {
+                if (tempObj.database[entry.run_data[k].key]) {
+                    tempObj.database[entry.run_data[k].key] = [
+                        tempObj.database[entry.run_data[k].key],
+                        entry.run_data[k].value
+                    ];
+                } else {
+                    tempObj.database[entry.run_data[k].key] =
+                            entry.run_data[k].value;
+                    headerPossible[entry.run_data[k].key] = 1;
+                }
+            }
+            retArray.push(tempObj);
         }
         return {
             data: retArray,
@@ -364,13 +350,15 @@
     };
 
     //Begin actual work
-    (function () {
+
+    var buildIt = function (database_arr) {
         var names_database, tableData, $table, $header;
 
         //grab all the names databases
-        names_database = getNamesDatabase();
-        console.log(names_database);
-        tableData = getTableData(names_database);
+        // names_database = getNamesDatabase();
+        // names_database = KINOME.get({level: 'name'});
+        // console.log(names_database, KINOME.get({level: 'name'}));
+        tableData = getTableData(database_arr);
 
         $page.empty();
 
@@ -407,8 +395,16 @@
 
         //now actually build the page
         buildTableBody();
+    };
 
-    }());
+    var names_major = KINOME.list({level: 'name'});
+    if (names_major.length) {
+        buildIt(names_major);
+    }
+    var lvl1_0_1 = KINOME.list({level: '1.0.1'});
+    if (lvl1_0_1.length) {
+        buildIt(lvl1_0_1);
+    }
 
     return [tableObject, $page];
 }());

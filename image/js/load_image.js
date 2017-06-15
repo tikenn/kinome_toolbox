@@ -60,7 +60,11 @@
     };
 
     var img = getParameter('img');
-    img = baseURL + img[0];
+    if (img.length === 0) {
+        $('#main_page').empty().append('<div class="alert alert-warning"><h2>No image provide, add a file name with: <code>?img="<imgName>"</code>.</h2></div>');
+        return;
+    }
+    img = baseURL + img[0] + '.tif';
     var worker = new Worker('./js/tiff.worker.min.js');
     worker.onmessage = function (event) {
         var data, canvas, context, imageData;
@@ -73,14 +77,18 @@
         (imageData).data.set(new Uint8Array(data.image));
 
         context.putImageData(spread(imageData), 0, 0);
-        $('#main_page').append(canvas).append($('<div class="h3">Column&nbsp;&nbsp;</div>').append($('<img>', {
+        $('#main_page').empty().append(canvas).append($('<div class="h3">Column&nbsp;&nbsp;</div>').append($('<img>', {
             src: 'arrow-39644_640.png',
             width: (data.width / 2) + "px"
         }))).append('<p>This image has been altered to be more visible and is low resolution due to the image conversion step. Please download the raw image and adjust levels to view if you would like a better quaility image.</p><button class="btn btn-lg btn-primary" onclick=window.open("' + img + '")>Download</button>');
         $(canvas).addClass('img-responsive').addClass('center-block');
     };
 
-    //color convert functions from same as hcv genie
+    worker.onerror = function () {
+        $('#main_page').empty().append('<div class="alert alert-danger"><h2>Failed to load image.</h2></div>');
+    };
+
+    //color convert functions from same as hcv genie, took from someone else
     (function () {
         getrgb = function (hsl) {
             var h = hsl[0] / 360;

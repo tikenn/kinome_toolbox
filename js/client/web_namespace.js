@@ -17,7 +17,8 @@ as urls this works by assuming jQuery is present and that Promises exist
     defaults = {
         levels: {
             name: ['./js/client/set_up_table.js'],
-            '1.0.0': ['./js/client/outlier.js']
+            '1.0.0': ['./js/client/outlier.js'],
+            '1.0.1': ['./js/client/set_up_table.js']
         },
         //library functions
         shiftToMin: './js/web_main.js',
@@ -185,12 +186,15 @@ as urls this works by assuming jQuery is present and that Promises exist
         );
     };
 
-    KINOME.get = function (get_object) {
+    KINOME.list = function (get_object) {
         //Need to flush this out, start with just getting by level
-        var level = get_object.level, out = [];
-        KINOME.params.data.map(function (group) {
+        var level = new RegExp(get_object.level, "i"), out = [];
+        KINOME.params.data.map(function (group, groupInd) {
             group.value.map(function (samp) {
-                if (samp.level === level) {
+                var final;
+                if (samp.level.match(level)) {
+                    final = samp.clone();
+                    Object.defineProperty(final, 'group', {value: groupInd, enumerable: false});
                     out.push(samp);
                 }
             });
