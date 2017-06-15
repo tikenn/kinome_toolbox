@@ -23,7 +23,7 @@
 
         //Based on the type we will define a series of functions
         level_1_helpers = function () {
-            var set_function, more_function,
+            var set_function, more_function, get_image,
                     check_apppend_params;
             get = function (getParams) {
                 var i, j, k, peps, cycs, exps, retArr = [], img_ind, pep_ind;
@@ -57,6 +57,7 @@
                                     background_valid: that.background_valid[img_ind][pep_ind],
                                     spot_row: peptide_object[peps[i]].row * 1,
                                     spot_col: peptide_object[peps[i]].col * 1,
+                                    image: get_image(img_ind, that),
                                     set: set_function(img_ind, pep_ind, that),
                                     more: more_function(img_ind, peptide_object[peps[i]])
                                 });
@@ -75,6 +76,16 @@
                         image_index: img_ind
                     };
                 };
+            };
+
+            get_image = function (ind, data) {
+                var i;
+                for (i = 0; i < data.run_data.length; i += 1) {
+                    if (data.run_data[i].key.match(/image/i)) {
+                        return data.run_data[i].value[ind];
+                    }
+                }
+                return;
             };
 
             append = function (appendParams) {

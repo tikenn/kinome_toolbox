@@ -44,9 +44,11 @@ var fout = "";
 
     timeoutPromise = function (d) {
         return new Promise(function (resolve) {
-            resolve(d);
-        }, 1000);
-    }
+            setTimeout(function () {
+                resolve(d);
+            }, 500);
+        });
+    };
 
     stringify = function (dataObj) {
         if (typeof dataObj.stringify === 'function') {
@@ -120,46 +122,46 @@ var fout = "";
                 }
 
                 prompt.start();
-                // prompt.get({properties: {"0": {description: 'Continue? (Y)', type: "string", required: true, pattern: /Ye*s*/i, message: 'type "y" to continue.'}}}, function () {
-                //     prompt.get(questions, function (err, results) {
-                //         var ij;
-                //         if (err) {
-                //             console.error(err);
-                //             return;
-                //         }
-                //         var resultKeys = Object.keys(results);
-                //         for (i = 0; i < resultKeys.length; i += 1) {
-                //             ij = resultKeys[i].split('_');
-                //             name[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
-                //             lvl_1_0_0[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
-                //         }
-                //         console.log(colors.red.underline('The following do not have an "Article Number". This is the design number for the chip used. Due to a bug PTK chips that have the Article Number "86312" often cannot export this number. If this you are using a PTK 86312 type "y". If you want to leave Article number out of the database (not recommended) type "skip"; otherwise type an article number for the chip.'));
-                //         prompt.get(questions2, function (err, results) {
-                //             if (err) {
-                //                 console.error(err);
-                //                 return;
-                //             }
-                //             resultKeys = Object.keys(results);
-                //             for (i = 0; i < resultKeys.length; i += 1) {
-                //                 for (j = 0; j < barcodeIndexes[resultKeys[i]].length; j += 1) {
-                //                     ij = barcodeIndexes[resultKeys[i]][j];
-                //                     if (results[resultKeys[i]] === 'y') {
-                //                         results[resultKeys[i]] = "86312";
-                //                     }
-                //                     if (results[resultKeys[i]] !== 'skip') {
-                //                         name[ij].run_data.push({
-                //                             key: 'Article Number',
-                //                             value: results[resultKeys[i]]
-                //                         });
-                //                         lvl_1_0_0[ij].run_data.push({
-                //                             key: 'Article Number',
-                //                             value: results[resultKeys[i]]
-                //                         });
-                //                     }
-                //                     delete name[ij].peptides;
-                //                 }
-                //             }
-                //             //continue on to the next stage...
+                prompt.get({properties: {"0": {description: 'Continue? (Y)', type: "string", required: true, pattern: /Ye*s*/i, message: 'type "y" to continue.'}}}, function () {
+                    prompt.get(questions, function (err, results) {
+                        var ij;
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        var resultKeys = Object.keys(results);
+                        for (i = 0; i < resultKeys.length; i += 1) {
+                            ij = resultKeys[i].split('_');
+                            name[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
+                            lvl_1_0_0[ij[0]].sample_data[ij[1]].key = results[resultKeys[i]];
+                        }
+                        console.log(colors.red.underline('The following do not have an "Article Number". This is the design number for the chip used. Due to a bug PTK chips that have the Article Number "86312" often cannot export this number. If this you are using a PTK 86312 type "y". If you want to leave Article number out of the database (not recommended) type "skip"; otherwise type an article number for the chip.'));
+                        prompt.get(questions2, function (err, results) {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            resultKeys = Object.keys(results);
+                            for (i = 0; i < resultKeys.length; i += 1) {
+                                for (j = 0; j < barcodeIndexes[resultKeys[i]].length; j += 1) {
+                                    ij = barcodeIndexes[resultKeys[i]][j];
+                                    if (results[resultKeys[i]] === 'y') {
+                                        results[resultKeys[i]] = "86312";
+                                    }
+                                    if (results[resultKeys[i]] !== 'skip') {
+                                        name[ij].run_data.push({
+                                            key: 'Article Number',
+                                            value: results[resultKeys[i]]
+                                        });
+                                        lvl_1_0_0[ij].run_data.push({
+                                            key: 'Article Number',
+                                            value: results[resultKeys[i]]
+                                        });
+                                    }
+                                    delete name[ij].peptides;
+                                }
+                            }
+                            //continue on to the next stage...
                             fs.readFile(model, 'utf8', function (err3, equation) {
                                 if (err3) {
                                     console.error(err3, 'failed to get equation');
@@ -170,9 +172,9 @@ var fout = "";
                                     lvl_1_0_0: lvl_1_0_0
                                 });
                             });
-                //         });
-                //     });
-                // });
+                        });
+                    });
+                });
             });
         });
     };

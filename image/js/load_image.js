@@ -171,14 +171,6 @@
         };
     }());
 
-
-
     worker.postMessage({url: img, memory: 16777216 * 110});
 
 }());
-
-
-
-
-
-
