@@ -1,7 +1,5 @@
 /*global Worker,convert $*/
 
-var adjustImg = {};
-
 (function () {
     //Simple function just loads in the image from the url and builds a scaffolding
         //to show the row column direction.
@@ -75,7 +73,11 @@ var adjustImg = {};
         (imageData).data.set(new Uint8Array(data.image));
 
         context.putImageData(spread(imageData), 0, 0);
-        $('#main_page').append(canvas);
+        $('#main_page').append(canvas).append($('<div class="h3">Column&nbsp;&nbsp;</div>').append($('<img>', {
+            src: 'arrow-39644_640.png',
+            width: (data.width / 2) + "px"
+        }))).append('<p>This image has been altered to be more visible and is low resolution due to the image conversion step. Please download the raw image and adjust levels to view if you would like a better quaility image.</p><button class="btn btn-lg btn-primary" onclick=window.open("' + img + '")>Download</button>');
+        $(canvas).addClass('img-responsive').addClass('center-block');
     };
 
     //color convert functions from same as hcv genie
