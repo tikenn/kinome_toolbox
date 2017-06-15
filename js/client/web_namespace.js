@@ -177,13 +177,15 @@ as urls this works by assuming jQuery is present and that Promises exist
         return ret;
     };
 
-    KINOME.error = function (err) {
+    KINOME.error = function (err, msg) {
         //display an error message... Need to add in some more options...
-        console.error(err);
-        $('#status').append(
-            '<div class="alert alert-danger alert-dismissable fade in">' + err + '<a href="#" class="close" data-dismiss="alert"'
-            + ' aria-label="close">&times;</a></div>'
-        );
+        console.error(err, msg);
+        if (msg !== undefined) {
+            $('#status').append(
+                '<div class="alert alert-danger alert-dismissable fade in">Error: ' + msg + '<a href="#" class="close" data-dismiss="alert"'
+                + ' aria-label="close">&times;</a></div>'
+            );
+        }
     };
 
     KINOME.list = function (get_object) {
@@ -193,7 +195,11 @@ as urls this works by assuming jQuery is present and that Promises exist
             group.value.map(function (samp) {
                 var final;
                 if (samp.level.match(level)) {
-                    final = samp.clone();
+                    if (typeof samp.clone === 'function') {
+                        final = samp.clone();
+                    } else {
+                        final = JSON.parse(JSON.stringify(samp));
+                    }
                     Object.defineProperty(final, 'group', {value: groupInd, enumerable: false});
                     out.push(samp);
                 }
