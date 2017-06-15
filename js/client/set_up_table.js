@@ -11,7 +11,7 @@
 //Body functions
 (function () {
     'use strict';
-    var $page = KINOME.page, tableObject, tableWidth = 3, //number of dropdowns
+    var $page = KINOME.page, tableWidth = 3, //number of dropdowns
             //functions
             getTableData, getHeader, addFirstHeaderRow,
             addSecondHeaderRow, buildTableBody, createPaginationDivs,
@@ -89,7 +89,7 @@
         return current;
     };
 
-    addFirstHeaderRow = function ($elem) {
+    addFirstHeaderRow = function ($elem, tableObject) {
         var $headerRow, $temp, i, j, $opt, update;
 
         update = function (index) {
@@ -122,7 +122,7 @@
         }
     };
 
-    addSecondHeaderRow = function ($elem) {
+    addSecondHeaderRow = function ($elem, tableObject) {
         var i, $temp, changeFilter, $row;
 
         changeFilter = function (index) {
@@ -154,7 +154,7 @@
         return;
     };
 
-    createPaginationDivs = function () {
+    createPaginationDivs = function (tableObject) {
         var currentPage, $temp;
         $temp = $('<div>', {class: 'text-center'}).appendTo($page);
         $temp = $('<nav aria-label="Page navigation"></nav>').appendTo($temp);
@@ -183,7 +183,7 @@
         return currentPage;
     };
 
-    buildLinks = function (groups) {
+    buildLinks = function (groups, tableObject) {
         var i, j, k, dataGroup, search, links, $element;
         $element = tableObject.link_out;
 
@@ -216,7 +216,7 @@
         $element.text(search);
     };
 
-    buildTableBody = function () {
+    buildTableBody = function (group_set, tableObject) {
         var row, i, tableLength, $element, pageNumber, max_length, data, tableKeys,
                 updateGroup, maxGroup, tableIndex, goodEntry, tableText, nameFilter,
                 temp, blank, groupFilter, goodEntries, groups;
@@ -253,7 +253,7 @@
         maxGroup += 1;
 
         //fill in groups part of the page
-        buildLinks(groups);
+        buildLinks(groups, tableObject);
 
         //build new table
         tableLength = 0;
@@ -297,17 +297,23 @@
                     row = $('<tr>').appendTo($element);
 
                     //append the drop down for group
-                    temp = $('<td>').appendTo(row);
-                    temp = $('<select>', {class: 'form-control'}).appendTo(temp);
-                    temp.append('<option selected value>None</option>');
-                    for (i = 0; i <= maxGroup; i += 1) {
-                        if (data[tableIndex].table.group * 1 === i) {
-                            temp.append('<option selected="true" value="' + i + '">' + i + '</option>');
-                        } else {
-                            temp.append('<option value="' + i + '">' + i + '</option>');
+                    if (group_set === 'name') {
+                        temp = $('<td>').appendTo(row);
+                        temp = $('<select>', {class: 'form-control'}).appendTo(temp);
+                        temp.append('<option selected value>None</option>');
+                        for (i = 0; i <= maxGroup; i += 1) {
+                            if (data[tableIndex].table.group * 1 === i) {
+                                temp.append('<option selected="true" value="' + i + '">' + i + '</option>');
+                            } else {
+                                temp.append('<option value="' + i + '">' + i + '</option>');
+                            }
                         }
+                        temp.change(updateGroup(tableIndex));
+                    } else {
+                        console.log(data[tableIndex].database.group);
+                        // $('<td>', {text: data[tableIndex]}).appendTo(row);
+                        $('<td>').appendTo(row);
                     }
-                    temp.change(updateGroup(tableIndex));
 
                     //add the barcode
                     temp = $('<td>', {text: data[tableIndex].table.name}).appendTo(row);
@@ -351,8 +357,8 @@
 
     //Begin actual work
 
-    var buildIt = function (database_arr) {
-        var names_database, tableData, $table, $header;
+    var buildIt = function (database_arr, name) {
+        var tableData, $table, $header, tableObject;
 
         //grab all the names databases
         // names_database = getNamesDatabase();
@@ -381,30 +387,29 @@
         $header = $('<thead>').appendTo($table);
 
         //add in header rows
-        addFirstHeaderRow($header);
-        addSecondHeaderRow($header);
+        addFirstHeaderRow($header, tableObject);
+        addSecondHeaderRow($header, tableObject);
 
         //set up the body to build
         tableObject.element = $('<tbody>').appendTo($table);
 
         //add in pagination
-        tableObject.pagination = createPaginationDivs();
+        tableObject.pagination = createPaginationDivs(tableObject);
 
         //add in url generated
         tableObject.link_out = $('<div>').appendTo($page);
 
         //now actually build the page
-        buildTableBody();
+        buildTableBody(name, tableObject);
     };
 
     var names_major = KINOME.list({level: 'name'});
     if (names_major.length) {
-        buildIt(names_major);
+        buildIt(names_major, 'name');
     }
     var lvl1_0_1 = KINOME.list({level: '1.0.1'});
     if (lvl1_0_1.length) {
         buildIt(lvl1_0_1);
     }
 
-    return [tableObject, $page];
 }());
