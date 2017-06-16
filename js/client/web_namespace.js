@@ -17,8 +17,9 @@ as urls this works by assuming jQuery is present and that Promises exist
     defaults = {
         levels: {
             name: ['./js/client/set_up_table.js'],
-            '1.0.0': ['./js/client/set_up_table.js', './js/client/outlier.js'],
-            '1.0.1': ['./js/client/set_up_table.js']
+            '1.0.0': ['./js/client/set_up_table.js', './js/client/outlier.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
+            '1.0.1': ['./js/client/set_up_table.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
+            '1.2.1': ['./js/client/set_up_table.js', 'http://mischiefmanaged.tk/pparameter_display.js']
         },
         //library functions
         shiftToMin: './js/web_main.js',
@@ -77,7 +78,9 @@ as urls this works by assuming jQuery is present and that Promises exist
             }
         }
         ps.then(function () {
-            delete pendingRequires[unique];
+            setTimeout(function () {
+                delete pendingRequires[unique];
+            }, 0); //clear the buffer
         });
 
         return new Promise(function (resolve) {
