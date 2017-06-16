@@ -12,7 +12,7 @@ as urls this works by assuming jQuery is present and that Promises exist
 (function (exports) {
     'use strict';
 
-    var require, defaults, get_script_promise, pages, KINOME = {}, pendingRequires = {};
+    var require, defaults, get_script_promise, pages, KINOME = {}, waiting = [], pendingRequires = {};
 
     defaults = {
         levels: {
@@ -43,21 +43,30 @@ as urls this works by assuming jQuery is present and that Promises exist
 
     var reqDone;
     reqDone = function (resolve, string) {
-
-        setTimeout(function () {
+        var interval, int2;
+        interval = setInterval(function () {
             if (Object.keys(pendingRequires).length === 0) {
                 // console.log('all done', string, pendingRequires);
-                resolve();
-            } else {
-                // console.log('pending', string, pendingRequires);
-                reqDone(resolve, string);
+                clearInterval(interval);
+                int2 = setInterval(function () {
+                    var ra;
+                    if (waiting.length === 0) {
+                        clearInterval(int2);
+                    } else {
+                        ra = waiting.pop();
+                        console.log('resolved', ra[1]);
+                        ra[0]();
+                    }
+                }, 0);
             }
         }, 0); //keeps stack size from getting overwhelmed
+        waiting.push([resolve, string]);
     };
 
     require = function (string) {
         var url = string, i, pArr = [], ps, unique = Math.random().toString();
 
+        console.log('requesting', string);
         pendingRequires[unique] = string;
         if (typeof string === 'string') {
             if (require.defaults.hasOwnProperty(string)) {
@@ -75,12 +84,17 @@ as urls this works by assuming jQuery is present and that Promises exist
                     ));
                 }
                 ps = Promise.all(pArr);
+                // ps = Promise.resolve(); //this just starts more promises.
+                // setTimeout(function () {
+                //     delete pendingRequires[unique];
+                // }, 0);
             }
         }
         ps.then(function () {
             setTimeout(function () {
+                console.log('Loaded', string);
                 delete pendingRequires[unique];
-            }, 0); //clear the buffer
+            }, 50); //clear the buffer
         });
 
         return new Promise(function (resolve) {
