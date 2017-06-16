@@ -12,7 +12,7 @@ as urls this works by assuming jQuery is present and that Promises exist
 (function (exports) {
     'use strict';
 
-    var require, defaults, get_script_promise, pages, KINOME = {}, pendingRequires = [];
+    var require, defaults, get_script_promise, pages, KINOME = {}, pendingRequires = {};
 
     defaults = {
         levels: {
@@ -40,8 +40,22 @@ as urls this works by assuming jQuery is present and that Promises exist
     // Load the Visualization API and the corechart package.
     google.charts.load('current', {packages: ['corechart']});
 
+    var reqDone;
+    reqDone = function (resolve) {
+
+        setTimeout(function () {
+            if (Object.keys(pendingRequires).length === 0) {
+                console.log('all done');
+                resolve();
+            } else {
+                console.log('pending');
+                reqDone(resolve);
+            }
+        }, 500);
+    };
+
     require = function (string) {
-        var url = string, i, pArr = [], ps;
+        var url = string, i, pArr = [], ps, unique = Math.random().toString();
         if (typeof string === 'string') {
             if (require.defaults.hasOwnProperty(string)) {
                 url = require.defaults[string];
@@ -60,15 +74,18 @@ as urls this works by assuming jQuery is present and that Promises exist
                 ps = Promise.all(pArr);
             }
         }
-        pendingRequires.push(ps);
-        return Promise.all(pendingRequires).then(function () {
-            pendingRequires = [];
+        pendingRequires[unique] = ps;
+        ps.then(function () {
+            delete pendingRequires[unique];
         });
 
+        return new Promise(function (resolve) {
+            reqDone(resolve);
+        });
     };
 
     get_script_promise = function (url) {
-        console.log(url);
+        // console.log(url);
         return function (resolve, reject) {
             jQuery.ajax({
                 url: url,
