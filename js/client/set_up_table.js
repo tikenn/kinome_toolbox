@@ -283,7 +283,7 @@
             goodEntry = true;
             //check group
             if (goodEntry && !blank.match(groupFilter)) {
-                if (!data[tableIndex].table.group || !data[tableIndex].table.group.match(groupFilter)) {
+                if (data[tableIndex].table.group === undefined || !data[tableIndex].table.group.toString().match(groupFilter)) {
                     goodEntry = false;
                 }
             }
@@ -332,9 +332,9 @@
                         }
                         temp.change(updateGroup(tableIndex));
                     } else {
-                        console.log(data[tableIndex]);
+                        console.log('no group', data[tableIndex]);
                         // $('<td>', {text: data[tableIndex]}).appendTo(row);
-                        $('<td>').appendTo(row);
+                        $('<td>', {text: data[tableIndex].table.group}).appendTo(row);
                     }
 
                     //add the barcode
@@ -410,8 +410,8 @@
         if (name === 'name') {
             $page.append('<p>Add samples to groups for reproducibility and comparisons then click the links below to load the different level data in a new window.</p>');
         } else {
-            console.log(tableObject);
-            for (i = 0; tableObject.data.length; i += 1) {
+            for (i = 0; i < tableObject.data.length; i += 1) {
+                console.log(tableObject.data[i]);
                 tableObject.data[i].table.group = tableObject.data[i].origin_db.group;
             }
         }

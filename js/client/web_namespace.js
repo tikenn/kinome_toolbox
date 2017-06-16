@@ -216,15 +216,21 @@ as urls this works by assuming jQuery is present and that Promises exist
         var level = new RegExp(get_object.level, "i"), out = [];
         KINOME.params.data.map(function (group, groupInd) {
             group.value.map(function (samp) {
-                var final;
+                var final, url = samp.data_origin_url;
                 if (samp.level.match(level)) {
                     if (typeof samp.clone === 'function') {
                         final = samp.clone();
                     } else {
                         final = JSON.parse(JSON.stringify(samp));
+                        Object.defineProperty(final, 'data_origin_url', {
+                            enumerable: false,
+                            configurable: false,
+                            writable: false,
+                            value: url
+                        });
                     }
                     Object.defineProperty(final, 'group', {value: groupInd, enumerable: false});
-                    out.push(samp);
+                    out.push(final);
                 }
             });
         });
