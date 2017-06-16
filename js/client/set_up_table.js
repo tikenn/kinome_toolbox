@@ -452,9 +452,9 @@
     if (lvl1_0_1.length) {
         buildIt(lvl1_0_1, '1.0.1');
     }
-    var lvl1_2_1 = KINOME.list({level: '1.2.1'});
+    var lvl1_2_1 = KINOME.list({level: '1.1.2'});
     if (lvl1_2_1.length) {
-        buildIt(lvl1_2_1, '1.2.1');
+        buildIt(lvl1_2_1, '1.1.2');
     }
 
 }());

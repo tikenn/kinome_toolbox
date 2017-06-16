@@ -12,14 +12,14 @@ as urls this works by assuming jQuery is present and that Promises exist
 (function (exports) {
     'use strict';
 
-    var require, defaults, get_script_promise, pages, KINOME = {}, waiting = [], pendingRequires = {};
+    var reqDone, require, defaults, get_script_promise, pages, KINOME = {}, waiting = [], pendingRequires = {};
 
     defaults = {
         levels: {
             name: ['./js/client/set_up_table.js'],
             '1.0.0': ['./js/client/set_up_table.js', './js/client/outlier.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
             '1.0.1': ['./js/client/set_up_table.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
-            '1.2.1': ['./js/client/set_up_table.js', 'http://mischiefmanaged.tk/pparameter_display.js']
+            '1.1.2': ['./js/client/set_up_table.js', 'http://mischiefmanaged.tk/pparameter_display.js']
         },
         //library functions
         shiftToMin: './js/web_main.js',
@@ -41,7 +41,6 @@ as urls this works by assuming jQuery is present and that Promises exist
     // Load the Visualization API and the corechart package.
     google.charts.load('current', {packages: ['corechart']});
 
-    var reqDone;
     reqDone = function (resolve, string) {
         var interval, int2;
         interval = setInterval(function () {
@@ -95,6 +94,8 @@ as urls this works by assuming jQuery is present and that Promises exist
                 console.log('Loaded', string);
                 delete pendingRequires[unique];
             }, 50); //clear the buffer
+        }).catch(function (err) {
+            KINOME.error(err, 'Failed to load script:' + string);
         });
 
         return new Promise(function (resolve) {
