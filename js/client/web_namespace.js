@@ -12,7 +12,7 @@ as urls this works by assuming jQuery is present and that Promises exist
 (function (exports) {
     'use strict';
 
-    var require, defaults, get_script_promise, pages, KINOME = {};
+    var require, defaults, get_script_promise, pages, KINOME = {}, pendingRequires = [];
 
     defaults = {
         levels: {
@@ -41,12 +41,12 @@ as urls this works by assuming jQuery is present and that Promises exist
     google.charts.load('current', {packages: ['corechart']});
 
     require = function (string) {
-        var url = string, i, pArr = [];
+        var url = string, i, pArr = [], ps;
         if (typeof string === 'string') {
             if (require.defaults.hasOwnProperty(string)) {
                 url = require.defaults[string];
             }
-            return new Promise(get_script_promise(url));
+            ps = new Promise(get_script_promise(url));
         }
         if (typeof string === 'object') {
             if (require.defaults.levels.hasOwnProperty(string.type)) {
@@ -57,9 +57,14 @@ as urls this works by assuming jQuery is present and that Promises exist
                         )
                     ));
                 }
-                return Promise.all(pArr);
+                ps = Promise.all(pArr);
             }
         }
+        pendingRequires.push(ps);
+        return Promise.all(pendingRequires).then(function () {
+            pendingRequires = [];
+        });
+
     };
 
     get_script_promise = function (url) {

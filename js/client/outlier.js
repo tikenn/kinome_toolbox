@@ -22,7 +22,7 @@
     startFits = function (evt) {
         evt.preventDefault();
         var data, barBuilder, filterPromise;
-        data = KINOME.get({level: '1.0.0'});
+        data = KINOME.list({level: '1.0.0'});
 
         barBuilder = function (msg) {
             div.append('<div>', {text: msg});

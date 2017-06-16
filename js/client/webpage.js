@@ -10,7 +10,7 @@
 
     if (KINOME.params.data.length === 0) {
         $page.append('<div class="text-center alert alert-info"><h2>We noticed you do not have any data loaded, we are starting the page with our public database, please wait...</h2></div>');
-        KINOME.loadData('http://138.26.31.155:8000/db/kinome/names').then(function () {
+        KINOME.loadData('http://138.26.31.155:8000/db/kinome/name').then(function () {
             return require('set_up_table');
         });
     } else {

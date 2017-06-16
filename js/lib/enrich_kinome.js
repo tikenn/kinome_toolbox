@@ -800,7 +800,25 @@
 
         clone = function () {
             //Uses simple p/s to return a getted version of the object
-            var newcopy = copy(this);
+            var newcopy = copy(this), url = this.data_origin_url, group = this.group;
+
+
+            if (typeof url === 'string') {
+                Object.defineProperty(newcopy, 'data_origin_url', {
+                    enumerable: false,
+                    configurable: false,
+                    writable: false,
+                    value: url
+                });
+            }
+            if (typeof group === 'string') {
+                Object.defineProperty(newcopy, 'group', {
+                    enumerable: false,
+                    configurable: false,
+                    writable: false,
+                    value: group
+                });
+            }
             delete newcopy[ID];
             return exports.enrich(newcopy);
         };

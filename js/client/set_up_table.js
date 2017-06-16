@@ -19,13 +19,14 @@
 
     //function definitions
     getTableData = function (names) {
-        var i, k, retArray = [], entry, id = '_id', tempObj, headerStart = {}, headerPossible = {};
+        var i, k, retArray = [], entry, tempObj, headerStart = {}, headerPossible = {};
         for (i = 0; i < names.length; i += 1) {
             entry = names[i];
-            tempObj = {url: names[i].url, database: {}, table: {}};
+            tempObj = {url: names[i].data_origin_url, database: {}, table: {}};
             tempObj.table.name = entry.name;
             tempObj.table.group = undefined;
-            tempObj.table.id = entry[id];
+            tempObj.table.id = entry.name_id;
+            tempObj.origin_db = entry;
 
             //sample data part of entry
             for (k = 0; k < entry.sample_data.length; k += 1) {
@@ -96,7 +97,7 @@
             return function (evt) {
                 var newKey = evt.target.value;
                 tableObject.header[index][0] = newKey;
-                buildTableBody();
+                buildTableBody(tableObject);
             };
 
         };
@@ -134,7 +135,7 @@
                 } else {
                     tableObject.header[index][1] = new RegExp(evt.target.value, 'i');
                 }
-                buildTableBody();
+                buildTableBody(tableObject);
             };
         };
         $row = $('<tr>').appendTo($elem);
@@ -166,7 +167,7 @@
             tableObject.page = tableObject.page === 0
                 ? 0
                 : tableObject.page - 1;
-            buildTableBody();
+            buildTableBody(tableObject);
         }).appendTo($('<li>').appendTo($temp));
 
         //Current page
@@ -177,14 +178,15 @@
         $('<a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>').click(function (evt) {
             evt.preventDefault();
             tableObject.page += 1;
-            buildTableBody();
+            buildTableBody(tableObject);
         }).appendTo($('<li>').appendTo($temp));
 
         return currentPage;
     };
 
     buildLinks = function (groups, tableObject) {
-        var i, j, k, dataGroup, search, links, $element;
+        var i, j, k, dataGroup, search, links, $element,
+                lvls = ['name', 'lvl_1.0.0', 'lvl_1.0.1', 'lvl_1.1.2', 'lvl_2.0.1', 'lvl_2.1.2'];
         $element = tableObject.link_out;
 
         //Add in something like this to the top of this list:
@@ -196,27 +198,35 @@
 
         search = "";
         for (i = 0; i < groups.length; i += 1) {
-            search += "data=*[";
+            search += "?data=*[";
             dataGroup = {};
-            for (j = 0; j < groups[i].length; j += 1) {
+            for (j = 0; groups[i] && j < groups[i].length; j += 1) {
                 dataGroup[groups[i][j].url] = dataGroup[groups[i][j].url] || [];
                 dataGroup[groups[i][j].url].push(groups[i][j].table.id);
             }
             links = Object.keys(dataGroup);
+            console.log(links);
             for (j = 0; j < links.length; j += 1) {
-                search += links[j].replace('names', '<database>') + '?find={"names_id":{"$in":["';
+                search += links[j].replace(/\/*\?[\s\S]+$|\/$/, '').replace(/\/[^\/]+$/, '/<database>') + '?find={"name_id":{"$in":["';
                 for (k = 0; k < dataGroup[links[j]].length; k += 1) {
                     search += dataGroup[links[j]][k] + '","';
                 }
                 search = search.replace(/,"$/, ']}};');
             }
-            search = search.replace(/;$/, ']*&');
+            search = search.replace(/;$/, '');
+            search += "]*&";
         }
         search = search.replace(/&$/, '');
-        $element.text(search);
+        //make the display these for level names, 1.0.0, 1.0.1, 1.2.1, 2.0.1, 2.1.2
+        $element.append('<h2>Databases Possible</h2>');
+        for (i = 0; i < lvls.length; i += 1) {
+            $element.append('<a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a>');
+        }
+
+        // $element.text(search);
     };
 
-    buildTableBody = function (group_set, tableObject) {
+    buildTableBody = function (tableObject) {
         var row, i, tableLength, $element, pageNumber, max_length, data, tableKeys,
                 updateGroup, maxGroup, tableIndex, goodEntry, tableText, nameFilter,
                 temp, blank, groupFilter, goodEntries, groups;
@@ -234,17 +244,19 @@
 
         //clear current table
         $element.empty();
+        $element.append('<h2>Sample List</h2>');
 
         updateGroup = function (i) {
             return function (evt) {
                 tableObject.data[i].table.group = evt.target.value;
-                buildTableBody();
+                console.log(evt.target.value, tableObject.data[i].table.group);
+                buildTableBody(tableObject);
             };
         };
 
         //determine the max group selected and build the links
         for (i = 0; i < data.length; i += 1) {
-            if (data[i].table.group) {
+            if (data[i].table.group && data[i].table.group.toString().match(/\d+/)) {
                 groups[data[i].table.group] = groups[data[i].table.group] || [];
                 groups[data[i].table.group].push(data[i]);
                 maxGroup = Math.max(maxGroup, data[i].table.group);
@@ -297,12 +309,16 @@
                     row = $('<tr>').appendTo($element);
 
                     //append the drop down for group
-                    if (group_set === 'name') {
+                    if (tableObject.table_type === 'name') {
                         temp = $('<td>').appendTo(row);
                         temp = $('<select>', {class: 'form-control'}).appendTo(temp);
-                        temp.append('<option selected value>None</option>');
+                        if (data[tableIndex].table.group === undefined || !data[tableIndex].table.group.toString().match(/\d{1,}/)) {
+                            temp.append('<option selected="true" value>None</option>');
+                        } else {
+                            temp.append('<option value="">None</option>');
+                        }
                         for (i = 0; i <= maxGroup; i += 1) {
-                            if (data[tableIndex].table.group * 1 === i) {
+                            if (parseFloat(data[tableIndex].table.group) === i) {
                                 temp.append('<option selected="true" value="' + i + '">' + i + '</option>');
                             } else {
                                 temp.append('<option value="' + i + '">' + i + '</option>');
@@ -310,7 +326,7 @@
                         }
                         temp.change(updateGroup(tableIndex));
                     } else {
-                        console.log(data[tableIndex].database.group);
+                        console.log(data[tableIndex]);
                         // $('<td>', {text: data[tableIndex]}).appendTo(row);
                         $('<td>').appendTo(row);
                     }
@@ -351,7 +367,7 @@
         //this is hear to make sure I never go out of range
         if (tableLength < 1) {
             tableObject.page -= 1;
-            buildTableBody();
+            buildTableBody(tableObject);
         }
     };
 
@@ -399,8 +415,10 @@
         //add in url generated
         tableObject.link_out = $('<div>').appendTo($page);
 
+        tableObject.table_type = name;
+
         //now actually build the page
-        buildTableBody(name, tableObject);
+        buildTableBody(tableObject);
     };
 
     var names_major = KINOME.list({level: 'name'});
