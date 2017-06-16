@@ -42,7 +42,7 @@ as urls this works by assuming jQuery is present and that Promises exist
     google.charts.load('current', {packages: ['corechart']});
 
     reqDone = (function () {
-        var interval, running = false, waiting = [], postResolve;
+        var waiting = [], postResolve;
 
         postResolve = function (loaded) {
             return function (val) {
@@ -56,26 +56,22 @@ as urls this works by assuming jQuery is present and that Promises exist
             waiting.push([resolve, string, prom]);
 
             //if the interval is not already running, start it
-            if (!running) {
-                running = true;
-                console.log('%c Blocking for require.', 'background: #f98493; font-weight: bold;');
-                interval = setInterval(function () {
-                    if (Object.keys(pendingRequires).length === 0) {
-                        pArr = [];
-                        while (waiting.length && Object.keys(pendingRequires).length === 0) {
-                            loaded = waiting.pop();
-                            pArr.push(loaded[2].then(postResolve(loaded)));
-                        }
-                        if (waiting.length === 0 && Object.keys(pendingRequires).length === 0) {
-                            Promise.all(pArr).then(function () {
-                                running = false;
-                                console.log('%c Resolved All.', 'background: #dff0d8; font-weight: bold;');
-                                clearInterval(interval);
-                            });
-                        }
+            prom.then(function () {
+                if (Object.keys(pendingRequires).length === 0) {
+                    pArr = [];
+                    while (waiting.length && Object.keys(pendingRequires).length === 0) {
+                        loaded = waiting.pop();
+                        pArr.push(loaded[2].then(postResolve(loaded)));
                     }
-                }, 10); //minimum value
-            }
+                    if (waiting.length === 0 && Object.keys(pendingRequires).length === 0) {
+                        Promise.all(pArr).then(function () {
+                            //running = false;
+                            console.log('%c Resolved All.', 'background: #dff0d8; font-weight: bold;');
+                            // clearInterval(interval);
+                        });
+                    }
+                }
+            });
         };
     }());
 
