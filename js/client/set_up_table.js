@@ -207,7 +207,8 @@
             links = Object.keys(dataGroup);
             console.log(links);
             for (j = 0; j < links.length; j += 1) {
-                search += links[j].replace(/\/*\?[\s\S]+$|\/$/, '').replace(/\/[^\/]+$/, '/<database>') + '?find={"name_id":{"$in":["';
+                console.log('here in table build', groups, dataGroup, links[j]);
+                search += links[j].replace(/\/*\?[\s\S]*$|\/$/g, '').replace(/\/[^\/]+$/, '/<database>') + '?find={"name_id":{"$in":["';
                 for (k = 0; k < dataGroup[links[j]].length; k += 1) {
                     search += dataGroup[links[j]][k] + '","';
                 }
@@ -218,18 +219,19 @@
         }
         search = search.replace(/&$/, '');
         //make the display these for level names, 1.0.0, 1.0.1, 1.2.1, 2.0.1, 2.1.2
-        $element.append('<h1 class="page-header">Collections Possible</h1>');
-        row = $('<div>', {class: 'row', style: "margin-bottom:20px;"}).appendTo($element);
-        col1 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
-        col2 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
-        for (i = 0; i < lvls.length; i += 1) {
-            if (i < Math.ceil(lvls.length / 2)) {
-                col1.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
-            } else {
-                col2.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
+        if (groups.length > 0) {
+            $element.append('<h1 class="page-header">Collections Possible</h1>');
+            row = $('<div>', {class: 'row', style: "margin-bottom:20px;"}).appendTo($element);
+            col1 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
+            col2 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
+            for (i = 0; i < lvls.length; i += 1) {
+                if (i < Math.ceil(lvls.length / 2)) {
+                    col1.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
+                } else {
+                    col2.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
+                }
             }
         }
-
         // $element.text(search);
     };
 
@@ -262,7 +264,7 @@
 
         //determine the max group selected and build the links
         for (i = 0; i < data.length; i += 1) {
-            if (data[i].table.group && data[i].table.group.toString().match(/\d+/)) {
+            if (data[i].table.group !== undefined && data[i].table.group.toString().match(/\d+/)) {
                 groups[data[i].table.group] = groups[data[i].table.group] || [];
                 groups[data[i].table.group].push(data[i]);
                 maxGroup = Math.max(maxGroup, data[i].table.group);
@@ -332,7 +334,7 @@
                         }
                         temp.change(updateGroup(tableIndex));
                     } else {
-                        console.log('no group', data[tableIndex]);
+                        // console.log('no group', data[tableIndex]);
                         // $('<td>', {text: data[tableIndex]}).appendTo(row);
                         $('<td>', {text: data[tableIndex].table.group}).appendTo(row);
                     }
