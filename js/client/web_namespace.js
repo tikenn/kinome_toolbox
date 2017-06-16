@@ -12,7 +12,7 @@ as urls this works by assuming jQuery is present and that Promises exist
 (function (exports) {
     'use strict';
 
-    var reqDone, require, defaults, get_script_promise, pages, KINOME = {}, waiting = [], pendingRequires = {};
+    var reqDone, get_text_promise, require, defaults, get_script_promise, pages, KINOME = {}, pendingRequires = {};
 
     defaults = {
         levels: {
@@ -41,65 +41,87 @@ as urls this works by assuming jQuery is present and that Promises exist
     // Load the Visualization API and the corechart package.
     google.charts.load('current', {packages: ['corechart']});
 
-    reqDone = function (resolve, string) {
-        var interval, int2;
-        interval = setInterval(function () {
-            if (Object.keys(pendingRequires).length === 0) {
-                // console.log('all done', string, pendingRequires);
-                clearInterval(interval);
-                int2 = setInterval(function () {
-                    var ra;
-                    if (waiting.length === 0) {
-                        clearInterval(int2);
-                    } else {
-                        ra = waiting.pop();
-                        console.log('resolved', ra[1]);
-                        ra[0]();
-                    }
-                }, 0);
-            }
-        }, 0); //keeps stack size from getting overwhelmed
-        waiting.push([resolve, string]);
-    };
+    reqDone = (function () {
+        var interval, running = false, waiting = [], postResolve;
 
-    require = function (string) {
+        postResolve = function (loaded) {
+            return function (val) {
+                console.log('%c resolved: ' + loaded[1], 'background: #dff0d8');
+                loaded[0](val);
+            };
+        };
+        return function (resolve, string, prom) {
+            //Add it to the stack
+            var loaded, pArr;
+            waiting.push([resolve, string, prom]);
+
+            //if the interval is not already running, start it
+            if (!running) {
+                running = true;
+                console.log('%c Blocking for require.', 'background: #f98493; font-weight: bold;');
+                interval = setInterval(function () {
+                    if (Object.keys(pendingRequires).length === 0) {
+                        pArr = [];
+                        while (waiting.length && Object.keys(pendingRequires).length === 0) {
+                            loaded = waiting.pop();
+                            pArr.push(loaded[2].then(postResolve(loaded)));
+                        }
+                        if (waiting.length === 0 && Object.keys(pendingRequires).length === 0) {
+                            Promise.all(pArr).then(function () {
+                                running = false;
+                                console.log('%c Resolved All.', 'background: #dff0d8; font-weight: bold;');
+                                clearInterval(interval);
+                            });
+                        }
+                    }
+                }, 10); //minimum value
+            }
+        };
+    }());
+
+    require = function (string, text) {
         var url = string, i, pArr = [], ps, unique = Math.random().toString();
 
-        console.log('requesting', string);
+        /*
+            type is optional, if it is set to true then it will return text
+            rather than evaluating a script. This could be used for data or
+            even as style as well. I would not reccomend style since they
+            do not have to load for the page to work.
+        */
         pendingRequires[unique] = string;
-        if (typeof string === 'string') {
+        if (text) {
+            if (require.defaults.hasOwnProperty(string)) {
+                url = require.defaults[string];
+            }
+            ps = new Promise(get_text_promise(url));
+        } else if (typeof string === 'string') {
             if (require.defaults.hasOwnProperty(string)) {
                 url = require.defaults[string];
             }
             ps = new Promise(get_script_promise(url));
-        }
-        if (typeof string === 'object') {
+        } else if (typeof string === 'object') {
             if (require.defaults.levels.hasOwnProperty(string.type)) {
                 for (i = 0; i < require.defaults.levels[string.type].length; i += 1) {
-                    pArr.push(new Promise(
-                        get_script_promise(
-                            require.defaults.levels[string.type][i]
-                        )
-                    ));
+                    pArr.push(require(require.defaults.levels[string.type][i]));
                 }
-                ps = Promise.all(pArr);
-                // ps = Promise.resolve(); //this just starts more promises.
-                // setTimeout(function () {
-                //     delete pendingRequires[unique];
-                // }, 0);
+                delete pendingRequires[unique];
+                return Promise.all(pArr); //end early
             }
         }
-        ps.then(function () {
-            setTimeout(function () {
-                console.log('Loaded', string);
-                delete pendingRequires[unique];
-            }, 50); //clear the buffer
+        console.log('%c Requesting: ' + string, 'background: #f98493');
+        ps.then(function (val) {
+            console.log('%c Loaded: ' + string, 'background: #fcf8e3');
+            delete pendingRequires[unique];
+            if (text) {
+                return val;
+            }
+            return true;
         }).catch(function (err) {
-            KINOME.error(err, 'Failed to load script:' + string);
+            KINOME.error(err, 'Failed to load require:' + string);
         });
 
         return new Promise(function (resolve) {
-            reqDone(resolve, string);
+            reqDone(resolve, string, ps);
         });
     };
 
@@ -109,6 +131,17 @@ as urls this works by assuming jQuery is present and that Promises exist
             jQuery.ajax({
                 url: url,
                 dataType: 'script',
+                success: resolve,
+                error: reject
+            });
+        };
+    };
+    get_text_promise = function (url) {
+        // console.log(url);
+        return function (resolve, reject) {
+            jQuery.ajax({
+                url: url,
+                dataType: 'text',
                 success: resolve,
                 error: reject
             });

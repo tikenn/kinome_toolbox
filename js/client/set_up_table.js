@@ -205,9 +205,9 @@
                 dataGroup[groups[i][j].url].push(groups[i][j].table.id);
             }
             links = Object.keys(dataGroup);
-            console.log(links);
+            // console.log(links);
             for (j = 0; j < links.length; j += 1) {
-                console.log('here in table build', groups, dataGroup, links[j]);
+                // console.log('here in table build', groups, dataGroup, links[j]);
                 search += links[j].replace(/\/*\?[\s\S]*$|\/$/g, '').replace(/\/[^\/]+$/, '/<database>') + '?find={"name_id":{"$in":["';
                 for (k = 0; k < dataGroup[links[j]].length; k += 1) {
                     search += dataGroup[links[j]][k] + '","';
@@ -257,7 +257,7 @@
         updateGroup = function (i) {
             return function (evt) {
                 tableObject.data[i].table.group = evt.target.value;
-                console.log(evt.target.value, tableObject.data[i].table.group);
+                // console.log(evt.target.value, tableObject.data[i].table.group);
                 buildTableBody(tableObject);
             };
         };
@@ -413,7 +413,7 @@
             $page.append('<p>Add samples to groups for reproducibility and comparisons then click the links below to load the different level data in a new window.</p>');
         } else {
             for (i = 0; i < tableObject.data.length; i += 1) {
-                console.log(tableObject.data[i]);
+                // console.log(tableObject.data[i]);
                 tableObject.data[i].table.group = tableObject.data[i].origin_db.group;
             }
         }
