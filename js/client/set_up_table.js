@@ -185,7 +185,7 @@
     };
 
     buildLinks = function (groups, tableObject) {
-        var i, j, k, dataGroup, search, links, $element,
+        var i, j, k, dataGroup, search, links, $element, col1, col2, row,
                 lvls = ['name', 'lvl_1.0.0', 'lvl_1.0.1', 'lvl_1.1.2', 'lvl_2.0.1', 'lvl_2.1.2'];
         $element = tableObject.link_out;
 
@@ -218,9 +218,16 @@
         }
         search = search.replace(/&$/, '');
         //make the display these for level names, 1.0.0, 1.0.1, 1.2.1, 2.0.1, 2.1.2
-        $element.append('<h2>Databases Possible</h2>');
+        $element.append('<h1 class="page-header">Collections Possible</h1>');
+        row = $('<div>', {class: 'row', style: "margin-bottom:20px;"}).appendTo($element);
+        col1 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
+        col2 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
         for (i = 0; i < lvls.length; i += 1) {
-            $element.append('<a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a>');
+            if (i < Math.ceil(lvls.length / 2)) {
+                col1.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
+            } else {
+                col2.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
+            }
         }
 
         // $element.text(search);
@@ -244,7 +251,6 @@
 
         //clear current table
         $element.empty();
-        $element.append('<h2>Sample List</h2>');
 
         updateGroup = function (i) {
             return function (evt) {
@@ -374,7 +380,7 @@
     //Begin actual work
 
     var buildIt = function (database_arr, name) {
-        var tableData, $table, $header, tableObject;
+        var i, tableData, $table, $header, tableObject;
 
         //grab all the names databases
         // names_database = getNamesDatabase();
@@ -399,6 +405,17 @@
         tableData = {};
 
         //create table
+        $page.append('<h1>Sample List for level: ' + name + '</h1>');
+
+        if (name === 'name') {
+            $page.append('<p>Add samples to groups for reproducibility and comparisons then click the links below to load the different level data in a new window.</p>');
+        } else {
+            console.log(tableObject);
+            for (i = 0; tableObject.data.length; i += 1) {
+                tableObject.data[i].table.group = tableObject.data[i].origin_db.group;
+            }
+        }
+
         $table = $('<table>', {class: 'table'}).appendTo($page);
         $header = $('<thead>').appendTo($table);
 
@@ -425,9 +442,17 @@
     if (names_major.length) {
         buildIt(names_major, 'name');
     }
+    var lvl1_0_0 = KINOME.list({level: '1.0.0'});
+    if (lvl1_0_0.length) {
+        buildIt(lvl1_0_0, '1.0.0');
+    }
     var lvl1_0_1 = KINOME.list({level: '1.0.1'});
     if (lvl1_0_1.length) {
-        buildIt(lvl1_0_1);
+        buildIt(lvl1_0_1, '1.0.1');
+    }
+    var lvl1_2_1 = KINOME.list({level: '1.2.1'});
+    if (lvl1_2_1.length) {
+        buildIt(lvl1_2_1, '1.2.1');
     }
 
 }());

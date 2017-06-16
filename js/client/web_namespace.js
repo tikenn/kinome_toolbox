@@ -17,7 +17,7 @@ as urls this works by assuming jQuery is present and that Promises exist
     defaults = {
         levels: {
             name: ['./js/client/set_up_table.js'],
-            '1.0.0': ['./js/client/outlier.js'],
+            '1.0.0': ['./js/client/set_up_table.js', './js/client/outlier.js'],
             '1.0.1': ['./js/client/set_up_table.js']
         },
         //library functions
@@ -41,21 +41,23 @@ as urls this works by assuming jQuery is present and that Promises exist
     google.charts.load('current', {packages: ['corechart']});
 
     var reqDone;
-    reqDone = function (resolve) {
+    reqDone = function (resolve, string) {
 
         setTimeout(function () {
             if (Object.keys(pendingRequires).length === 0) {
-                console.log('all done');
+                // console.log('all done', string, pendingRequires);
                 resolve();
             } else {
-                console.log('pending');
-                reqDone(resolve);
+                // console.log('pending', string, pendingRequires);
+                reqDone(resolve, string);
             }
-        }, 500);
+        }, 0); //keeps stack size from getting overwhelmed
     };
 
     require = function (string) {
         var url = string, i, pArr = [], ps, unique = Math.random().toString();
+
+        pendingRequires[unique] = string;
         if (typeof string === 'string') {
             if (require.defaults.hasOwnProperty(string)) {
                 url = require.defaults[string];
@@ -74,13 +76,12 @@ as urls this works by assuming jQuery is present and that Promises exist
                 ps = Promise.all(pArr);
             }
         }
-        pendingRequires[unique] = ps;
         ps.then(function () {
             delete pendingRequires[unique];
         });
 
         return new Promise(function (resolve) {
-            reqDone(resolve);
+            reqDone(resolve, string);
         });
     };
 
