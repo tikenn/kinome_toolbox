@@ -156,7 +156,7 @@ as urls this works by assuming jQuery is present and that Promises exist
                 } else {
                     jQuery.ajax({
                         url: url,
-                        dataType: 'script',
+                        dataType: 'text',
                         success: function (res) {
                             loaded[url] = res;
                             resolve(res);
@@ -331,6 +331,13 @@ as urls this works by assuming jQuery is present and that Promises exist
     KINOME.list = function (list_str) {
         //make sure this is initialized\
         // keep things compatible for now
+
+        list_str = list_str || "";
+        if (typeof list_str !== 'string') {
+            list_str = "";
+            console.warn('list should only be passed a string');
+        }
+
         var groups = [], ids = [], names = [], levelsObj = {}, levels = [];
         //Now move through the object grabbing things
         KINOME.params.data.map(function (group, groupInd) {

@@ -440,19 +440,19 @@
         buildTableBody(tableObject);
     };
 
-    var names_major = KINOME.list({level: 'name'});
+    var names_major = KINOME.get({level: 'name'});
     if (names_major.length) {
         buildIt(names_major, 'name');
     }
-    var lvl1_0_0 = KINOME.list({level: '1.0.0'});
+    var lvl1_0_0 = KINOME.get({level: '1.0.0'});
     if (lvl1_0_0.length) {
         buildIt(lvl1_0_0, '1.0.0');
     }
-    var lvl1_0_1 = KINOME.list({level: '1.0.1'});
+    var lvl1_0_1 = KINOME.get({level: '1.0.1'});
     if (lvl1_0_1.length) {
         buildIt(lvl1_0_1, '1.0.1');
     }
-    var lvl1_2_1 = KINOME.list({level: '1.1.2'});
+    var lvl1_2_1 = KINOME.get({level: '1.1.2'});
     if (lvl1_2_1.length) {
         buildIt(lvl1_2_1, '1.1.2');
     }
