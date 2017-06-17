@@ -2,7 +2,7 @@
 (function (exports) {
     'use strict';
 
-    exports.enrich = function (object) {
+    exports.enrich = function (OBJECT) {
         /*
         The idea here is to take an object or an array and outfit it with get
         and list functions. This is to make it easier to grab the data of
@@ -1008,50 +1008,49 @@
         };
 
         //now actually assign the function
-        if (Array.isArray(object)) {
+        if (Array.isArray(OBJECT) && OBJECT.length > 0) {
             //enrich the lower level objects
-            object = object.map(function (x) {
+            OBJECT = OBJECT.map(function (x) {
                 return exports.enrich(x); //recursively call this function
             });
             //now rely on those to enrich the array
 
             //basics
             array_level_helpers(); // define this level helper functions
-            Object.defineProperty(object, 'clone', {value: clone, enumerable: false});
-            Object.defineProperty(object, 'stringify', {value: stringify, enumerable: false});
+            Object.defineProperty(OBJECT, 'clone', {value: clone, enumerable: false});
+            Object.defineProperty(OBJECT, 'stringify', {value: stringify, enumerable: false});
 
             //get and list
-            define_lists(object);
-            Object.defineProperty(object, 'get', {value: get, enumerable: false});
-            Object.defineProperty(object, 'list', {value: list, enumerable: false});
-
-        } else if (!object.hasOwnProperty('get') && object.level.match(/^1\.\d\.\d/)) {
+            define_lists(OBJECT);
+            Object.defineProperty(OBJECT, 'get', {value: get, enumerable: false});
+            Object.defineProperty(OBJECT, 'list', {value: list, enumerable: false});
+        } else if (typeof OBJECT === 'object' && !Array.isArray(OBJECT) && !OBJECT.hasOwnProperty('get') && OBJECT.level && OBJECT.level.match(/^1\.\d\.\d/)) {
             //basics
             level_1_helpers(); // define level 1 helper functions
-            Object.defineProperty(object, 'clone', {value: clone, enumerable: false});
-            Object.defineProperty(object, 'stringify', {value: stringify, enumerable: false});
+            Object.defineProperty(OBJECT, 'clone', {value: clone, enumerable: false});
+            Object.defineProperty(OBJECT, 'stringify', {value: stringify, enumerable: false});
 
             //get, append, and list
-            define_lists(object);
-            Object.defineProperty(object, 'get', {value: get, enumerable: false});
-            Object.defineProperty(object, 'list', {value: list, enumerable: false});
-            Object.defineProperty(object, 'put', {value: append, enumerable: false});
+            define_lists(OBJECT);
+            Object.defineProperty(OBJECT, 'get', {value: get, enumerable: false});
+            Object.defineProperty(OBJECT, 'list', {value: list, enumerable: false});
+            Object.defineProperty(OBJECT, 'put', {value: append, enumerable: false});
 
             //specialized
-            Object.defineProperty(object, 'level_up', {value: level_up, enumerable: false});
-        } else if (!object.hasOwnProperty('get') && object.level.match(/^2\.\d\.\d/)) {
+            Object.defineProperty(OBJECT, 'level_up', {value: level_up, enumerable: false});
+        } else if (typeof OBJECT === 'object' && !Array.isArray(OBJECT) && !OBJECT.hasOwnProperty('get') && OBJECT.level && OBJECT.level.match(/^2\.\d\.\d/)) {
             //basics
             level_2_helpers();
-            Object.defineProperty(object, 'clone', {value: clone, enumerable: false});
-            Object.defineProperty(object, 'stringify', {value: stringify, enumerable: false});
+            Object.defineProperty(OBJECT, 'clone', {value: clone, enumerable: false});
+            Object.defineProperty(OBJECT, 'stringify', {value: stringify, enumerable: false});
 
             //get, append, and list
-            define_lists(object);
-            Object.defineProperty(object, 'get', {value: get, enumerable: false});
-            Object.defineProperty(object, 'list', {value: list, enumerable: false});
-            Object.defineProperty(object, 'put', {value: append, enumerable: false});
+            define_lists(OBJECT);
+            Object.defineProperty(OBJECT, 'get', {value: get, enumerable: false});
+            Object.defineProperty(OBJECT, 'list', {value: list, enumerable: false});
+            Object.defineProperty(OBJECT, 'put', {value: append, enumerable: false});
         }
-        return object;
+        return OBJECT;
     };
     return exports;
 }(
