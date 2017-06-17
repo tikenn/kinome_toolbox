@@ -227,6 +227,10 @@
                 var ret;
                 //just return copies of the list objects
                 list_term = list_term || "";
+                if (typeof list_term !== 'string') {
+                    list_term = "";
+                    console.warn('list should only be passed a string');
+                }
                 if (list_term.match(/peptide/i)) {
                     ret = copy(peptide_list);
                     ret.more = ret_full_pep_list;
@@ -612,6 +616,12 @@
                 var ret;
                 //just return copies of the list objects
                 list_term = list_term || "";
+
+                if (typeof list_term !== 'string') {
+                    list_term = "";
+                    console.warn('list should only be passed a string');
+                }
+
                 if (list_term.match(/peptide/i)) {
                     ret = copy(peptide_list);
                     ret.more = ret_full_pep_list;
@@ -705,6 +715,10 @@
             };
             list = function (list_str) {
                 list_str = list_str || "";
+                if (typeof list_str !== 'string') {
+                    list_str = "";
+                    console.warn('list should only be passed a string');
+                }
                 var i, listKeys = Object.keys(allLists);
                 for (i = 0; i < listKeys.length; i += 1) {
                     if (list_str.match(new RegExp(listKeys[i], 'i'))) {
