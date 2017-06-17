@@ -20,7 +20,7 @@
             /*glob helpers*/
                 level_1_helpers, level_2_helpers, copy, mult1, blank_array,
                 ret_full_pep_list, define_peptide_list, verify_get_input,
-                array_level_helpers;
+                array_level_helpers, name_helpers;
 
         //Based on the type we will define a series of functions
         level_1_helpers = function () {
@@ -791,6 +791,115 @@
             };
         };
 
+        name_helpers = function () {
+            var get_image;
+            get = function (getParams) {
+                var i, j, k, peps, cycs, exps, retArr = [], img_ind, pep_ind;
+                /*
+                    Get params can have a peptide string or array
+                                        a cycle number or array
+                                        an exposure number or array
+                */
+                var that = this;
+
+                getParams = verify_get_input(getParams);
+                peps = getParams.peptides;
+                exps = getParams.exposures;
+                cycs = getParams.cycles;
+
+                //now get all possible combinations
+                for (i = 0; i < peps.length; i += 1) {
+                    for (j = 0; j < cycs.length; j += 1) {
+                        for (k = 0; k < exps.length; k += 1) {
+                            img_ind = cycle_object[cycs[j]][exps[k]];
+                            pep_ind = peptide_object[peps[i]].index;
+
+                            if (img_ind !== undefined && pep_ind !== undefined) {
+                                retArr.push({
+                                    peptide: peps[i],
+                                    cycle: cycs[j],
+                                    exposure: exps[k],
+                                    spot_row: peptide_object[peps[i]].row * 1,
+                                    spot_col: peptide_object[peps[i]].col * 1,
+                                    image: get_image(img_ind, that)
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return retArr;
+            };
+            get_image = function (ind, data) {
+                var i;
+                for (i = 0; i < data.run_data.length; i += 1) {
+                    if (data.run_data[i].key.match(/image/i)) {
+                        return data.run_data[i].value[ind];
+                    }
+                }
+                return;
+            };
+            list = function (list_term) {
+                var ret;
+                //just return copies of the list objects
+                list_term = list_term || "";
+                if (typeof list_term !== 'string') {
+                    list_term = "";
+                    console.warn('list should only be passed a string');
+                }
+                if (list_term.match(/peptide/i)) {
+                    ret = copy(peptide_list);
+                    ret.more = ret_full_pep_list;
+                    return ret;
+                }
+                if (list_term.match(/exposure/i)) {
+                    return copy(exposure_list);
+                }
+                if (list_term.match(/cycle/i)) {
+                    return copy(cycle_list);
+                }
+                ret = {
+                    peptides: copy(peptide_list),
+                    exposures: copy(exposure_list),
+                    cycles: copy(cycle_list)
+                };
+                ret.peptides.more = ret_full_pep_list;
+                return ret;
+            };
+            define_lists = function (object) {
+                var i, cyc, exp;
+
+                //intialize
+                cycle_list = [];
+                cycle_object = {};
+                exposure_list = [];
+                exposure_object = {};
+                peptide_list = [];
+                peptide_object = {};
+
+                //get peptide list
+                define_peptide_list(object);
+
+                //get cycles and exposures list
+                for (i = 0; i < object.cycles.length; i += 1) {
+                    cyc = object.cycles[i];
+                    if (cyc === null) {
+                        cyc = "Post Wash";
+                    }
+                    exp = object.exposures[i];
+                    if (exp === null) {
+                        exp = "Cycle Slope";
+                    }
+                    cycle_object[cyc] = cycle_object[cyc] || [];
+                    cycle_object[cyc][exp] = i;
+                    exposure_object[exp] = 1;
+
+                }
+                cycle_list = Object.keys(cycle_object).map(mult1);
+                exposure_list = Object.keys(exposure_object).map(mult1);
+            };
+        };
+
         //These may be generalizable
         ret_full_pep_list = function () {
             var i, j, ret = [], that = this, oneRet, row, col, found;
@@ -1063,6 +1172,18 @@
             Object.defineProperty(OBJECT, 'get', {value: get, enumerable: false});
             Object.defineProperty(OBJECT, 'list', {value: list, enumerable: false});
             Object.defineProperty(OBJECT, 'put', {value: append, enumerable: false});
+        } else if (typeof OBJECT === 'object' && !Array.isArray(OBJECT) && !OBJECT.hasOwnProperty('get') && OBJECT.level && OBJECT.level.match(/name/)) {
+            //basics
+            name_helpers();
+            Object.defineProperty(OBJECT, 'clone', {value: clone, enumerable: false});
+            Object.defineProperty(OBJECT, 'stringify', {value: stringify, enumerable: false});
+
+            //get and list - both do nothing for names
+            console.log('here...');
+            define_lists(OBJECT);
+            console.log('here...2');
+            Object.defineProperty(OBJECT, 'get', {value: get, enumerable: false});
+            Object.defineProperty(OBJECT, 'list', {value: list, enumerable: false});
         }
         return OBJECT;
     };

@@ -158,7 +158,6 @@ var fout = "";
                                             value: results[resultKeys[i]]
                                         });
                                     }
-                                    delete name[ij].peptides;
                                 }
                             }
                             //continue on to the next stage...
