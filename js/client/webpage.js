@@ -14,22 +14,13 @@
             return require('set_up_table');
         });
     } else {
-        //Find types and load in possible packages
-        var levels = {};
-        KINOME.params.data.map(function (x) {
-            return x.value;
-        }).reduce(function (a, b) {
-            return a.concat(b);
-        }).map(function (x) {
-            levels[x.level] = 1;
-            return x;
-        });
         //load UI scripts that correspond to types
-        Object.keys(levels).map(function (x) {
-            return require(x);
+        KINOME.list('levels').map(function (x) {
+            return require(x, 'js').catch(function (err) {
+                KINOME.error(err, 'No default options for level: ' + x);
+            });
         });
     }
-
 
     return exports;
 }(

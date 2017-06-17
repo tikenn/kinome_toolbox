@@ -19,9 +19,11 @@ as urls this works by assuming jQuery is present and that Promises exist
 
     defaults = {
         name: ['set_up_table'],
-        '1.0.0': ['set_up_table', './js/client/outlier.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
-        '1.0.1': ['set_up_table', 'http://mischiefmanaged.tk/pparameter_display.js'],
-        '1.1.2': ['set_up_table', 'http://mischiefmanaged.tk/pparameter_display.js'],
+        '1.0.0': ['set_up_table', 'outlier_tab', 'pparameter_display'],
+        '1.0.1': ['set_up_table', 'pparameter_display'],
+        '1.1.2': ['set_up_table', 'pparameter_display'],
+        '2.0.1': ['set_up_table'],
+        '2.1.2': ['set_up_table'],
 
         //library functions
         shiftToMin: './js/web_main.js',
@@ -32,6 +34,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         fit_curves: './js/lib/parameterize_curves.js',
 
         //webpage based stuff
+        outlier_tab: './js/client/outlier.js',
+        pparameter_display: 'http://mischiefmanaged.tk/pparameter_display.js',
         webpage: './js/client/webpage.js',
         set_up_table: './js/client/set_up_table.js'
     };
@@ -189,7 +193,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         url = input_str;
         blocking = false; //should only be true for js.
 
-        //Respond to default from above.
+        // deal with both arrays and default strings
         if (Array.isArray(url)) {
             input_str = "[array](" + url.length + ")" + (type
                 ? " of " + type
@@ -197,9 +201,13 @@ as urls this works by assuming jQuery is present and that Promises exist
         } else if (defaults.hasOwnProperty(url)) {
             url = defaults[url];
         }
+
+
         if (VERBOSE_REQ) {
             console.log('%c Requesting: ' + input_str, 'background: #f98493');
         }
+
+        //actually get started
         if (typeof url === 'string') {
             //Determine the data function from the url and type
             dt_obj = get_function_type(url, type);
@@ -255,12 +263,13 @@ as urls this works by assuming jQuery is present and that Promises exist
             });
         //Otherwise set it to the pending promise
         } else {
-            ret_promise = promise_pending.then(function (x) {
+            promise_pending.then(function (x) {
                 if (VERBOSE_REQ) {
                     console.log('%c resolved: ' + input_str, 'background: #dff0d8');
                 }
                 return x;
             });
+            ret_promise = promise_pending;
         }
 
         return ret_promise;
@@ -530,8 +539,8 @@ as urls this works by assuming jQuery is present and that Promises exist
                 ids.push(samp.name_id);
             });
         });
-        levels = Object.keys(levels);
-        return list_str === undefined
+        levels = Object.keys(levelsObj);
+        return list_str === ""
             ? {levels: levels, names: names, ids: ids, groups: groups}
             : list_str.match(/level/i)
                 ? levels
