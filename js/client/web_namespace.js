@@ -12,15 +12,17 @@ as urls this works by assuming jQuery is present and that Promises exist
 (function (exports) {
     'use strict';
 
-    var reqDone, get_text_promise, require, defaults, get_script_promise, pages, KINOME = {}, pendingRequires = {};
+    var get_function_type, get_data_promise, get_style_promise, reqDone, use_cache,
+            get_text_promise, require, defaults, get_script_promise, pages, add_to_db,
+            KINOME = {}, pendingRequires = {}, database, cache_db, get_from_db,
+            db_open, VERBOSE_REQ;
 
     defaults = {
-        levels: {
-            name: ['./js/client/set_up_table.js'],
-            '1.0.0': ['./js/client/set_up_table.js', './js/client/outlier.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
-            '1.0.1': ['./js/client/set_up_table.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
-            '1.1.2': ['./js/client/set_up_table.js', 'http://mischiefmanaged.tk/pparameter_display.js']
-        },
+        name: ['set_up_table'],
+        '1.0.0': ['set_up_table', './js/client/outlier.js', 'http://mischiefmanaged.tk/pparameter_display.js'],
+        '1.0.1': ['set_up_table', 'http://mischiefmanaged.tk/pparameter_display.js'],
+        '1.1.2': ['set_up_table', 'http://mischiefmanaged.tk/pparameter_display.js'],
+
         //library functions
         shiftToMin: './js/web_main.js',
         amd_ww: './js/lib/amd_ww.3.1.0.min.js',
@@ -41,18 +43,72 @@ as urls this works by assuming jQuery is present and that Promises exist
     // Load the Visualization API and the corechart package.
     google.charts.load('current', {packages: ['corechart']});
 
+    //Set up the cache_db
+    database = new Dexie("require_cache");
+    database.version(1).stores({require_cache: 'url'});
+    cache_db = database.require_cache;
+    db_open = database.open();
+    VERBOSE_REQ = false;
+
+    use_cache = function (url, date) {
+        var i, uuidRegex, databaseRegex, nameRegex, timeLimits, default_limit, now, useit, diff, match;
+        uuidRegex = '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
+        databaseRegex = '\\?find=\\{"name_id":(\\{"\\$in":\\[("' + uuidRegex + '",*)+\\]\\}|' +
+                '"' + uuidRegex + '")\\}';
+        databaseRegex = new RegExp(databaseRegex, 'i');
+        nameRegex = new RegExp(/[\s\S]+name\/*$/i);
+        default_limit = 0.5 * 60 * 60 * 1000; // 1/2 hour
+
+        now = new Date();
+        diff = now - new Date(date);
+        useit = false;
+        match = false;
+
+        timeLimits = [
+            { //names
+                limit: 24 * 60 * 60 * 1000,// 24 hours
+                regex: nameRegex
+            }, { // database specific
+                limit: 90 * 24 * 60 * 60 * 1000, // 90 days
+                regex: databaseRegex
+            }
+        ];
+
+        for (i = 0; !match && i < timeLimits.length; i += 1) {
+            if (url.match(timeLimits[i].regex)) {
+                match = true;
+                if (diff < timeLimits[i].limit) {
+                    useit = true;
+                }
+            }
+        }
+
+        if (!match && diff < default_limit) {
+            useit = true;
+        }
+        return useit;
+    };
+
     reqDone = (function () {
-        var waiting = [], postResolve;
+        var waiting = [], postResolve, blocking = false;
 
         postResolve = function (loaded) {
             return function (val) {
-                console.log('%c resolved: ' + loaded[1], 'background: #dff0d8');
-                loaded[0](val);
+                if (VERBOSE_REQ) {
+                    console.log('%c resolved: ' + loaded[1], 'background: #dff0d8');
+                }
+                loaded[0](val); // call the resolve function
             };
         };
-        return function (resolve, string, prom, reject) {
+        return function (resolve, reject, string, prom) {
             //Add it to the stack
             var loaded, pArr;
+            if (!blocking) {
+                if (VERBOSE_REQ) {
+                    console.log('%c Blocking Scripts.', 'background: #f98493; font-weight: bold;');
+                }
+                blocking = true;
+            }
             waiting.push([resolve, string, prom]);
 
             //if the interval is not already running, start it
@@ -63,15 +119,14 @@ as urls this works by assuming jQuery is present and that Promises exist
                         loaded = waiting.pop();
                         pArr.push(loaded[2].then(postResolve(loaded)));
                     }
-                    if (waiting.length === 0 && Object.keys(pendingRequires).length === 0) {
-                        Promise.all(pArr).then(function () {
-                            //running = false;
-                            console.log('%c Resolved All.', 'background: #dff0d8; font-weight: bold;');
-                            // clearInterval(interval);
-                        }).catch(function () {
-                            return; //ignore this error it is resolved elsewhere
-                        });
-                    }
+                    Promise.all(pArr).then(function () {
+                        blocking = false;
+                        if (VERBOSE_REQ) {
+                            console.log('%c Resolved Blocking.', 'background: #dff0d8; font-weight: bold;', pArr.length);
+                        }
+                    }).catch(function () {
+                        return; //ignore this error it is resolved elsewhere
+                    });
                 }
             }).catch(function (err) {
                 reject(err);
@@ -79,49 +134,167 @@ as urls this works by assuming jQuery is present and that Promises exist
         };
     }());
 
-    require = function (string, type) {
-        var url = string, i, pArr = [], ps, unique = Math.random().toString();
+
+    //Leave this for now.
+    KINOME.db = (function () {
+        var db = new Dexie("KINOME");
+        db.version(1).stores({KINOME: 'url'});
+        $('#about_tab').append('<div class="text-center"><p>This tool uses IndexedDB to store data to pull it for future use. If you would like to clear that click below. (Page load times will increase signifcantly, but temporarily.)</p><button class="btn-lg btn btn-primary" onclick="KINOME.db.db.clear()">Clear Saved</button><p>Specific data queries will be saved for 90 days, the names database for 1 day and general data query results for 30 minutes.</p></div>');
+        return {open: db.open(), db: db.KINOME};
+    }());
+
+    get_from_db = function (url, cache) {
+        return db_open.then(function () {
+            var collection = cache_db.where('url').equals(url);
+            if (cache !== undefined && !cache) {
+                return collection.delete();
+            } else {
+                return collection.toArray().then(function (res) {
+                    if (res.length === 1) {
+                        if (use_cache(url, res[0].time)) {
+                            return res[0].text;
+                        }
+                    }
+                    return collection.delete();
+                });
+            }
+        });
+    };
+
+    add_to_db = function (url, data) {
+        return db_open.then(function () {
+            return cache_db.put({
+                url: url,
+                text: data,
+                time: String(new Date())
+            });
+        });
+    };
+
+    require = function (input_str, type, cache) {
+        var i, url, blocking, dt_obj, ret_promise, datafunc, pArr = [], promise_pending, unique = Math.random().toString();
         /*
-            type is optional, if it is set to true then it will return text
-            rather than evaluating a script. This could be used for data or
-            even as style as well. I would not reccomend style since they
-            do not have to load for the page to work.
+            type is optional, if it is not set then the file extension will be
+            used. 'js' will load javascript, 'css' will load style, 'json' will
+            load data, and anything else will load as a string. If cache is set
+            to false then we will clear the cache for that file. If it is set
+            to true then we will use the cache as set up by IndexedDB, dexie.
         */
-        pendingRequires[unique] = string;
-        if (type && typeof string === "string") {
-            if (require.defaults.hasOwnProperty(string)) {
-                url = require.defaults[string];
-            }
-            ps = get_text_promise(url);
-        } else if (typeof string === 'string') {
-            if (require.defaults.hasOwnProperty(string)) {
-                url = require.defaults[string];
-            }
-            ps = get_script_promise(url);
-        } else if (typeof string === 'object') {
-            if (require.defaults.levels.hasOwnProperty(string.type)) {
-                for (i = 0; i < require.defaults.levels[string.type].length; i += 1) {
-                    pArr.push(require(require.defaults.levels[string.type][i]));
-                }
-                delete pendingRequires[unique];
-                return Promise.all(pArr); //end early
-            }
-            console.warn('No default packages found');
-            return;
+
+        /*
+            !!Note: scripts do not allow IndexedDB caching and will load
+            dynamically every time. This results in a more consistent behaviour
+            and allows for faster development.
+        */
+        url = input_str;
+        blocking = false; //should only be true for js.
+
+        //Respond to default from above.
+        if (Array.isArray(url)) {
+            input_str = "[array](" + url.length + ")" + (type
+                ? " of " + type
+                : "");
+        } else if (defaults.hasOwnProperty(url)) {
+            url = defaults[url];
         }
-        console.log('%c Requesting: ' + string, 'background: #f98493');
-        ps.then(function (val) {
-            console.log('%c Loaded: ' + string, 'background: #fcf8e3');
+        if (VERBOSE_REQ) {
+            console.log('%c Requesting: ' + input_str, 'background: #f98493');
+        }
+        if (typeof url === 'string') {
+            //Determine the data function from the url and type
+            dt_obj = get_function_type(url, type);
+            datafunc = dt_obj.func;
+            blocking = dt_obj.blocking;
+
+            //Tell the system there is a new pending promise
+            if (blocking) {
+                pendingRequires[unique] = 1;
+            }
+
+            //Now if we have a datafunc (nothing failed) then get going
+            if (datafunc) {
+                promise_pending = datafunc(url, cache);
+            } else {
+                promise_pending = Promise.reject('Type parameter (2nd in require function) was not recognized, valid types are: json, scrip, style, and text. This can also be a blank string and the file extension will be used.');
+            }
+        } else if (Array.isArray(url)) {
+            //This is a series of strings, calls recursively.
+            for (i = 0; i < url.length; i += 1) {
+                pArr.push(require(url[i], type, cache));
+            }
+            //Each part of this will have to be added to the queue
+            //  if we add this main one to the queue then the entire thing
+            //  fails.
+
+            //promise going back is all the queue done
+            promise_pending = Promise.all(pArr).then(function (res) {
+                return res;
+            });
+        } else {
+            //Not a valide object
+            promise_pending = Promise.reject('Require only accepts strings or arrays.');
+        }
+
+        //here we clear the promise pending list
+        promise_pending.then(function (res) {
             delete pendingRequires[unique];
-            return val;
+            if (VERBOSE_REQ) {
+                console.log('%c Loaded: ' + input_str, 'background: #fcf8e3');
+            }
+            return res;
         }).catch(function (err) {
+            //Even if there is an error, keep going
             delete pendingRequires[unique];
             return err;
         });
 
-        return new Promise(function (resolve, reject) {
-            reqDone(resolve, string, ps, reject);
-        });
+        //finally if this is blocking then set the return to the blocking promise.
+        if (blocking) {
+            ret_promise = new Promise(function (resolve, reject) {
+                reqDone(resolve, reject, input_str, promise_pending);
+            });
+        //Otherwise set it to the pending promise
+        } else {
+            ret_promise = promise_pending.then(function (x) {
+                if (VERBOSE_REQ) {
+                    console.log('%c resolved: ' + input_str, 'background: #dff0d8');
+                }
+                return x;
+            });
+        }
+
+        return ret_promise;
+    };
+
+    get_function_type = function (url, type) {
+        var datafunc, blocking = false;
+        if (type) {
+            if (type.match(/^js$|scripts*|codes*/i)) {
+                datafunc = get_script_promise;
+                blocking = true;
+            } else if (type.match(/json|data/i)) {
+                datafunc = get_data_promise;
+            } else if (type.match(/styles*|css/)) {
+                datafunc = get_style_promise;
+            } else if (type.match(/texts*|strings*/)) {
+                datafunc = get_text_promise;
+            }
+        } else {
+            if (url.match(/\.js\s*$/i)) {
+                datafunc = get_script_promise;
+                blocking = true;
+            } else if (url.match(/\.css\s*$/i)) {
+                datafunc = get_style_promise;
+            } else if (url.match(/\.json\s*$/i)) {
+                datafunc = get_data_promise;
+            } else {
+                datafunc = get_text_promise;
+            }
+        }
+        return {
+            func: datafunc,
+            blocking: blocking
+        };
     };
 
     get_script_promise = (function () {
@@ -145,20 +318,43 @@ as urls this works by assuming jQuery is present and that Promises exist
 
     get_text_promise = (function () {
         var promised = {};
-        return function (url) {
+        return function (url, cache) {
             var prom;
             if (promised[url]) {
                 prom = promised[url];
             } else {
-                prom = jQuery.ajax({
-                    url: url,
-                    dataType: 'text'
+                prom = get_from_db(url, cache).then(function (res) {
+                    if (typeof res === 'string') { //delete returns a # 0/1
+                        // console.log(res, 'got from cache');
+                        return res;
+                    }
+                    // console.log(res, 'got from url');
+                    return jQuery.ajax({
+                        url: url,
+                        dataType: 'text'
+                    }).then(function (res) {
+                        add_to_db(url, res);
+                        return res;
+                    });
                 });
                 promised[url] = prom;
             }
             return prom;
         };
     }());
+
+    get_data_promise = function (url, cache) {
+        return get_text_promise(url, cache).then(function (res) {
+            return JSON.parse(res);
+        });
+    };
+
+    get_style_promise = function (url, cache) {
+        return get_text_promise(url, cache).then(function (css) {
+            $('<style type="text/css"></style>').html(css).appendTo('head');
+            return true;
+        });
+    };
 
     require.defaults = defaults;
     exports.require = require;
@@ -223,13 +419,6 @@ as urls this works by assuming jQuery is present and that Promises exist
         pages.hide();
         pages.show(1);
     });
-
-    KINOME.db = (function () {
-        var db = new Dexie("KINOME");
-        db.version(1).stores({KINOME: 'url'});
-        $('#about_tab').append('<div class="text-center"><p>This tool uses IndexedDB to store data to pull it for future use. If you would like to clear that click below. (Page load times will increase signifcantly, but temporarily.)</p><button class="btn-lg btn btn-primary" onclick="KINOME.db.db.clear()">Clear Saved</button><p>Specific data queries will be saved for 90 days, the names database for 1 day and general data query results for 30 minutes.</p></div>');
-        return {open: db.open(), db: db.KINOME};
-    }());
 
     KINOME.addAnalysis = function (title) {
         //We need to add this to the list of avaliable, and set up a page for it.

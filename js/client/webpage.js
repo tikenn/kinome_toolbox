@@ -26,7 +26,7 @@
         });
         //load UI scripts that correspond to types
         Object.keys(levels).map(function (x) {
-            return require({type: x});
+            return require(x);
         });
     }
 

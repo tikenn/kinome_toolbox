@@ -11,7 +11,7 @@
     fitCurvesWorker = "./js/lib/fitCurvesWorker.min.js";
     equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
 
-    requires = [require(equationURL, true), require('amd_ww'), require('enrich_kinome'), require('outlier')];
+    requires = [require(equationURL, 'text'), require('amd_ww'), require('enrich_kinome'), require('outlier')];
 
     buildPage = function (req_arr) {
         non_linear_model = req_arr[0].replace(/\/\/[^\n]*/g, "").replace(/\s+/g, ' ');
