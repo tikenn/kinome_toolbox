@@ -4,7 +4,7 @@
     "use strict";
 
     var getParameter, data, code, getSTRINGS, dataPromiseArray, requires, styles,
-            getDATA, getDataParameters, strings, getScript, writeError, getSTYLES;
+            getDATA, getDataParameters, strings, getScript, getSTYLES;
 
     requires = [require('enrich_kinome')];
 
@@ -24,22 +24,9 @@
             match = regex.exec(url);
         }
 
-        console.log(name, matches, url);
+        // console.log(name, matches, url);
 
         return matches;
-    };
-
-    writeError = function (url) {
-        return function (err) {
-            console.error('failed to get script: ' + url, err);
-            $('#status').append(
-                '<div class="alert alert-danger alert-dismissable fade in"><strong><a href='
-                + url + '>' + url + '</a></strong> failed to load. Make sure the URL you provided'
-                + ' is correct. It it is, please try refreshing the page.<a href="#" class="close" data-dismiss="alert"'
-                + ' aria-label="close">&times;</a></div>'
-            );
-            return err;
-        };
     };
 
     getDataParameters = function (url) {
@@ -64,7 +51,9 @@
                 success: resolve,
                 error: reject
             });
-        }).catch(writeError(dataURL));
+        }).catch(function (err) {
+            KINOME.error(err, "Failed to load string: " + dataURL + '.');
+        });
     };
 
     getSTYLES = function (dataURL) {
@@ -74,11 +63,13 @@
                 dataType: "text",
                 success: function (css) {
                     $('<style type="text/css"></style>').html(css).appendTo('head');
-                    resolve();
+                    resolve(true);
                 },
                 error: reject
             });
-        }).catch(writeError(dataURL));
+        }).catch(function (err) {
+            KINOME.error(err, "Failed to load style: " + dataURL + '.');
+        });
     };
 
     getDATA = function (dataURLArr) {
@@ -94,6 +85,8 @@
             name: 24 * 60 * 60 * 1000, //24 hours
             data: 90 * 24 * 60 * 60 * 1000, // 90 days
             other: 0.5 * 60 * 60 * 1000 // 1/2 hour
+            // other: 1 * 60 * 1000, // 1 minute, testing
+            // name: 1 * 60 * 1000 //1 minute, testing
         };
 
         ajaxPromise = function (dataURL) {
@@ -106,31 +99,32 @@
                     var collection = KINOME.db.db.where('url').equals(dataURL);
                     collection.toArray().then(function (x) {
                         var indexdb_entry, useCache = false, now = new Date();
+
+                        //essential goal here is to grab any object that may
+                            // already be stored, check if it has expired,
+                            // delete it if it has expired, then cache the new
+                            // version.
                         if (x.length === 1 && x[0].time) {
                             indexdb_entry = x[0];
-                            if (
-                                dataURL_decode.match(databaseRegex) &&
-                                now - new Date(indexdb_entry.time) < timeLimits.data
-                            ) {
-                                useCache = true;
-                            } else if (
-                                dataURL_decode.match(nameRegex) &&
-                                now - new Date(indexdb_entry.time) < timeLimits.name
-                            ) {
-                                useCache = true;
-                            } else if (
-                                now - new Date(indexdb_entry.time) < timeLimits.other
-                            ) {
+                            // console.log(now - new Date(indexdb_entry.time));
+                            if (dataURL_decode.match(databaseRegex)) {
+                                if (now - new Date(indexdb_entry.time) < timeLimits.data) {
+                                    useCache = true;
+                                }
+                            } else if (dataURL_decode.match(nameRegex)) {
+                                if (now - new Date(indexdb_entry.time) < timeLimits.name) {
+                                    useCache = true;
+                                }
+                            } else if (now - new Date(indexdb_entry.time) < timeLimits.other) {
                                 useCache = true;
                             }
                             if (!useCache) {
                                 //time limit has expired delete this entry
                                 collection.delete();
-                                console.log('deleting', indexdb_entry);
+                                // console.log('deleting', indexdb_entry);
                             }
                         }
                         if (useCache) {
-                            console.log("recovered from cache", x);
                             resolve(x[0].text);
                         } else {
                             $.ajax({
@@ -154,7 +148,7 @@
         };
 
         for (i = 0; i < dataURLArr.length; i += 1) {
-            promises.push(ajaxPromise(dataURLArr[i]).catch(writeError(dataURLArr[i])));
+            promises.push(ajaxPromise(dataURLArr[i]));
         }
         return Promise.all(promises).then(function (results) {
             var j, k, result, solution = [];
@@ -180,7 +174,9 @@
 
     getScript = function (codeURL) {
         return function () {
-            return require(codeURL).catch(writeError(codeURL));
+            return require(codeURL).catch(function (err) {
+                KINOME.error(err, "Failed to load script: " + codeURL + '.');
+            });
         };
     };
 
@@ -190,7 +186,7 @@
     data = getDataParameters(decodeURIComponent(location.href));
     code = getParameter('code');
 
-    console.log(strings, data, code);
+    // console.log(strings, data, code);
 
     //set up parts of the DATA object
     exports.params = {};
@@ -218,6 +214,8 @@
                     value: resolvedData,
                     url: data[ind]
                 };
+            }).catch(function (err) {
+                KINOME.error(err, 'Failed to load data: ' + data[ind]);
             });
         }));
 

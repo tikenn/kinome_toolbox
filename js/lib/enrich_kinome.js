@@ -1179,9 +1179,7 @@
             Object.defineProperty(OBJECT, 'stringify', {value: stringify, enumerable: false});
 
             //get and list - both do nothing for names
-            console.log('here...');
             define_lists(OBJECT);
-            console.log('here...2');
             Object.defineProperty(OBJECT, 'get', {value: get, enumerable: false});
             Object.defineProperty(OBJECT, 'list', {value: list, enumerable: false});
         }

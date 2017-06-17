@@ -68,16 +68,18 @@ as urls this works by assuming jQuery is present and that Promises exist
                             //running = false;
                             console.log('%c Resolved All.', 'background: #dff0d8; font-weight: bold;');
                             // clearInterval(interval);
-                        }).catch(function (err) {
-                            reject(err);
+                        }).catch(function () {
+                            return; //ignore this error it is resolved elsewhere
                         });
                     }
                 }
+            }).catch(function (err) {
+                reject(err);
             });
         };
     }());
 
-    require = function (string, text) {
+    require = function (string, type) {
         var url = string, i, pArr = [], ps, unique = Math.random().toString();
         /*
             type is optional, if it is set to true then it will return text
@@ -86,16 +88,16 @@ as urls this works by assuming jQuery is present and that Promises exist
             do not have to load for the page to work.
         */
         pendingRequires[unique] = string;
-        if (text && typeof string === "string") {
+        if (type && typeof string === "string") {
             if (require.defaults.hasOwnProperty(string)) {
                 url = require.defaults[string];
             }
-            ps = new Promise(get_text_promise(url));
+            ps = get_text_promise(url);
         } else if (typeof string === 'string') {
             if (require.defaults.hasOwnProperty(string)) {
                 url = require.defaults[string];
             }
-            ps = new Promise(get_script_promise(url));
+            ps = get_script_promise(url);
         } else if (typeof string === 'object') {
             if (require.defaults.levels.hasOwnProperty(string.type)) {
                 for (i = 0; i < require.defaults.levels[string.type].length; i += 1) {
@@ -111,60 +113,50 @@ as urls this works by assuming jQuery is present and that Promises exist
         ps.then(function (val) {
             console.log('%c Loaded: ' + string, 'background: #fcf8e3');
             delete pendingRequires[unique];
-            if (text) {
-                return val;
-            }
-            return true;
+            return val;
         }).catch(function (err) {
-            KINOME.error(err, 'Failed to load require:' + string);
+            delete pendingRequires[unique];
+            return err;
         });
 
         return new Promise(function (resolve, reject) {
             reqDone(resolve, string, ps, reject);
-        }).catch(function (err) {
-            KINOME.error(err, 'Failed to load required code.');
         });
     };
 
     get_script_promise = (function () {
-        var loaded = {};
+        var promised = {};
         return function (url) {
-            return function (resolve, reject) {
-                if (loaded[url]) {
-                    resolve(loaded[url]);
-                } else {
-                    jQuery.ajax({
-                        url: url,
-                        dataType: 'script',
-                        success: function () {
-                            loaded[url] = true;
-                            resolve(true);
-                        },
-                        error: reject
-                    });
-                }
-            };
+            var prom;
+            if (promised[url]) {
+                prom = promised[url];
+            } else {
+                prom = jQuery.ajax({
+                    url: url,
+                    dataType: 'script'
+                }).then(function () {
+                    return true;
+                });
+                promised[url] = prom;
+            }
+            return prom;
         };
     }());
 
     get_text_promise = (function () {
-        var loaded = {};
+        var promised = {};
         return function (url) {
-            return function (resolve, reject) {
-                if (loaded[url]) {
-                    resolve(loaded[url]);
-                } else {
-                    jQuery.ajax({
-                        url: url,
-                        dataType: 'text',
-                        success: function (res) {
-                            loaded[url] = res;
-                            resolve(res);
-                        },
-                        error: reject
-                    });
-                }
-            };
+            var prom;
+            if (promised[url]) {
+                prom = promised[url];
+            } else {
+                prom = jQuery.ajax({
+                    url: url,
+                    dataType: 'text'
+                });
+                promised[url] = prom;
+            }
+            return prom;
         };
     }());
 
@@ -235,7 +227,7 @@ as urls this works by assuming jQuery is present and that Promises exist
     KINOME.db = (function () {
         var db = new Dexie("KINOME");
         db.version(1).stores({KINOME: 'url'});
-        $('#about_tab').append('<div class="text-center"><p>This tool uses IndexedDB to store data to pull it for future use. If you would like to clear that below. (Page load times will increase signifcantly, but temporarily.)</p><button class="btn-lg btn btn-primary" onclick="KINOME.db.db.clear()">Clear Saved</button></div>');
+        $('#about_tab').append('<div class="text-center"><p>This tool uses IndexedDB to store data to pull it for future use. If you would like to clear that click below. (Page load times will increase signifcantly, but temporarily.)</p><button class="btn-lg btn btn-primary" onclick="KINOME.db.db.clear()">Clear Saved</button><p>Specific data queries will be saved for 90 days, the names database for 1 day and general data query results for 30 minutes.</p></div>');
         return {open: db.open(), db: db.KINOME};
     }());
 
