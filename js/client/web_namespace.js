@@ -297,7 +297,9 @@ as urls this works by assuming jQuery is present and that Promises exist
             } else if (url.match(/\.json\s*$/i)) {
                 datafunc = get_data_promise;
             } else {
-                datafunc = get_text_promise;
+                //default should be javascript
+                datafunc = get_script_promise;
+                blocking = true;
             }
         }
         return {
