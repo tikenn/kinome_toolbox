@@ -638,43 +638,58 @@
         };
 
         array_level_helpers = function () {
-            var group_list, name_list, id_list, check_new_get_params,
-                    levels_list;
-            define_lists = function (arr) {
-                var group_obj = {}, name_obj = {}, id_obj = {},
-                        levels_obj = {};
+            var check_new_get_params, allLists, mergeArrays;
 
-                peptide_object = {};
-                cycle_object = {};
-                exposure_object = {};
+            mergeArrays = function (a1, a2) {
+                var i, obj = {};
+                for (i = 0; i < a1.length; i += 1) {
+                    obj[a1[i]] = 1;
+                }
+                for (i = 0; i < a2.length; i += 1) {
+                    obj[a2[i]] = 1;
+                }
+                return Object.keys(obj);
+            };
+            define_lists = function (arr) {
+                var group_obj = {}, name_obj = {}, id_obj = {}, i,
+                        levels_obj = {}, lists_one, listKeys;
+
+                allLists = {};
 
                 arr.map(function (samp) {
-                    samp.list("peptide").map(function (x) {
-                        peptide_object[x] = 1;
-                    });
-                    samp.list("cycle").map(function (x) {
-                        cycle_object[x] = 1;
-                    });
-                    samp.list("exposure").map(function (x) {
-                        exposure_object[x] = 1;
-                    });
+                    lists_one = samp.list();
+                    listKeys = Object.keys(lists_one);
+                    for (i = 0; i < listKeys.length; i += 1) {
+                        if (allLists.hasOwnProperty(listKeys[i])) {
+                            mergeArrays(allLists[listKeys[i]], lists_one[listKeys[i]]);
+                        } else {
+                            allLists[listKeys[i]] = lists_one[listKeys[i]];
+                        }
+                    }
                     group_obj[samp.group] = 1;
                     name_obj[samp.name] = 1;
                     id_obj[samp.name_id] = 1;
                     levels_obj[samp.level] = 1;
                 });
 
-                peptide_list = Object.keys(peptide_object);
-                cycle_list = Object.keys(cycle_object).map(mult1);
-                exposure_list = Object.keys(exposure_object).map(mult1);
-                group_list = Object.keys(group_obj).map(mult1);
-                name_list = Object.keys(name_obj);
-                id_list = Object.keys(id_obj);
-                levels_list = Object.keys(levels_obj);
+                allLists.cycles = allLists.cycles.map(mult1);
+                allLists.exposures = allLists.exposures.map(mult1);
+                allLists.groups = Object.keys(group_obj).map(mult1);
+                allLists.names = Object.keys(name_obj);
+                allLists.ids = Object.keys(id_obj);
+                allLists.levels = Object.keys(levels_obj);
+
+                // peptide_list = allLists.peptides;
+                // cycle_list = allLists.cycles.map(mult1);
+                // exposure_list = allLists.exposures.map(mult1);
+                // group_list = Object.keys(group_obj).map(mult1);
+                // name_list = Object.keys(name_obj);
+                // id_list = Object.keys(id_obj);
+                // levels_list = Object.keys(levels_obj);
             };
             get = function (get_params) {
                 var i, that = this, ret = [];
-                get_params = check_new_get_params(verify_get_input(get_params));
+                get_params = check_new_get_params(get_params);
                 for (i = 0; i < that.length; i += 1) {
                     //check if the sample matches
                     if (
@@ -690,37 +705,13 @@
             };
             list = function (list_str) {
                 list_str = list_str || "";
-                if (list_str.match(/^names*$/i)) {
-                    return copy(name_list);
+                var i, listKeys = Object.keys(allLists);
+                for (i = 0; i < listKeys.length; i += 1) {
+                    if (list_str.match(new RegExp(listKeys[i], 'i'))) {
+                        return copy(allLists[listKeys[i]]);
+                    }
                 }
-                if (list_str.match(/^groups*$/i)) {
-                    return copy(group_list);
-                }
-                if (list_str.match(/^ids*$/i)) {
-                    return copy(id_list);
-                }
-                if (list_str.match(/^levels*$/i)) {
-                    return copy(levels_list);
-                }
-                if (list_str.match(/^cycles*$/i)) {
-                    return copy(cycle_list);
-                }
-                if (list_str.match(/^exposures*$/i)) {
-                    return copy(exposure_list);
-                }
-                if (list_str.match(/^peptides*$/i)) {
-                    return copy(peptide_list);
-                }
-                console.log(cycle_list);
-                return copy({
-                    names: name_list,
-                    groups: group_list,
-                    ids: id_list,
-                    levels: levels_list,
-                    cycles: cycle_list,
-                    exposures: exposure_list,
-                    peptides: peptide_list
-                });
+                return copy(allLists);
             };
             check_new_get_params = function (getParams) {
                 var grps, nms, ids, lvls, ret;
@@ -729,7 +720,7 @@
                     ? getParams.groups
                     : getParams.hasOwnProperty("group")
                         ? getParams.group
-                        : group_list;
+                        : allLists.groups;
                 if (!Array.isArray(grps)) {
                     grps = [grps];
                 }
@@ -740,7 +731,7 @@
                     ? getParams.names
                     : getParams.hasOwnProperty("name")
                         ? getParams.name
-                        : name_list;
+                        : allLists.names;
 
                 if (!Array.isArray(nms)) {
                     nms = [nms];
@@ -752,7 +743,7 @@
                     ? getParams.ids
                     : getParams.hasOwnProperty("id")
                         ? getParams.id
-                        : id_list;
+                        : allLists.ids;
 
                 if (!Array.isArray(ids)) {
                     ids = [ids];
@@ -764,7 +755,7 @@
                     ? getParams.levels
                     : getParams.hasOwnProperty("level")
                         ? getParams.level
-                        : levels_list;
+                        : allLists.levels;
 
                 if (!Array.isArray(lvls)) {
                     lvls = [lvls];
@@ -981,7 +972,7 @@
 
         mult1 = function (x) {
             //for map
-            if (x.match(/Post\ Wash|Cycle\ Slope/i)) {
+            if (typeof x === 'string' && x.match(/Post\ Wash|Cycle\ Slope/i)) {
                 return x;
             }
             return x * 1;
