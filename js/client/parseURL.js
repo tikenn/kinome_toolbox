@@ -86,25 +86,43 @@
 
         ajaxPromise = function (dataURL) {
             return new Promise(function (resolve, reject) {
-                KINOME.db.open.then(function () {
-                    KINOME.db.db.where('url').equals(dataURL).toArray().then(function (x) {
-                        if (x.length === 1) {
-                            console.log(x);
-                            resolve(x[0].text);
-                        } else {
-                            $.ajax({
-                                url: dataURL,
-                                dataType: "text",
-                                success: function (res) {
-                                    KINOME.db.db.put({text: res, url: dataURL}).then(function () {
-                                        resolve(res);
-                                    });
-                                },
-                                error: reject
-                            });
-                        }
+
+                //Only load from memory if the url is only grabbing specific samples.
+                var dataURL_decode = decodeURIComponent(dataURL).replace(/\s/, ''),
+                    uuidRegex = '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}',
+                    testRegex;
+                testRegex = '\\?find=\\{"name_id":(\\{"\\$in":\\[("' + uuidRegex + '",*)+\\]\\}|' +
+                        '"' + uuidRegex + '")\\}';
+                //If this is grabbing specific documents then cache it.
+                if (dataURL_decode.match(testRegex)) {
+                    KINOME.db.open.then(function () {
+                        KINOME.db.db.where('url').equals(dataURL).toArray().then(function (x) {
+                            if (x.length === 1) {
+                                console.log(x);
+                                resolve(x[0].text);
+                            } else {
+                                $.ajax({
+                                    url: dataURL,
+                                    dataType: "text",
+                                    success: function (res) {
+                                        KINOME.db.db.put({text: res, url: dataURL}).then(function () {
+                                            resolve(res);
+                                        });
+                                    },
+                                    error: reject
+                                });
+                            }
+                        });
                     });
-                });
+                //If it is grabbing an entire database, or something else all together
+                } else {
+                    $.ajax({
+                        url: dataURL,
+                        dataType: "text",
+                        success: resolve,
+                        error: reject
+                    });
+                }
             });
         };
 
