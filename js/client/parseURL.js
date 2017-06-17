@@ -86,11 +86,24 @@
 
         ajaxPromise = function (dataURL) {
             return new Promise(function (resolve, reject) {
-                $.ajax({
-                    url: dataURL,
-                    dataType: "text",
-                    success: resolve,
-                    error: reject
+                KINOME.db.open.then(function () {
+                    KINOME.db.db.where('url').equals(dataURL).toArray().then(function (x) {
+                        if (x.length === 1) {
+                            console.log(x);
+                            resolve(x[0].text);
+                        } else {
+                            $.ajax({
+                                url: dataURL,
+                                dataType: "text",
+                                success: function (res) {
+                                    KINOME.db.db.put({text: res, url: dataURL}).then(function () {
+                                        resolve(res);
+                                    });
+                                },
+                                error: reject
+                            });
+                        }
+                    });
                 });
             });
         };

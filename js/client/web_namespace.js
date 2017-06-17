@@ -1,4 +1,4 @@
-/*global KINOME module google Blob jQuery save ID $ window*/
+/*global Dexie KINOME module google Blob jQuery save ID $ window*/
 /*
 
 This creates the require function for the browser. Essentially this will only
@@ -50,7 +50,7 @@ as urls this works by assuming jQuery is present and that Promises exist
                 loaded[0](val);
             };
         };
-        return function (resolve, string, prom) {
+        return function (resolve, string, prom, reject) {
             //Add it to the stack
             var loaded, pArr;
             waiting.push([resolve, string, prom]);
@@ -68,6 +68,8 @@ as urls this works by assuming jQuery is present and that Promises exist
                             //running = false;
                             console.log('%c Resolved All.', 'background: #dff0d8; font-weight: bold;');
                             // clearInterval(interval);
+                        }).catch(function (err) {
+                            reject(err);
                         });
                     }
                 }
@@ -77,7 +79,6 @@ as urls this works by assuming jQuery is present and that Promises exist
 
     require = function (string, text) {
         var url = string, i, pArr = [], ps, unique = Math.random().toString();
-
         /*
             type is optional, if it is set to true then it will return text
             rather than evaluating a script. This could be used for data or
@@ -85,7 +86,7 @@ as urls this works by assuming jQuery is present and that Promises exist
             do not have to load for the page to work.
         */
         pendingRequires[unique] = string;
-        if (text) {
+        if (text && typeof string === "string") {
             if (require.defaults.hasOwnProperty(string)) {
                 url = require.defaults[string];
             }
@@ -103,6 +104,8 @@ as urls this works by assuming jQuery is present and that Promises exist
                 delete pendingRequires[unique];
                 return Promise.all(pArr); //end early
             }
+            console.warn('No default packages found');
+            return;
         }
         console.log('%c Requesting: ' + string, 'background: #f98493');
         ps.then(function (val) {
@@ -116,33 +119,54 @@ as urls this works by assuming jQuery is present and that Promises exist
             KINOME.error(err, 'Failed to load require:' + string);
         });
 
-        return new Promise(function (resolve) {
-            reqDone(resolve, string, ps);
+        return new Promise(function (resolve, reject) {
+            reqDone(resolve, string, ps, reject);
+        }).catch(function (err) {
+            KINOME.error(err, 'Failed to load required code.');
         });
     };
 
-    get_script_promise = function (url) {
-        // console.log(url);
-        return function (resolve, reject) {
-            jQuery.ajax({
-                url: url,
-                dataType: 'script',
-                success: resolve,
-                error: reject
-            });
+    get_script_promise = (function () {
+        var loaded = {};
+        return function (url) {
+            return function (resolve, reject) {
+                if (loaded[url]) {
+                    resolve(loaded[url]);
+                } else {
+                    jQuery.ajax({
+                        url: url,
+                        dataType: 'script',
+                        success: function () {
+                            loaded[url] = true;
+                            resolve(true);
+                        },
+                        error: reject
+                    });
+                }
+            };
         };
-    };
-    get_text_promise = function (url) {
-        // console.log(url);
-        return function (resolve, reject) {
-            jQuery.ajax({
-                url: url,
-                dataType: 'text',
-                success: resolve,
-                error: reject
-            });
+    }());
+
+    get_text_promise = (function () {
+        var loaded = {};
+        return function (url) {
+            return function (resolve, reject) {
+                if (loaded[url]) {
+                    resolve(loaded[url]);
+                } else {
+                    jQuery.ajax({
+                        url: url,
+                        dataType: 'script',
+                        success: function (res) {
+                            loaded[url] = res;
+                            resolve(res);
+                        },
+                        error: reject
+                    });
+                }
+            };
         };
-    };
+    }());
 
     require.defaults = defaults;
     exports.require = require;
@@ -208,6 +232,12 @@ as urls this works by assuming jQuery is present and that Promises exist
         pages.show(1);
     });
 
+    KINOME.db = (function () {
+        var db = new Dexie("KINOME");
+        db.version(1).stores({KINOME: 'url'});
+        return {open: db.open(), db: db.KINOME};
+    }());
+
     KINOME.addAnalysis = function (title) {
         //We need to add this to the list of avaliable, and set up a page for it.
 
@@ -258,13 +288,37 @@ as urls this works by assuming jQuery is present and that Promises exist
         }
     };
 
-    KINOME.list = function (get_object) {
+    KINOME.get = function (get_object) {
+        //make sure this is initialized
+        get_object = get_object || {};
+
         //Need to flush this out, start with just getting by level
-        var level = new RegExp(get_object.level, "i"), out = [];
+        var level, out = [], id_filter = get_object.id, groupFilter = get_object.group, sample_name;
+        level = new RegExp(get_object.level !== undefined
+            ? get_object.level
+            : "", "i");
+        sample_name = new RegExp(get_object.name !== undefined
+            ? get_object.name
+            : "", "i");
+
+        //Now move through the object grabbing things
         KINOME.params.data.map(function (group, groupInd) {
             group.value.map(function (samp) {
                 var final, url = samp.data_origin_url;
-                if (samp.level.match(level)) {
+                if (
+                //Body of the filter is right here
+                    //matches the level string
+                    samp.level.match(level) &&
+
+                    //matches the group index
+                    (groupFilter === undefined || groupInd === groupFilter) &&
+
+                    //matches the name
+                    samp.name.match(sample_name) &&
+
+                    //matches the id
+                    (id_filter === undefined || id_filter === samp.name_id)
+                ) {
                     if (typeof samp.clone === 'function') {
                         final = samp.clone();
                     } else {
@@ -281,7 +335,32 @@ as urls this works by assuming jQuery is present and that Promises exist
                 }
             });
         });
-        return out;
+        return KINOME.enrich(out);
+    };
+
+    KINOME.list = function (list_str) {
+        //make sure this is initialized\
+        return KINOME.get(list_str); // keep things compatible for now
+        var groups = [], ids = [], names = [], levelsObj = {}, levels = [];
+        //Now move through the object grabbing things
+        KINOME.params.data.map(function (group, groupInd) {
+            groups.push(groupInd);
+            group.value.map(function (samp) {
+                levelsObj[samp.level] = 1;
+                names.push(samp.name);
+                ids.push(samp.name_id);
+            });
+        });
+        levels = Object.keys(levels);
+        return list_str === undefined
+            ? {levels: levels, names: names, ids: ids, groups: groups}
+            : list_str.match(/level/i)
+                ? levels
+                : list_str.match(/name/i)
+                    ? names
+                    : list_str.match(/group/i)
+                        ? groups
+                        : [];
     };
 }(
     ("undefined" !== typeof module && module.exports)

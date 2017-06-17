@@ -19,7 +19,8 @@
                 exposure_list, exposure_object,
             /*glob helpers*/
                 level_1_helpers, level_2_helpers, copy, mult1, blank_array,
-                ret_full_pep_list, define_peptide_list, verify_get_input;
+                ret_full_pep_list, define_peptide_list, verify_get_input,
+                array_level_helpers;
 
         //Based on the type we will define a series of functions
         level_1_helpers = function () {
@@ -636,6 +637,150 @@
             };
         };
 
+        array_level_helpers = function () {
+            var group_list, name_list, id_list, check_new_get_params,
+                    levels_list;
+            define_lists = function (arr) {
+                var peptide_obj = {}, cycle_obj = {}, exposure_obj = {},
+                        group_obj = {}, name_obj = {}, id_obj = {},
+                        levels_obj = {};
+
+                arr.map(function (samp) {
+                    samp.list("peptide").map(function (x) {
+                        peptide_obj[x] = 1;
+                    });
+                    samp.list("cycle").map(function (x) {
+                        cycle_obj[x] = 1;
+                    });
+                    samp.list("exposure").map(function (x) {
+                        exposure_obj[x] = 1;
+                    });
+                    group_obj[samp.group] = 1;
+                    name_obj[samp.name] = 1;
+                    id_obj[samp.name_id] = 1;
+                    levels_obj[samp.level] = 1;
+                });
+
+                peptide_list = Object.keys(peptide_obj);
+                cycle_list = Object.keys(cycle_obj);
+                exposure_list = Object.keys(exposure_obj);
+                group_list = Object.keys(group_obj);
+                name_list = Object.keys(name_obj);
+                id_list = Object.keys(id_obj);
+                levels_list = Object.keys(levels_obj);
+            };
+            get = function (get_params) {
+                var i, that = this, ret = [];
+                get_params = check_new_get_params(verify_get_input(get_params));
+                for (i = 0; i < that.length; i += 1) {
+                    //check if the sample matches
+                    if (
+                        that[i].name.match(get_params.names) &&
+                        that[i].group.match(get_params.groups) &&
+                        that[i].level.match(get_params.levels) &&
+                        that[i].name_id.match(get_params.ids)
+                    ) {
+                        ret = ret.concat(that[i].get(get_params));
+                    }
+                }
+                return ret;
+            };
+            list = function (list_str) {
+                if (list_str.match(/^names*$/i)) {
+                    return copy(name_list);
+                }
+                if (list_str.match(/^groups*$/i)) {
+                    return copy(group_list);
+                }
+                if (list_str.match(/^ids*$/i)) {
+                    return copy(id_list);
+                }
+                if (list_str.match(/^levels*$/i)) {
+                    return copy(levels_list);
+                }
+                if (list_str.match(/^cycles*$/i)) {
+                    return copy(cycle_list);
+                }
+                if (list_str.match(/^exposures*$/i)) {
+                    return copy(exposure_list);
+                }
+                if (list_str.match(/^peptides*$/i)) {
+                    return copy(peptide_list);
+                }
+                return copy({
+                    names: name_list,
+                    groups: group_list,
+                    ids: id_list,
+                    levels: levels_list,
+                    cycles: cycle_list,
+                    exposures: exposure_list,
+                    peptides: peptide_list
+                });
+            };
+
+            check_new_get_params = function (getParams) {
+                var grps, nms, ids, lvls, ret;
+
+                grps = getParams.hasOwnProperty("groups")
+                    ? getParams.groups
+                    : getParams.hasOwnProperty("group")
+                        ? getParams.group
+                        : group_list;
+                if (!Array.isArray(grps)) {
+                    grps = [grps];
+                }
+
+                nms = getParams.hasOwnProperty("names")
+                    ? getParams.names
+                    : getParams.hasOwnProperty("name")
+                        ? getParams.name
+                        : name_list;
+
+                if (!Array.isArray(nms)) {
+                    nms = [nms];
+                }
+
+                nms = new RegExp('^' + nms.join('$|^') + '$', 'i');
+
+                ids = getParams.hasOwnProperty("ids")
+                    ? getParams.ids
+                    : getParams.hasOwnProperty("id")
+                        ? getParams.id
+                        : name_list;
+
+                if (!Array.isArray(ids)) {
+                    ids = [ids];
+                }
+
+                ids = new RegExp('^' + ids.join('$|^') + '$', 'i');
+
+                lvls = getParams.hasOwnProperty("levels")
+                    ? getParams.levels
+                    : getParams.hasOwnProperty("level")
+                        ? getParams.level
+                        : name_list;
+
+                if (!Array.isArray(lvls)) {
+                    lvls = [lvls];
+                }
+
+                lvls = new RegExp('^' + lvls.join('$|^') + '$', 'i');
+
+                ret = copy(getParams);
+                delete ret.level;
+                delete ret.group;
+                delete ret.id;
+                delete ret.name;
+                ret.levels = lvls;
+                ret.groups = grps;
+                ret.ids = ids;
+                ret.names = nms;
+
+                return ret;
+
+            };
+        };
+
         //These may be generalizable
         ret_full_pep_list = function () {
             var i, j, ret = [], that = this, oneRet, row, col, found;
@@ -799,25 +944,31 @@
         };
 
         clone = function () {
+            var that = this, newcopy, l1, l2, i, j;
             //Uses simple p/s to return a getted version of the object
-            var newcopy = copy(this), url = this.data_origin_url, group = this.group;
+            newcopy = copy(that);
+            l1 = Object.getOwnPropertyNames(that);
+            l2 = Object.getOwnPropertyNames(newcopy);
 
-
-            if (typeof url === 'string') {
-                Object.defineProperty(newcopy, 'data_origin_url', {
-                    enumerable: false,
-                    configurable: false,
-                    writable: false,
-                    value: url
-                });
+            for (i = 0; i < l1.length; i += 1) {
+                for (j = 0; j < l2.length; j += 1) {
+                    if (l1[i] === l2[j]) {
+                        l1.splice(i, 1);
+                        l2.splice(j, 1);
+                        i -= 1;
+                        break;
+                    }
+                }
             }
-            if (typeof group === 'string') {
-                Object.defineProperty(newcopy, 'group', {
-                    enumerable: false,
-                    configurable: false,
-                    writable: false,
-                    value: group
-                });
+            for (i = 0; i < l1.length; i += 1) {
+                if (typeof that[l1[i]] !== 'function') {
+                    Object.defineProperty(newcopy, l1[i], {
+                        enumerable: false,
+                        configurable: false,
+                        writable: false,
+                        value: that[l1[i]]
+                    });
+                }
             }
             delete newcopy[ID];
             return exports.enrich(newcopy);
@@ -862,9 +1013,22 @@
 
         //now actually assign the function
         if (Array.isArray(object)) {
+            //enrich the lower level objects
             object = object.map(function (x) {
                 return exports.enrich(x); //recursively call this function
             });
+            //now rely on those to enrich the array
+
+            //basics
+            array_level_helpers(); // define this level helper functions
+            Object.defineProperty(object, 'clone', {value: clone, enumerable: false});
+            Object.defineProperty(object, 'stringify', {value: stringify, enumerable: false});
+
+            //get and list
+            define_lists(object);
+            Object.defineProperty(object, 'get', {value: get, enumerable: false});
+            Object.defineProperty(object, 'list', {value: list, enumerable: false});
+
         } else if (!object.hasOwnProperty('get') && object.level.match(/^1\.\d\.\d/)) {
             //basics
             level_1_helpers(); // define level 1 helper functions
