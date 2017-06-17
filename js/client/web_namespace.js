@@ -304,7 +304,6 @@ as urls this works by assuming jQuery is present and that Promises exist
         //Now move through the object grabbing things
         KINOME.params.data.map(function (group, groupInd) {
             group.value.map(function (samp) {
-                var final, url = samp.data_origin_url;
                 if (
                 //Body of the filter is right here
                     //matches the level string
@@ -319,19 +318,10 @@ as urls this works by assuming jQuery is present and that Promises exist
                     //matches the id
                     (id_filter === undefined || id_filter === samp.name_id)
                 ) {
-                    if (typeof samp.clone === 'function') {
-                        final = samp.clone();
-                    } else {
-                        final = JSON.parse(JSON.stringify(samp));
-                        Object.defineProperty(final, 'data_origin_url', {
-                            enumerable: false,
-                            configurable: false,
-                            writable: false,
-                            value: url
-                        });
+                    if (!samp.hasOwnProperty('group')) {
+                        Object.defineProperty(samp, 'group', {value: groupInd, enumerable: false});
                     }
-                    Object.defineProperty(final, 'group', {value: groupInd, enumerable: false});
-                    out.push(final);
+                    out.push(samp);
                 }
             });
         });
@@ -340,7 +330,7 @@ as urls this works by assuming jQuery is present and that Promises exist
 
     KINOME.list = function (list_str) {
         //make sure this is initialized\
-        return KINOME.get(list_str); // keep things compatible for now
+        // keep things compatible for now
         var groups = [], ids = [], names = [], levelsObj = {}, levels = [];
         //Now move through the object grabbing things
         KINOME.params.data.map(function (group, groupInd) {
