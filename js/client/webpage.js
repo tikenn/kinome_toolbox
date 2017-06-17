@@ -24,7 +24,6 @@
             levels[x.level] = 1;
             return x;
         });
-        $('#about_tab').append('<div><p>This tool uses IndexedDB to store data to pull it for future use. If you would like to clear that click here. (Page load times will decrease temporarily again)</p><button class="btn-lg btn btn-primary" onclick="KINOME.db.db.clear()">Clear Saved</button></div>');
         //load UI scripts that correspond to types
         Object.keys(levels).map(function (x) {
             return require({type: x});
