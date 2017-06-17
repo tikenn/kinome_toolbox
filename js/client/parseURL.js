@@ -148,6 +148,20 @@
     });
 
     //set up standard functions
+    exports.loadData = function (urls) {
+        //this is needed to get the enrich called and the data put in the
+            //correct place.
+        if (!Array.isArray(urls)) {
+            urls = [urls];
+        }
+        return getDATA(urls).then(function (data) {
+            data = data.map(function (x) {
+                return KINOME.enrich(x);
+            });
+            exports.params.data.push({value: data, url: urls});
+            return data;
+        });
+    };
     exports.loadStyle = getSTYLES;
 
     return exports;
