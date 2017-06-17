@@ -641,19 +641,22 @@
             var group_list, name_list, id_list, check_new_get_params,
                     levels_list;
             define_lists = function (arr) {
-                var peptide_obj = {}, cycle_obj = {}, exposure_obj = {},
-                        group_obj = {}, name_obj = {}, id_obj = {},
+                var group_obj = {}, name_obj = {}, id_obj = {},
                         levels_obj = {};
+
+                peptide_object = {};
+                cycle_object = {};
+                exposure_object = {};
 
                 arr.map(function (samp) {
                     samp.list("peptide").map(function (x) {
-                        peptide_obj[x] = 1;
+                        peptide_object[x] = 1;
                     });
                     samp.list("cycle").map(function (x) {
-                        cycle_obj[x] = 1;
+                        cycle_object[x] = 1;
                     });
                     samp.list("exposure").map(function (x) {
-                        exposure_obj[x] = 1;
+                        exposure_object[x] = 1;
                     });
                     group_obj[samp.group] = 1;
                     name_obj[samp.name] = 1;
@@ -661,10 +664,10 @@
                     levels_obj[samp.level] = 1;
                 });
 
-                peptide_list = Object.keys(peptide_obj);
-                cycle_list = Object.keys(cycle_obj);
-                exposure_list = Object.keys(exposure_obj);
-                group_list = Object.keys(group_obj);
+                peptide_list = Object.keys(peptide_object);
+                cycle_list = Object.keys(cycle_object).map(mult1);
+                exposure_list = Object.keys(exposure_object).map(mult1);
+                group_list = Object.keys(group_obj).map(mult1);
                 name_list = Object.keys(name_obj);
                 id_list = Object.keys(id_obj);
                 levels_list = Object.keys(levels_obj);
@@ -676,7 +679,7 @@
                     //check if the sample matches
                     if (
                         that[i].name.match(get_params.names) &&
-                        that[i].group.match(get_params.groups) &&
+                        that[i].group.toString().match(get_params.groups) &&
                         that[i].level.match(get_params.levels) &&
                         that[i].name_id.match(get_params.ids)
                     ) {
@@ -686,6 +689,7 @@
                 return ret;
             };
             list = function (list_str) {
+                list_str = list_str || "";
                 if (list_str.match(/^names*$/i)) {
                     return copy(name_list);
                 }
@@ -707,6 +711,7 @@
                 if (list_str.match(/^peptides*$/i)) {
                     return copy(peptide_list);
                 }
+                console.log(cycle_list);
                 return copy({
                     names: name_list,
                     groups: group_list,
@@ -717,7 +722,6 @@
                     peptides: peptide_list
                 });
             };
-
             check_new_get_params = function (getParams) {
                 var grps, nms, ids, lvls, ret;
 
@@ -729,6 +733,8 @@
                 if (!Array.isArray(grps)) {
                     grps = [grps];
                 }
+
+                grps = new RegExp('^' + grps.join('$|^') + '$', 'i');
 
                 nms = getParams.hasOwnProperty("names")
                     ? getParams.names
@@ -746,7 +752,7 @@
                     ? getParams.ids
                     : getParams.hasOwnProperty("id")
                         ? getParams.id
-                        : name_list;
+                        : id_list;
 
                 if (!Array.isArray(ids)) {
                     ids = [ids];
@@ -758,7 +764,7 @@
                     ? getParams.levels
                     : getParams.hasOwnProperty("level")
                         ? getParams.level
-                        : name_list;
+                        : levels_list;
 
                 if (!Array.isArray(lvls)) {
                     lvls = [lvls];
@@ -777,7 +783,6 @@
                 ret.names = nms;
 
                 return ret;
-
             };
         };
 
