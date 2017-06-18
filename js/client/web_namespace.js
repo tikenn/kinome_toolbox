@@ -22,8 +22,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         '1.0.0': ['set_up_table', 'outlier_tab', 'pparameter_display'],
         '1.0.1': ['set_up_table', 'pparameter_display'],
         '1.1.2': ['set_up_table', 'pparameter_display'],
-        '2.0.1': ['set_up_table'],
-        '2.1.2': ['set_up_table'],
+        '2.0.1': ['set_up_table', 'reproduce'],
+        '2.1.2': ['set_up_table', 'reproduce'],
 
         //library functions
         peptide_picker: 'http://mischiefmanaged.tk/peptide_picker.js?_=1497745198870',
@@ -39,7 +39,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         pparameter_display: 'http://mischiefmanaged.tk/pparameter_display.js',
         webpage: './js/client/webpage.js',
         set_up_table: './js/client/set_up_table.js',
-        'bs-toggle': './js/client/general/bootstrap-toggle.min.js'
+        'bs-toggle': './js/client/general/bootstrap-toggle.min.js',
+        reproduce: './js/client/reproducibility.js'
     };
 
     //set globals
