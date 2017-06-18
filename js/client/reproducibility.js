@@ -170,7 +170,7 @@
                 legend: 'none',
                 tooltip: {isHtml: true, trigger: 'both'},
                 seriesType: 'scatter',
-                series: {'4': {color: '#43459d', type: 'line', enableInteractivity: false}},
+                series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
                 height: $page_obj.width.width(),
                 width: $page_obj.width.width()
             };
