@@ -171,12 +171,12 @@
                             xys_lin.push([
                                 x,
                                 y,
-                                "x: val: " + x.toFixed(2), //+
+                                "x: val: " + x.toFixed(2) +
                                         " R2: " + pnts.lin[i][j].signal.R2.toFixed(2) + '\n' +
                                         " y: val: " + y.toFixed(2) +
                                         " R2: " + pnts.lin[i][k].signal.R2.toFixed(2) + '\n' +
                                         "peptide: " + pnts.lin[i][k].peptide + '\n' +
-                                        "exposure: " + pnts.lin[i][k].exposure
+                                        "exposure: " + pnts.lin[i][k].exposure,
                                 null,
                                 ""
                             ]);
