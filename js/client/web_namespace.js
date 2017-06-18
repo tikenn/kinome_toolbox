@@ -26,6 +26,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         '2.1.2': ['set_up_table'],
 
         //library functions
+        peptide_picker: 'http://mischiefmanaged.tk/peptide_picker.js?_=1497745198870',
         shiftToMin: './js/web_main.js',
         amd_ww: './js/lib/amd_ww.3.1.0.min.js',
         enrich_kinome: './js/lib/enrich_kinome.js',
@@ -37,7 +38,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         outlier_tab: './js/client/outlier.js',
         pparameter_display: 'http://mischiefmanaged.tk/pparameter_display.js',
         webpage: './js/client/webpage.js',
-        set_up_table: './js/client/set_up_table.js'
+        set_up_table: './js/client/set_up_table.js',
+        'bs-toggle': './js/client/general/bootstrap-toggle.min.js'
     };
 
     //set globals
@@ -487,12 +489,14 @@ as urls this works by assuming jQuery is present and that Promises exist
 
         //Need to flush this out, start with just getting by level
         var level, out = [], id_filter = get_object.id, groupFilter = get_object.group, sample_name;
-        level = new RegExp(get_object.level !== undefined
+        level = get_object.level !== undefined
             ? get_object.level
-            : "", "i");
-        sample_name = new RegExp(get_object.name !== undefined
+            : "[\\s\\S]*";
+        level = new RegExp(level, 'i');
+        sample_name = get_object.name !== undefined
             ? get_object.name
-            : "", "i");
+            : "[\\s\\S]*";
+        sample_name = new RegExp(sample_name, 'i');
 
         //Now move through the object grabbing things
         KINOME.params.data.map(function (group, groupInd) {
