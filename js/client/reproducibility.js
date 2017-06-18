@@ -7,7 +7,7 @@
 
     buildFigures = function ($div, DATA) {
         var peps, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
-                my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, limit, useAllGroups = false,
+                my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, limit, useAllGroups = false, buildTooltip,
                 thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase;
 
         $page_obj.div = $div;
@@ -124,26 +124,29 @@
             return str.charAt(0).toUpperCase() + str.slice(1);
         };
 
+        buildTooltip = function (x, y, pntx, pnty, constant) {
+            return '<div style="min-width: 170px; padding:5px;">(' + x.toFixed(2) + ', ' + y.toFixed(2) + '), ' +
+                    '<div>(<a target="_blank" href="' + pntx.lvl_1 + '">' + pntx.name + '</a>, ' +
+                    '<a target="_blank" href="' + pnty.lvl_1 + '">' + pnty.name + '</a>)</div>' +
+                    "group: " + pnty.group + ', <br />' +
+                    "peptide: " + pnty.peptide + '<br />' +
+                    constant + ": " + pnty[constant] + '</div>';
+        };
+
         getOneDataSet = function (pnts, type, constant) {
-            var i, j, k, x, y, out = [["X", "Y", {type: 'string', role: 'tooltip', p: {html: true}}, 'onetoone']], limits_here, diffPer;
+            var i, j, k, x, y, out = [["X", "G0", {type: 'string', role: 'tooltip', p: {html: true}}, "G1", {type: 'string', role: 'tooltip', p: {html: true}}, "G2", {type: 'string', role: 'tooltip', p: {html: true}}, "G3", {type: 'string', role: 'tooltip', p: {html: true}}, 'onetoone']],
+                    limits_here, diffPer, gInd, oneOut;
             for (i = 0; i < pnts[type].length; i += 1) {
                 for (j = 0; j < pnts[type][i].length; j += 1) {
                     for (k = 0; k < pnts[type][i].length; k += 1) {
                         if (j !== k) {
+                            gInd = pnts[type][i][k].group * 2 + 1;
                             x = equation[type](pnts[type][i][j], type);
                             y = equation[type](pnts[type][i][k], type);
-                            out.push([
-                                x,
-                                y,
-                                '<div style="min-width: 170px; padding:5px;">(' + x.toFixed(2) + ', ' + y.toFixed(2) + '), ' +
-                                        " R2: (" + pnts[type][i][j].signal.R2.toFixed(2) + ', ' +
-                                        pnts[type][i][k].signal.R2.toFixed(2) + ')<br />' +
-                                        '<div>(<a target="_blank" href="' + pnts[type][i][j].lvl_1 + '">' + pnts[type][i][j].name + '</a>, <a target="_blank" href="' + pnts[type][i][k].lvl_1 + '">' + pnts[type][i][k].name + '</a>)</div>' +
-                                        "group: " + pnts[type][i][k].group + ', <br />' +
-                                        "peptide: " + pnts[type][i][k].peptide + '<br />' +
-                                        constant + ": " + pnts[type][i][k][constant] + '</div>',
-                                null
-                            ]);
+                            oneOut = [x, NaN, "", NaN, "", NaN, "", NaN, "", NaN];
+                            oneOut[gInd] = y;
+                            oneOut[gInd + 1] = buildTooltip(x, y, pnts[type][i][j], pnts[type][i][k], constant);
+                            out.push(oneOut);
                         }
                     }
                 }
@@ -151,10 +154,9 @@
             if (pnts[type][0][0]) {
                 limits_here = limit(pnts[type][0][0][constant], type);
                 diffPer = 0.05 * (limits_here[1] - limits_here[0]);
-                out.push([limits_here[0] - diffPer, null, "", limits_here[0] - diffPer]);
-                out.push([limits_here[1] + diffPer, null, "", limits_here[1] + diffPer]);
+                out.push([limits_here[0] - diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[0] - diffPer]);
+                out.push([limits_here[1] + diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[1] + diffPer]);
             }
-
             return out;
         };
 
@@ -168,7 +170,7 @@
                 legend: 'none',
                 tooltip: {isHtml: true, trigger: 'both'},
                 seriesType: 'scatter',
-                series: {'1': {type: 'line', enableInteractivity: false}},
+                series: {'4': {color: '#43459d', type: 'line', enableInteractivity: false}},
                 height: $page_obj.width.width(),
                 width: $page_obj.width.width()
             };
