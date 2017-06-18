@@ -125,7 +125,7 @@
         };
 
         getOneDataSet = function (pnts, type, constant) {
-            var i, j, k, x, y, out = [["X", "Y", {type: 'string', role: 'tooltip'}, 'onetoone']], limits_here, diffPer;
+            var i, j, k, x, y, out = [["X", "Y", {type: 'string', role: 'tooltip', p: {html: true}}, 'onetoone']], limits_here, diffPer;
             for (i = 0; i < pnts[type].length; i += 1) {
                 for (j = 0; j < pnts[type][i].length; j += 1) {
                     for (k = 0; k < pnts[type][i].length; k += 1) {
@@ -135,13 +135,13 @@
                             out.push([
                                 x,
                                 y,
-                                "(" + x.toFixed(2) + ', ' + y.toFixed(2) + '), ' +
+                                '<div style="min-width: 170px; padding:5px;">(' + x.toFixed(2) + ', ' + y.toFixed(2) + '), ' +
                                         " R2: (" + pnts[type][i][j].signal.R2.toFixed(2) + ', ' +
-                                        pnts[type][i][k].signal.R2.toFixed(2) + ')\n' +
-                                        '(' + pnts[type][i][j].name + ', ' + pnts[type][i][k].name + ')\n' +
-                                        "group: " + pnts[type][i][k].group + ' ' +
-                                        "peptide: " + pnts[type][i][k].peptide + '\n' +
-                                        constant + ": " + pnts[type][i][k][constant],
+                                        pnts[type][i][k].signal.R2.toFixed(2) + ')<br />' +
+                                        '<div>(<a target="_blank" href="' + pnts[type][i][j].lvl_1 + '">' + pnts[type][i][j].name + '</a>, <a target="_blank" href="' + pnts[type][i][k].lvl_1 + '">' + pnts[type][i][k].name + '</a>)</div>' +
+                                        "group: " + pnts[type][i][k].group + ', <br />' +
+                                        "peptide: " + pnts[type][i][k].peptide + '<br />' +
+                                        constant + ": " + pnts[type][i][k][constant] + '</div>',
                                 null
                             ]);
                         }
@@ -166,6 +166,7 @@
                 hAxis: {title: my_state_obj[type].params[my_state_obj[type].param], titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
                 vAxis: {title: my_state_obj[type].params[my_state_obj[type].param], titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
                 legend: 'none',
+                tooltip: {isHtml: true, trigger: 'both'},
                 seriesType: 'scatter',
                 series: {'1': {type: 'line', enableInteractivity: false}},
                 height: $page_obj.width.width(),
@@ -348,7 +349,7 @@
                         ? thisState.exposure
                         : thisState.cycle;
                     ce = 1 - minimums[type][my_state_obj[type].param][key2];
-                    console.log(ce);
+                    // console.log(ce);
                     part.backCorrSelected.append(",&nbsp;&nbsp;").append(
                         M.sToMathE("c_e=" + ce.toFixed(4))
                     );

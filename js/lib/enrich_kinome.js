@@ -61,7 +61,7 @@
                                     image: get_image(img_ind, that),
                                     set: set_function(img_ind, pep_ind, that),
                                     more: more_function(img_ind, peptide_object[peps[i]])
-                                }));
+                                }, that));
                             }
                         }
                     }
@@ -673,8 +673,19 @@
         };
 
         addSuperMeta = function (obj, data) {
+            var url;
             if (data.group !== undefined) {
                 obj.group = data.group;
+            }
+            if (data.level.match(/^2/) && typeof location === 'object' && location.href) {
+                url = data.data_origin_url;
+                if (url) {
+                    url = url.replace(/\/*\?[\s\S]*$/, '')
+                        .replace(/\/lvl_2/, '/lvl_1');
+                    url = url + '?find={"name_id":"' + data.name_id + '"}';
+                    url = './?data=*[' + encodeURIComponent(url) + ']*';
+                    obj.lvl_1 = url;
+                }
             }
             obj.name = data.name;
             obj.level = data.level;
@@ -763,7 +774,7 @@
             };
             check_new_get_params = function (getParams) {
                 var grps, nms, ids, lvls, ret;
-
+                getParams = getParams || {};
                 grps = getParams.hasOwnProperty("groups")
                     ? getParams.groups
                     : getParams.hasOwnProperty("group")
