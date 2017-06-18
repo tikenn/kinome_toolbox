@@ -10,7 +10,7 @@
         level 1 for now...
         */
             /*defined by level*/
-        var get, list, define_lists, append, level_up,
+        var get, list, define_lists, append, level_up, eval_equation,
             /*generalizable*/
                 clone, stringify, ID = "_id",
             /*Super objects*/
@@ -20,7 +20,7 @@
             /*glob helpers*/
                 level_1_helpers, level_2_helpers, copy, mult1, blank_array,
                 ret_full_pep_list, define_peptide_list, verify_get_input,
-                array_level_helpers, name_helpers;
+                array_level_helpers, name_helpers, addSuperMeta;
 
         //Based on the type we will define a series of functions
         level_1_helpers = function () {
@@ -48,7 +48,7 @@
                             pep_ind = peptide_object[peps[i]].index;
 
                             if (img_ind !== undefined && pep_ind !== undefined) {
-                                retArr.push({
+                                retArr.push(addSuperMeta({
                                     peptide: peps[i],
                                     cycle: cycs[j],
                                     exposure: exps[k],
@@ -61,7 +61,7 @@
                                     image: get_image(img_ind, that),
                                     set: set_function(img_ind, pep_ind, that),
                                     more: more_function(img_ind, peptide_object[peps[i]])
-                                });
+                                }));
                             }
                         }
                     }
@@ -508,6 +508,7 @@
                             };
                             onesol[dim2_key] = dim2[j];
                             onesol[other_key] = copy(other_arr);
+                            onesol = addSuperMeta(onesol, that);
                             sol.push(onesol);
                         }
                     }
@@ -612,6 +613,30 @@
                 return good;
             };
 
+            eval_equation = function (obj) {
+                var nl_equation = {};
+                if (!obj.kinetic.equation && obj.kinetic.equation_string) {
+                    eval('nl_equation = ' + obj.kinetic.equation_string);
+                    obj.kinetic.equation = nl_equation;
+                }
+
+                //define the linear function one
+                obj.linear.equation = obj.linear.equation || {
+                    description: "For fitting linear data",
+                    displayEq: function (params) {
+                        return 'y(e)=' + params[0].toFixed(2) + '·e+' + params[1].toFixed(2);
+                    },
+                    func: function (X, p) {
+                        return X[0] * p[0] + p[1];
+                    },
+                    mathParams: ['m', 'b'],
+                    mathType: 'y(e)=m·e+b',
+                    name: 'linear',
+                    stringified: "y(e) = m · e + b"
+                };
+                return obj;
+            };
+
             list = function (list_term) {
                 var ret;
                 //just return copies of the list objects
@@ -645,6 +670,15 @@
                 ret.peptides.more = ret_full_pep_list;
                 return ret;
             };
+        };
+
+        addSuperMeta = function (obj, data) {
+            if (data.group !== undefined) {
+                obj.group = data.group;
+            }
+            obj.name = data.name;
+            obj.level = data.level;
+            return obj;
         };
 
         array_level_helpers = function () {
@@ -1172,6 +1206,9 @@
             Object.defineProperty(OBJECT, 'get', {value: get, enumerable: false});
             Object.defineProperty(OBJECT, 'list', {value: list, enumerable: false});
             Object.defineProperty(OBJECT, 'put', {value: append, enumerable: false});
+
+            //specail level t
+            eval_equation(OBJECT);
         } else if (typeof OBJECT === 'object' && !Array.isArray(OBJECT) && !OBJECT.hasOwnProperty('get') && OBJECT.level && OBJECT.level.match(/name/)) {
             //basics
             name_helpers();
