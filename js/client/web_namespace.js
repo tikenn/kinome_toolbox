@@ -83,6 +83,9 @@ as urls this works by assuming jQuery is present and that Promises exist
             }, { // database specific
                 limit: 90 * 24 * 60 * 60 * 1000, // 90 days
                 regex: databaseRegex
+            }, { // style
+                limit: 90 * 24 * 60 * 60 * 1000, // 90 days
+                regex: /\.css$/
             }
         ];
 
@@ -304,6 +307,10 @@ as urls this works by assuming jQuery is present and that Promises exist
                 datafunc = get_style_promise;
             } else if (url.match(/\.json\s*$/i)) {
                 datafunc = get_data_promise;
+            } else if (url.match(/\.txt\s*$/i)) {
+                datafunc = get_text_promise;
+            } else if (url.match(/\.jseq\s*$/i)) { //for equation objects
+                datafunc = get_text_promise;
             } else {
                 //default should be javascript
                 datafunc = get_script_promise;
