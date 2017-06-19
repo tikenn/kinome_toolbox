@@ -8,7 +8,7 @@
     buildFigures = function ($div, DATA) {
         var peps, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
                 my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, limit, useAllGroups = false, buildTooltip,
-                thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase;
+                thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase, collapse;
 
         $page_obj.div = $div;
         //defaults
@@ -178,7 +178,21 @@
             var chart = new google.visualization.ComboChart($page_obj[type].fig[0]);
 
             chart.draw(dataTable, options);
-            $page_obj[type].corr.text("pearson's r = " + pearsonCorr(pnts).toFixed(5));
+            $page_obj[type].corr.text("pearson's r = " + pearsonCorr(collapse(pnts)).toFixed(5));
+        };
+
+        collapse = function (arr) {
+            var i, j, arrOut = [];
+            for (i = 0; i < arr.length; i += 1) {
+                arrOut[i] = [];
+                for (j = 0; j < arr[i].length && arrOut[i].length < 2; j += 1) {
+                    if (typeof arr[i][j] === 'number' && !isNaN(arr[i][j])) {
+                        arrOut[i].push(arr[i][j]);
+                    }
+                }
+            }
+            arrOut.shift(); // leave out header
+            return arrOut;
         };
 
         make_reprofigures = function (pnts) {
