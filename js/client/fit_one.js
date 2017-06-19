@@ -83,7 +83,7 @@
                     origin: {type: 'signal'}
                 });
                 p2 = worker.submit({
-                    model: model.signal,
+                    model: model.background,
                     origin: {type: 'background'}
                 });
 

@@ -151,12 +151,12 @@ as urls this works by assuming jQuery is present and that Promises exist
 
 
     //Leave this for now.
-    KINOME.db = (function () {
-        var db = new Dexie("KINOME");
-        db.version(1).stores({KINOME: 'url'});
-        $('#about_tab').append('<div class="text-center"><p>This tool uses IndexedDB to store data to pull it for future use. If you would like to clear that click below. (Page load times will increase signifcantly, but temporarily.)</p><button class="btn-lg btn btn-primary" onclick="KINOME.db.db.clear()">Clear Saved</button><p>Specific data queries will be saved for 90 days, the names database for 1 day and general data query results for 30 minutes.</p></div>');
-        return {open: db.open(), db: db.KINOME};
-    }());
+    // KINOME.db = (function () {
+    //     var db = new Dexie("KINOME");
+    //     db.version(1).stores({KINOME: 'url'});
+    //     $('#about_tab').append('<div class="text-center"><p>This tool uses IndexedDB to store data to pull it for future use. If you would like to clear that click below. (Page load times will increase signifcantly, but temporarily.)</p><button class="btn-lg btn btn-primary" onclick="KINOME.db.db.clear()">Clear Saved</button><p>Specific data queries will be saved for 90 days, the names database for 1 day and general data query results for 30 minutes.</p></div>');
+    //     return {open: db.open(), db: db.KINOME};
+    // }());
 
     get_from_db = function (url, cache) {
         return db_open.then(function () {
