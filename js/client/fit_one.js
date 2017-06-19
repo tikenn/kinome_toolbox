@@ -11,17 +11,17 @@
     requires = Promise.all(requires);
 
 
-    get_models = function (array, cycVexp) {
+    get_models = function (array, cycVexp, equation) {
         var i = 0, background = {
             x: [],
             y: [],
             valid: [],
-            equation: {string: eq_string}
+            equation: {string: equation}
         }, signal = {
             x: [],
             y: [],
             valid: [],
-            equation: {string: eq_string}
+            equation: {string: equation}
         };
         for (i = 0; i < array.length; i += 1) {
             //signal
@@ -57,12 +57,26 @@
                 reject('You must pass in a data array of at least length 2.');
             }
             requires.then(function () {
-                var model, p1, p2;
+                var model, p1, p2, outObj = {};
 
                 if (type === 'kinetic') {
-                    model = get_models(dataArr, 'cycle');
+                    model = get_models(dataArr, 'cycle', eq_string);
+                    eval("outObj.equation =" + eq_string);
                 } else {
-                    model = get_models(dataArr, 'exposure');
+                    model = get_models(dataArr, 'exposure', 'linear');
+                    outObj.equation = {
+                        description: "For fitting linear data",
+                        displayEq: function (params) {
+                            return 'y(e)=' + params[0].toFixed(2) + '·e+' + params[1].toFixed(2);
+                        },
+                        func: function (X, p) {
+                            return X[0] * p[0] + p[1];
+                        },
+                        mathParams: ['m', 'b'],
+                        mathType: 'y(e)=m·e+b',
+                        name: 'linear',
+                        stringified: "y(e) = m · e + b"
+                    };
                 }
                 p1 = worker.submit({
                     model: model.signal,
@@ -74,10 +88,9 @@
                 });
 
                 Promise.all([p1, p2]).then(function (res) {
-                    resolve({
-                        signal: res[0][1],
-                        background: res[1][1]
-                    });
+                    outObj.signal = res[0][1];
+                    outObj.background = res[1][1];
+                    resolve(outObj);
                 });
             });
         });
