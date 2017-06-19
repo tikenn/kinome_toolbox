@@ -2,8 +2,8 @@
 (function () {
     'use strict';
 
-    var buildFigures, pearsonCorr, requires = [require('peptide_picker'), require('bs-toggle')];
-    require("https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css", 'style', false);
+    var buildFigures, pearsonCorr, requires = [require('peptide_picker'), require('bs_toggle-js')];
+    require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
         var peps, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,

@@ -39,9 +39,13 @@ as urls this works by assuming jQuery is present and that Promises exist
         pparameter_display: 'http://mischiefmanaged.tk/pparameter_display.js',
         webpage: './js/client/webpage.js',
         set_up_table: './js/client/set_up_table.js',
-        'bs-toggle': './js/client/general/bootstrap-toggle.min.js',
+        'bs_toggle-js': './js/client/general/bootstrap-toggle.min.js',
+        'bs_toggle-css': 'https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css',
         reproduce: './js/client/reproducibility.js',
-        fit: './js/client/fit_one.js'
+        fit: './js/client/fit_one.js',
+        'bs_slider-js': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js',
+        'bs_slider-css': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css',
+        'peptide_picker-css': 'http://mischiefmanaged.tk/peptide_picker.css'
     };
 
     //set globals
