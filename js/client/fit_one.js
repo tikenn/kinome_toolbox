@@ -48,7 +48,7 @@
         return;
     });
 
-    exports.fit = function (dataArr, type) {
+    exports.fit = function (dataArr, type, backvsig) {
         return new Promise(function (resolve, reject) {
             if (typeof type !== 'string' || (type !== 'linear' && type !== 'kinetic')) {
                 reject('You must pass in a type of either linear or kinetic');
@@ -78,18 +78,38 @@
                         stringified: "y(e) = m · e + b"
                     };
                 }
-                p1 = worker.submit({
-                    model: model.signal,
-                    origin: {type: 'signal'}
-                });
-                p2 = worker.submit({
-                    model: model.background,
-                    origin: {type: 'background'}
-                });
+
+                //Only fit requested if asked for
+                if (backvsig !== undefined && backvsig === 'signal') {
+                    p1 = worker.submit({
+                        model: model.signal,
+                        origin: {type: 'signal'}
+                    });
+                    p2 = Promise.resolve();
+                } else if (backvsig !== undefined && backvsig === 'background') {
+                    p1 = Promise.resolve();
+                    p2 = worker.submit({
+                        model: model.background,
+                        origin: {type: 'background'}
+                    });
+                } else {
+                    p1 = worker.submit({
+                        model: model.signal,
+                        origin: {type: 'signal'}
+                    });
+                    p2 = worker.submit({
+                        model: model.background,
+                        origin: {type: 'background'}
+                    });
+                }
 
                 Promise.all([p1, p2]).then(function (res) {
-                    outObj.signal = res[0][1];
-                    outObj.background = res[1][1];
+                    if (Array.isArray(res[0])) {
+                        outObj.signal = res[0][1];
+                    }
+                    if (Array.isArray(res[1])) {
+                        outObj.background = res[1][1];
+                    }
                     resolve(outObj);
                 });
             });
