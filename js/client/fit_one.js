@@ -8,6 +8,7 @@
     equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
 
     requires = [require(equationURL, 'text'), require('amd_ww')];
+    requires = Promise.all(requires);
 
 
     get_models = function (array, cycVexp) {
