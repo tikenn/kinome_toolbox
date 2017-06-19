@@ -40,7 +40,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         webpage: './js/client/webpage.js',
         set_up_table: './js/client/set_up_table.js',
         'bs-toggle': './js/client/general/bootstrap-toggle.min.js',
-        reproduce: './js/client/reproducibility.js'
+        reproduce: './js/client/reproducibility.js',
+        fit: './js/client/fit_one.js'
     };
 
     //set globals
