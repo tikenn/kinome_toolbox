@@ -63,6 +63,6 @@
     mathType: "y(c)={y_{max}·v_{i}·(c-c_0)}/{y_{max}+v_{i}·(c-c_0)}",
     mathParams: ['v_i', 'c_0', 'y_{max}'],
     displayEq: function (params) {
-        return "y(c)={" + (params[2]).toFixed(3) + " · " + (params[0]).toFixed(3) + " · (c - " + (params[1]).toFixed(3)  + ")}/{" + (params[2]).toFixed(3) +  " + " + (params[0]).toFixed(3) + " · (c - " + (params[1]).toFixed(3)  + ")}";
+        return "y(c)={" + (params[2]).toPrecision(5) + " · " + (params[0]).toFixed(3) + " · (c - " + (params[1]).toFixed(3)  + ")}/{" + (params[2]).toPrecision(5) +  " + " + (params[0]).toFixed(3) + " · (c - " + (params[1]).toFixed(3)  + ")}";
     }
 }
