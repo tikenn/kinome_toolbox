@@ -19,7 +19,8 @@
 
     require('bs_slider-js');
     require('bs_slider-css');
-    require('peptide_picker-css', 'css', false);
+    require('peptide_picker-css', 'css', false),
+    require('http://mischiefmanaged.tk/gradient.js');
 
     /**
      * Function that displays peptide data at a given level
@@ -151,25 +152,25 @@
          * @param Float number The number between 0 and 1
          * @param String The string representing the gradient
          */
-        var createGradient = function(number) {
-            var hue,
-                minHue = 60,
-                maxHue = 255,
-                hueRange = maxHue - minHue,
-                saturation,
-                minSaturation = 70,
-                maxSaturation = 100 - minSaturation,
-                lightness,
-                minLightness = 30,
-                maxLightness = 60 - minLightness,
-                eScale = Math.exp(number) / Math.E;
+        // var createGradient = function(number) {
+        //     var hue,
+        //         minHue = 60,
+        //         maxHue = 255,
+        //         hueRange = maxHue - minHue,
+        //         saturation,
+        //         minSaturation = 70,
+        //         maxSaturation = 100 - minSaturation,
+        //         lightness,
+        //         minLightness = 30,
+        //         maxLightness = 60 - minLightness,
+        //         eScale = Math.exp(number) / Math.E;
 
-                hue = hueRange * Math.pow(1 - number, 2) + minHue;
-                saturation = eScale * maxSaturation + minSaturation;
-                lightness = eScale * maxLightness + minLightness;
+        //         hue = hueRange * Math.pow(1 - number, 2) + minHue;
+        //         saturation = eScale * maxSaturation + minSaturation;
+        //         lightness = eScale * maxLightness + minLightness;
 
-                return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
-        };
+        //         return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+        // };
 
         /**
          * Colors the peptides using the method established when displaying the peptide matrix
@@ -180,7 +181,7 @@
             var cssHsl;
 
             for (var i = 0; i < peptideMatrix.length; i++) {
-                cssHsl = createGradient(peptideColors[i]);
+                cssHsl = KINOME.gradient.convert(peptideColors[i]);
                 peptideMatrix[i].changeSpotColor(cssHsl);
             }
         };
@@ -196,21 +197,23 @@
             });
         };
 
-        pageStructure.gradientScale = (function() {
-            var maxTransitions = 10,
-                canvas = document.createElement('canvas'),
-                ctx;
+        // pageStructure.gradientScale = (function() {
+        //     var maxTransitions = 10,
+        //         canvas = document.createElement('canvas'),
+        //         ctx;
 
-            canvas.height = 10;
-            canvas.width = 150;
-            ctx = canvas.getContext('2d');
-            for (var i = 0; i < canvas.width; i++) {
-                ctx.fillStyle = createGradient(i / canvas.width);
-                ctx.fillRect(i, 0, 1, canvas.height);
-            }
+        //     canvas.height = 10;
+        //     canvas.width = 150;
+        //     ctx = canvas.getContext('2d');
+        //     for (var i = 0; i < canvas.width; i++) {
+        //         ctx.fillStyle = createGradient(i / canvas.width);
+        //         ctx.fillRect(i, 0, 1, canvas.height);
+        //     }
 
-            return $(canvas).hide();
-        }());
+        //     return $(canvas).hide();
+        // }());
+
+        pageStructure.gradientScale = KINOME.gradient.colorBar(10, 150).hide();
 
 
         /* ==============================================================
@@ -831,7 +834,7 @@
             // stores the object of a peptide from a sample at a specific cycle and exposure time
             var quadfecta = sample.get({peptide: peptide, cycle: cycle, exposure: exposure})[0];
 
-            if (quadfecta.image !== undefined) {
+            if (quadfecta !== undefined && quadfecta.image !== undefined) {
                 return baseImgUrl + encodeURIComponent('"' + quadfecta.image +'"');
             
             } else {
