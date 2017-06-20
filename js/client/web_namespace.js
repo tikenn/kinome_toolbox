@@ -20,11 +20,11 @@ as urls this works by assuming jQuery is present and that Promises exist
     defaults = {
         name: ['set_up_table'],
         '1.0.0': ['set_up_table', 'outlier_tab', 'pparameter_display'],
-        // '1.0.1': ['set_up_table', 'pparameter_display'],
-        '1.0.1': ['set_up_table'],
+        '1.0.1': ['set_up_table', 'pparameter_display'],
+        // '1.0.1': ['set_up_table'],
         '1.1.2': ['set_up_table', 'pparameter_display'],
-        '2.0.1': ['set_up_table', 'reproduce'],
-        '2.1.2': ['set_up_table', 'reproduce'],
+        '2.0.1': ['set_up_table', 'reproduce', 'anova'],
+        '2.1.2': ['set_up_table', 'reproduce', 'anova'],
 
         //library functions
         peptide_picker: './plugins/peptide_picker/peptide_picker.js',
@@ -44,6 +44,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         'bs_toggle-css': 'https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css',
         reproduce: './js/client/reproducibility.js',
         fit: './js/client/fit_one.js',
+        anova: './js/client/anova.js',
         'bs_slider-js': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js',
         'bs_slider-css': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css',
         'peptide_picker-css': './plugins/peptide_picker/peptide_picker.css'
