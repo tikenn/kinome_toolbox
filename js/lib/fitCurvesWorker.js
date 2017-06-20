@@ -301,7 +301,7 @@
 
     determineRunningConditions = function (object) {
         //variable declarations
-        var i, X, xIni, yIni, length, equationObj, linear = false, retObj, robust = false;
+        var i, minL, X, xIni, yIni, length, equationObj, linear = false, retObj, robust = false;
 
         //variable defintions
         X = object.x;
@@ -324,9 +324,20 @@
                 yIni.push(object.y[i]);
             }
         }
-        if (X.length === 0) {
-            X.push([]);
+
+        minL = object.equation.string === 'linear'
+            ? 2
+            : 3;
+        if (xIni.length < minL) {
+            //add in at least first minL points regardless of outlier status
+            for (i = 0; i < minL; i += 1) {
+                if (!object.valid[i]) {
+                    xIni.push([X[i]]);
+                    yIni.push(object.y[i]);
+                }
+            }
         }
+
         if (object.equation.robust) {
             robust = object.equation.robust;
         }

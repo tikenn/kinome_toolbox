@@ -20,7 +20,8 @@ as urls this works by assuming jQuery is present and that Promises exist
     defaults = {
         name: ['set_up_table'],
         '1.0.0': ['set_up_table', 'outlier_tab', 'pparameter_display'],
-        '1.0.1': ['set_up_table', 'pparameter_display'],
+        // '1.0.1': ['set_up_table', 'pparameter_display'],
+        '1.0.1': ['set_up_table'],
         '1.1.2': ['set_up_table', 'pparameter_display'],
         '2.0.1': ['set_up_table', 'reproduce'],
         '2.1.2': ['set_up_table', 'reproduce'],
@@ -101,8 +102,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         if (!match && diff < default_limit) {
             useit = true;
         }
-        return false; // turns cache off
-        // return useit;
+        // return false; // turns cache off
+        return useit;
     };
 
     reqDone = (function () {
@@ -151,7 +152,7 @@ as urls this works by assuming jQuery is present and that Promises exist
     }());
 
 
-    //Leave this for now.
+    //Leave this for now. Clears cache
     // KINOME.db = (function () {
     //     var db = new Dexie("KINOME");
     //     db.version(1).stores({KINOME: 'url'});

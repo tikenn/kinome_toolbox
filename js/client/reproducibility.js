@@ -233,11 +233,15 @@
                 return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
             }
             all = DATA.get(get_obj).map(function (x) {
-                return equation[type](x, type);
+                var sol = equation[type](x, type);
+                if (sol < -2.28) {
+                    console.log(sol, type, x);
+                }
+                return sol;
             }).sort(function (a, b) {
                 return a - b;
             });
-            // console.log(all);
+            console.log(all);
 
             limits[type][currentEQnum[type]][my_state_obj[type].param][param2] = [all[0], all[all.length - 1]];
             return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
