@@ -719,7 +719,7 @@
         return main;
     };
 
-    exports.peptidePicker2 = display;
+    exports.peptidePicker = display;
 
 }(KINOME));
 

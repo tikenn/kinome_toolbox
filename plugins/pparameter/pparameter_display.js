@@ -306,7 +306,7 @@
         pageStructure.chartLocations.exposureBackground = $('<div class="graph"></div>').appendTo(pageStructure.backgroundCol);
 
         // Append the graphs to the page structure started by building the graphs
-        var pp = KINOME.peptidePicker2(data);
+        var pp = KINOME.peptidePicker(data);
         pp.change(buildGraphs);
         pageStructure.dummy.append(pp.div);
 
@@ -318,8 +318,7 @@
             data3 = KINOME.get({level: '1.1.2'}),
             div1,
             div2,
-            div3,
-            div4;
+            div3;
 
         if (data1.length > 0) {
             div1 = KINOME.addAnalysis('Level 1.0.0 Visualize');
@@ -328,9 +327,7 @@
 
         if (data2.length > 0) {
             div2 = KINOME.addAnalysis('Level 1.0.1 Visualize (2)');
-            div4 = KINOME.addAnalysis('Level 1.0.1 Visualize (2)');
             buildTab(div2, data2);
-            buildTab(div4, data2);
         }
 
         if (data3.length > 0) {
