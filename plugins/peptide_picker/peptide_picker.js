@@ -17,9 +17,9 @@
 (function(exports) {
     "use strict";
 
-    require('https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js');
-    require('https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css');
-    require('http://mischiefmanaged.tk/peptide_picker.css', 'css', false);
+    require('bs_slider-js');
+    require('bs_slider-css');
+    require('peptide_picker-css', 'css', false);
 
     /**
      * Function that displays peptide data at a given level
@@ -51,6 +51,8 @@
         pageStructure.metaDataCol = $('<div id="metadata-col" class="col-sm-6 col-md-7 bottom-column"></div>').appendTo(pageStructure.row);
         pageStructure.cycleExposureRow = $('<div id="cycle-exposure-row" class="row"></div>').appendTo(pageStructure.metaDataCol);
         pageStructure.metaDataDisplay = $('<div>').appendTo(pageStructure.metaDataCol);
+        pageStructure.gradientScale = undefined;
+        pageStructure.dataTable = undefined;
 
 
         /* ==============================================================
@@ -108,7 +110,8 @@
         previousState = clone(state);
 
         // if state function not passed, just create empty function
-        var stateFunction = function() { return };
+        var defaultStateFunction = function() { return },
+            stateFunction = defaultStateFunction;
 
         /**
          * Checks for a change in state based on a current state and a previous state and fires the stateFunction if there is a change
@@ -134,6 +137,7 @@
         var defaultColorPeptideFunc = function(peptideList, state) {
             var colorArray = [];
             for (var i = 0; i < peptideList.length; i++) {
+                // colorArray.push(Math.random());
                 colorArray.push('#191919');
             }
 
@@ -142,9 +146,42 @@
 
         var colorPeptideFunc = defaultColorPeptideFunc;
 
+        /**
+         * Returns an HSL color using a gradient when given a number between 0 and 1 inclusive
+         * @param Float number The number between 0 and 1
+         * @param String The string representing the gradient
+         */
+        var createGradient = function(number) {
+            var hue,
+                minHue = 60,
+                maxHue = 255,
+                hueRange = maxHue - minHue,
+                saturation,
+                minSaturation = 70,
+                maxSaturation = 100 - minSaturation,
+                lightness,
+                minLightness = 30,
+                maxLightness = 60 - minLightness,
+                eScale = Math.exp(number) / Math.E;
+
+                hue = hueRange * Math.pow(1 - number, 2) + minHue;
+                saturation = eScale * maxSaturation + minSaturation;
+                lightness = eScale * maxLightness + minLightness;
+
+                return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+        };
+
+        /**
+         * Colors the peptides using the method established when displaying the peptide matrix
+         *     Accepts an array of values between 0 and 1 inclusive
+         * @param Array peptideColors An array of values between 0 and 1 inclusive that will be translated into the hsl() color space
+         */
         var colorPeptides = function(peptideColors) {
-            for (var i = 0; i < peptideColors.length; i++) {
-                peptideMatrix[i].changeSpotColor(peptideColors[i]);
+            var cssHsl;
+
+            for (var i = 0; i < peptideMatrix.length; i++) {
+                cssHsl = createGradient(peptideColors[i]);
+                peptideMatrix[i].changeSpotColor(cssHsl);
             }
         };
 
@@ -152,8 +189,54 @@
             var peptideList = state.sample.get({cycle: state.cycle, exposure: state.exposure});
             colorPeptideFunc(peptideList, state).then(function(peptideColors) {
                 colorPeptides(peptideColors);
+            })
+            .catch(function(err) {
+                console.warn('The peptide color function expects a promise', err);
+                return err;
             });
         };
+
+        pageStructure.gradientScale = (function() {
+            var maxTransitions = 10,
+                canvas = document.createElement('canvas'),
+                ctx;
+
+            canvas.height = 10;
+            canvas.width = 150;
+            ctx = canvas.getContext('2d');
+            for (var i = 0; i < canvas.width; i++) {
+                ctx.fillStyle = createGradient(i / canvas.width);
+                ctx.fillRect(i, 0, 1, canvas.height);
+            }
+
+            return $(canvas).hide();
+        }());
+
+
+        /* ==============================================================
+         * Table functions
+         * ============================================================== */
+
+        /**
+         * Expects the result of state.sample.get({peptide: state.peptide, exposure: state.exposure, cycle: state.cycle})
+         * @param Object quadfecta The object that results from the above process
+         * @return Array An array of two pieces that that contains key value pair objects
+         */
+        var defaultTableFunc = function(quadfecta) {
+            return [
+                {
+                    "key": "Signal",
+                    "value": quadfecta.signal
+                },
+                {
+                    "key": "Background",
+                    "value": quadfecta.background
+                }
+            ];
+        };
+
+        var tableFunc = defaultTableFunc;
+
 
         /* ==============================================================
          * Main Return Object
@@ -161,15 +244,26 @@
 
         main.div = pageStructure.container;
         
-        // Create a new state function based on users input
+        /**
+         * Create a new state function based on users input and forcibly fire the state
+         * @param Function customStateFunction The new state function to fire on state change
+         */
         main.change = function(customStateFunction) {
-           stateFunction = customStateFunction;
-           fireState(clone(state), {sample: {name: null}});
+            if (typeof customStateFunction === 'function') {
+                stateFunction = customStateFunction;
+                fireState(clone(state), {sample: {name: null}});
+            } else {
+                console.error('The change function of peptide picker expects a function');
+            }
         };
 
-        // Forcibly set the state
-        main.set = function(customState) {
+        /**
+         * Forcibly sets the state of the system and fires the state function
+         * @param Object customState The new state to set the peptide picker to
+         */
+        main.setState = function(customState) {
             var keys,
+                customKeys,
                 changeFlag;
 
             keys = Object.keys(state);
@@ -185,17 +279,37 @@
             }
         };
 
+        /**
+         * Disables the sample if it is unecessary
+         */
         main.disableSample = function() {
             pageStructure.peptidePickerCol.children().children().children('select').prop('disabled', true);
         };
 
+        /**
+         * Sets a custom color function that changes the color of the peptide matrix based on a user defined function
+         * @param Function customColorFunc A user defined function that receives the peptide list at a specific exposure and cycle and is expected to return a promise
+         */
         main.setColorFunc = function(customColorFunc) {
             if (typeof customColorFunc === 'function') {
                 colorPeptideFunc = customColorFunc;
+                pageStructure.gradientScale.show();
             } else {
                 colorPeptideFunc = defaultColorPeptideFunc;
+                pageStructure.gradientScale.hide();
+                console.warn('The setColorFunc expects a function, not this', customColorFunc);
             }
         };
+
+        main.setTable = function(customTableFunc) {
+            if (typeof customTableFunc === 'function') {
+                tableFunc = customFunc;
+                createDataTable(state.sample, state.peptide, state.cycle, state.exposure);
+            } else {
+                tableFunc = defaultTableFunc;
+                console.warn('The setTable function requires a function argument, not this', customTableFunc);
+            }
+        }
 
         /* ==============================================================
          * Main
@@ -328,7 +442,7 @@
          * @param Function findPeptides A callback function that distinguishes peptides found in a search and takes the peptide list and a search string
          */
         var displayPeptides = function(peptideList, displayDiv) {
-            var $peptideMatrixLabel = $('<label id="peptide-picker-label">Peptide: </label>').appendTo(pageStructure.peptideMatrix),
+            var $peptideMatrixLabel = $('<label id="peptide-picker-label">Peptide: </label>').append(pageStructure.gradientScale).appendTo(pageStructure.peptideMatrix),
                 $peptideDisplay = $('<div id="peptide-list"></div>').appendTo(pageStructure.peptideMatrix),
                 peptideRowWidth;
 
@@ -637,7 +751,7 @@
             $('<h3>Description</h3>').appendTo($rightCol);
             $('<p>' + peptideData.desc.replace(/\([\s\S]+$/g, '') + '</p>').appendTo($rightCol);
 
-            createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo(pageStructure.metaDataDisplay);
+            createDataTable(state.sample, state.peptide, state.cycle, state.exposure);
         };
 
 
@@ -700,9 +814,9 @@
                 state[type] = data[e.value];
                 fireState(state, previousState);
                 setPeptideColors();
-                createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo(pageStructure.metaDataDisplay);
+                createDataTable(state.sample, state.peptide, state.cycle, state.exposure);
             });
-        }
+        };
 
         /**
          * Retrieves an image link for displaying in the peptide information section
@@ -732,13 +846,20 @@
          * @return jQuery Object The jquery object that represents the table
          */
         var createDataTable = function(sample, peptide, cycle, exposure) {
-            $('#data-table').remove()
+            if (pageStructure.dataTable !== undefined) {
+                pageStructure.dataTable.empty();
+            }
+
+            pageStructure.dataTable = $('<div>');
 
             // stores the object of a peptide from a sample at a specific cycle and exposure time
             var quadfecta = sample.get({peptide: peptide, cycle: cycle, exposure: exposure})[0],
-                $tableContainer = $('<div id="data-table"></div>'),
+                $tableContainer = pageStructure.dataTable,
                 imageLink = getImageLink(sample, peptide, cycle, exposure),
-                $tableTitle;
+                $tableTitle,
+                customRow,
+                customRowLabel = [],
+                customRowValue = [];
 
             // console.log(imageLink);
 
@@ -750,15 +871,21 @@
             }
 
             $tableTitle.appendTo($tableContainer);
-            
+            customRow = tableFunc(quadfecta);
+
+            for (var i = 0; i < customRow.length; i++) {
+                customRowLabel.push(customRow[i].key);
+                customRowValue.push(customRow[i].value);
+            }
+
             var $table = $('<table class="table table-condensed"></table>').appendTo($tableContainer),
                 $tableHead = $('<thead></thead>').appendTo($table),
                 $tableHeaders = $('<tr><th>Measurement</th><th>Value</th></tr>').appendTo($tableHead),
                 $tableBody = $('<tbody>').appendTo($table),
-                $backgroundDataRow = $('<tr><td>Signal, Background</td><td>' + quadfecta.signal + ', ' + quadfecta.background + '</td></tr>').appendTo($tableBody),
+                $backgroundDataRow = $('<tr><td>' + customRowLabel.join(', ') + '</td><td>' + customRowValue.join(', ') + '</td></tr>').appendTo($tableBody),
                 $cycleDataRow = $('<tr><td>Cycle, Exposure</td><td>' + quadfecta.cycle + ', ' + quadfecta.exposure + '</td></tr>').appendTo($tableBody);
 
-            return $tableContainer;
+            $tableContainer.appendTo(pageStructure.metaDataDisplay);
         };
 
         displaySamples(data, state);
