@@ -16,14 +16,14 @@
             x: [],
             y: [],
             valid: [],
-            equation: {string: equation, robust: true}
-            // equation: {string: equation}
+            // equation: {string: equation, robust: true}
+            equation: {string: equation}
         }, signal = {
             x: [],
             y: [],
             valid: [],
-            equation: {string: equation, robust: true}
-            // equation: {string: equation}
+            // equation: {string: equation, robust: true}
+            equation: {string: equation}
         };
         for (i = 0; i < array.length; i += 1) {
             //signal
