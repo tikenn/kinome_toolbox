@@ -831,7 +831,12 @@
             // stores the object of a peptide from a sample at a specific cycle and exposure time
             var quadfecta = sample.get({peptide: peptide, cycle: cycle, exposure: exposure})[0];
 
-            return baseImgUrl + encodeURIComponent('"' + quadfecta.image +'"');
+            if (quadfecta.image !== undefined) {
+                return baseImgUrl + encodeURIComponent('"' + quadfecta.image +'"');
+            
+            } else {
+                return undefined;
+            }
         }
 
         var createImageButton = function(imageLink) {

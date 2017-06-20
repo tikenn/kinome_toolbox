@@ -13,7 +13,7 @@
  *  * add in equations
  */
 
-(function() {
+(function(exports) {
     'use strict';
 
     var requires = [
@@ -21,7 +21,7 @@
         require('fit')
     ];
 
-    var buildTab = function(div, data) {
+    var buildTab = function(data) {
         var pageStructure = {},
             baseImgUrl = "./image/?img=";
         
@@ -311,8 +311,9 @@
             return Promise.resolve(colorScale);
         };
 
-        pageStructure.dummy = $('<div></div>').appendTo(div);
-        pageStructure.row = $('<div class="row"></div>').appendTo(div);
+        pageStructure.superDiv = $('<div>')
+        pageStructure.peptidePicker = $('<div></div>').appendTo(pageStructure.superDiv);
+        pageStructure.row = $('<div class="row"></div>').appendTo(pageStructure.superDiv);
         pageStructure.signalCol = $('<div id="signal-col" class="col-sm-6"></div>').appendTo(pageStructure.row);
         pageStructure.backgroundCol = $('<div id="background-col" class="col-sm-6"></div>').appendTo(pageStructure.row);
         pageStructure.chartLocations = {};
@@ -325,41 +326,22 @@
         var pp = KINOME.peptidePicker(data);
         pp.change(buildGraphs);
         pp.setColorFunc(colorPeptides);
-        pageStructure.dummy.append(pp.div);
+        pageStructure.peptidePicker.append(pp.div);
+
+        return pageStructure.superDiv;
     };
+
+    // exports.levelOneDisplay = buildTab;
 
     Promise.all(requires).then(function() {
         KINOME.list('levels').map(function(lvl) {
             var data = KINOME.get({level: lvl}),
                 div;
-                
+
             if (data.length) {
                 div = KINOME.addAnalysis('Level ' + lvl + ' Visualize');
-                buildTab(div, data);
+                div.append(buildTab(data));
             }
-        })
-
-        // var data1 = KINOME.get({level:'1.0.0'}),
-        //     data2 = KINOME.get({level:'1.0.1'}),
-        //     data3 = KINOME.get({level: '1.1.2'}),
-        //     div1,
-        //     div2,
-        //     div3;
-
-        // if (data1.length > 0) {
-        //     div1 = KINOME.addAnalysis('Level 1.0.0 Visualize');
-        //     buildTab(div1, data1);
-        // }
-
-        // if (data2.length > 0) {
-        //     div2 = KINOME.addAnalysis('Level 1.0.1 Visualize');
-        //     buildTab(div2, data2);
-        // }
-
-        // if (data3.length > 0) {
-        //     div3 = KINOME.addAnalysis('Level 1.2.1 Visualize');
-        //     buildTab(div3, data3);
-        // }
+        });
     });
-
 }());
