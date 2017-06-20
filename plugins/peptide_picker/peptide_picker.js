@@ -28,7 +28,33 @@
      * @param Object state The initial state of the display based on the current value of following properties: sample, peptide, cycle, exposure
      * @param Function stateFunction A callback function that takes in the current state and allows the user to see the state or use the state if desired
      */
-    var display = function(data, state, stateFunction) {
+    var display = function(data) {
+
+        var pageStructure = {},
+            baseImgUrl = "./image/?img=",
+            previousState,
+            state = {},
+            main = {};
+
+        /* ==============================================================
+         * Major Page Structure
+         * ============================================================== */
+
+        pageStructure.peptideMatrixDummy = $('<div>').appendTo($('<div class="col-sm-6 col-md-5"></div>')
+            .appendTo($('<div class="container" style="height: 0px; visibility: hidden"></div>')
+                .appendTo('body')));
+
+        pageStructure.container = $('<div id="peptide-picker-container" class="container"></div>');
+        pageStructure.row = $('<div class="row"></div>').appendTo(pageStructure.container);
+        pageStructure.peptidePickerCol = $('<div class="col-sm-6 col-md-5"></div>').appendTo(pageStructure.row);
+        pageStructure.metaDataCol = $('<div id="metadata-col" class="col-sm-6 col-md-7 bottom-column"></div>').appendTo(pageStructure.row);
+        pageStructure.cycleExposureRow = $('<div id="cycle-exposure-row" class="row"></div>').appendTo(pageStructure.metaDataCol);
+        pageStructure.metaDataDisplay = $('<div>').appendTo(pageStructure.metaDataCol);
+
+
+        /* ==============================================================
+         * Helper Functions
+         * ============================================================== */
 
         /**
          * Deep copies an object and returns it
@@ -53,22 +79,18 @@
         };
 
         /**
-         * Checks for a change in state based on a current state and a previous state
-         * @param Object state The current state of the system
-         * @param Object previousState The previous state of the system
-         * @return Boolean Returns true if the states are different
+         * Capitalizes the first letter of a string
+         * @param String string The string to capitalize the first letter of
+         * @return String The string with the first letter capitalized
          */
-         var changedState = function(state, previousState) {
-            if (state.sample.name !== previousState.sample.name
-                || state.peptide !== previousState.peptide
-                || state.exposure !== previousState.exposure
-                || state.cycle !== previousState.cycle
-            ) {
-                return true;
-            }
+        var capitalize = function(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        };
 
-            return false;
-         }
+
+        /* ==============================================================
+         * Peptide Picker State
+         * ============================================================== */
 
         /**
          * Define the state of the display, this will allow the display to be preset based on previous information
@@ -78,34 +100,64 @@
          *  * cycle:  the current cycle of the state
          *  * exposure:  the current exposure level of the state
          */
-        state = state || {};
         state.sample = state.sample || data[0];
         state.peptide = state.peptide || null;
         state.cycle = state.cycle || null;
         state.exposure = state.exposure || null;
+        previousState = clone(state);
 
         // if state function not passed, just create empty function
-        stateFunction = stateFunction || function() { return };
-
-        // Create row for picking peptide and displaying metadata
-        var pageStructure = {},
-            baseImgUrl = "./image/?img=",
-            previousState = clone(state);
-            
-        pageStructure.container = $('<div id="peptide-picker-container" class="container"></div>');
-        pageStructure.row = $('<div class="row"></div>').appendTo(pageStructure.container);
-        pageStructure.peptidePickerCol = $('<div class="col-sm-6 col-md-5"></div>').appendTo(pageStructure.row);
-        pageStructure.metaDataCol = $('<div id="metadata-col" class="col-sm-6 col-md-7 bottom-column"></div>').appendTo(pageStructure.row);
-        pageStructure.cycleExposureRow = $('<div id="cycle-exposure-row" class="row"></div>').appendTo(pageStructure.metaDataCol);
+        var stateFunction = function() { return };
 
         /**
-         * Capitalizes the first letter of a string
-         * @param String string The string to capitalize the first letter of
-         * @return String The string with the first letter capitalized
+         * Checks for a change in state based on a current state and a previous state and fires the stateFunction if there is a change
+         * @param Object state The current state of the system
+         * @param Object previousState The previous state of the system
          */
-        var capitalize = function(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
+         var fireState = function(state, previousState) {
+            // console.log(previousState);
+            if (state.sample.name !== previousState.sample.name
+                || state.peptide !== previousState.peptide
+                || state.exposure !== previousState.exposure
+                || state.cycle !== previousState.cycle
+            ) {
+                stateFunction(clone(state));
+            }
+         };
+
+        /* ==============================================================
+         * Main Return Object
+         * ============================================================== */
+        main.div = pageStructure.container;
+        
+        // Create a new state function based on users input
+        main.change = function(customStateFunction) {
+           stateFunction = customStateFunction;
         };
+
+        // Forcibly set the state
+        main.set = function(customState) {
+            var keys,
+                changeFlag;
+
+            keys = Object.keys(state);
+            for (var i = 0; i < keys.length; i++) {
+                if (customState[keys[i]] !== state[keys[i]]) {
+                    state[keys[i]] = customState[keys[i]];
+                    changeFlag = 1;
+                }
+            }
+
+            if (changeFlag) {
+                stateFunction(state);
+            }
+        };
+
+        // 
+
+        /* ==============================================================
+         * Main
+         * ============================================================== */
 
         // expecting level 1.0.1 data for now
         var displaySamples = function(data) {
@@ -120,6 +172,8 @@
 
                 $searchLabel = $('<label for="peptide-search">Peptide Search: </label>').appendTo($searchCol),
                 $searchBox = $('<input type="text" id="peptide-search" class="form-control" placeholder="regexp" />').appendTo($searchCol);
+
+                pageStructure.peptideMatrix = $('<div id="peptide-picker"></div>').appendTo(pageStructure.peptidePickerCol);
 
             // create dropdown
             for (var i = 0; i < data.length; i++) {
@@ -179,21 +233,19 @@
 
             // load in other peptide list when selected from dropdown
             sampleDropdown.change(function(e) {
-                console.log('dropdown changed');
+                // console.log('dropdown changed');
                 currentPeptideListIndex = $(this).val();
                 currentPeptideList = data[currentPeptideListIndex].list('peptides').more();
 
                 // A potential change in the sample's state has occurred, call the stateFunction if there truly is one to reveal the change
                 state.sample = data[currentPeptideListIndex];
-
-                if (changedState(state, previousState)) {
-                    stateFunction(clone(state));
-                }
-
+                fireState(state, previousState);
                 previousState = clone(state);
 
                 currentPeptideList = updatePeptides(currentPeptideList, displayDiv);
             });
+
+
 
             // resize (rebuild) peptide matrix when window is resized
             $(window).resize(function(e) {
@@ -206,7 +258,7 @@
             // Attach peptide search to keypress event
             searchBox.keyup(function(e) {
                 var searchString = $(this).val();
-                console.log(currentPeptideList);
+                // console.log(currentPeptideList);
                 peptideSearch(searchString, currentPeptideList);
             });
 
@@ -234,21 +286,13 @@
          * @param Function findPeptides A callback function that distinguishes peptides found in a search and takes the peptide list and a search string
          */
         var displayPeptides = function(peptideList, displayDiv) {
-            var $peptideMatrixLabel = $('<label id="peptide-picker-label">Peptide: </label>').appendTo(displayDiv),
-                $peptideDisplay = $('<div id="peptide-list"></div>').appendTo(displayDiv),
+            var $peptideMatrixLabel = $('<label id="peptide-picker-label">Peptide: </label>').appendTo(pageStructure.peptideMatrix),
+                $peptideDisplay = $('<div id="peptide-list"></div>').appendTo(pageStructure.peptideMatrix),
                 peptideRowWidth;
 
-            if ($peptideDisplay.is(':visible')) {
-                peptideRowWidth = $peptideDisplay.width();
+            // visible
+            peptideRowWidth = pageStructure.peptideMatrixDummy.width();
             
-            } else {
-                var parent = $('<div class="container"></div>').appendTo('body'),
-                    temp = $('<div>').appendTo($('<div class="col-sm-6 col-md-5"></div>').appendTo(parent));
-                    peptideRowWidth = temp.width();
-
-                parent.remove();
-            }
-
             var $peptideDisplayRow,
                 $cell,
                 spotOpacity = 1,
@@ -273,33 +317,18 @@
                     $peptideDisplayRow = $('<div class="row-number-' + currentRow + '"></div>').appendTo($peptideDisplay);
                 }
 
-                // Set a default color for the cells to revert to when colors are changed
-                peptideList[i].defaultCellColor = '#e7e7e7';
-
-                $cell = $('<span class="microarray-sample" style="width: ' + cellDimension +'px; height: ' + cellDimension + 'px; background-color: ' + peptideList[i].defaultCellColor + '"><button style="width: ' + spotDimension + 'px; height: ' + spotDimension + 'px;"></button></span>')
-                    .appendTo($peptideDisplayRow);
-
-                peptideList[i].cell = $cell;
-                peptideList[i].changeSpotOpacity = function(opacity) {
-                    // console.log(this.cell);
-                    this.cell.children('button').css({opacity: opacity});
-                };
-
-                peptideList[i].changeCellColor = function(color) {
-                    this.cell.css({"background-color": color});
-                }
-
+                $cell = createPeptideCell(peptideList[i], $peptideDisplayRow, cellDimension, spotDimension);
                 createPopover($cell, peptideList[i]);
 
                 if (peptideList[i].name === state.peptide) {
                     previousPeptideClicked = peptideList[i];
-                    selectPeptide(peptideList[i], previousPeptideClicked, peptideList[i].defaultCellColor);
+                    selectPeptide(peptideList[i], previousPeptideClicked, peptideList[i].defaultCellColor, false);
                 }
 
                 // Changes the peptide based on the one that was clicked
                 (function(i) {
                     $cell.click(function(e) {
-                        previousInfo = selectPeptide(peptideList[i], previousPeptideClicked, peptideList[i].defaultCellColor);
+                        previousInfo = selectPeptide(peptideList[i], previousPeptideClicked, peptideList[i].defaultCellColor, true);
 
                         previousPeptideClicked = previousInfo[0];
                         previousCellColor = previousInfo[1];
@@ -310,6 +339,7 @@
             }
 
             createCycleExposureHtmlScaffold(state.sample);
+            // console.log(state.peptide);
             if (state.peptide === null) {
                 displaySampleData(state.sample);
             }
@@ -324,19 +354,46 @@
          * Can be attached to events to allow display update 
          */
         var updatePeptides = function(peptideList, displayDiv) {
-            $('#peptide-picker-label').remove();
-            $('#peptide-list').remove();
-
+            pageStructure.peptideMatrix.empty();
             return displayPeptides(peptideList, displayDiv);
-         };
+        };
 
+        var createPeptideCell = function(peptide, location, cellDimension, spotDimension) {
+            var $cell;
 
-         var selectPeptide = function(peptide, previousPeptideClicked, previousCellColor) {
+            peptide.defaultCellColor = '#e7e7e7';
+
+            $cell = $('<span class="microarray-sample" style="width: ' + cellDimension +'px; height: ' + cellDimension + 'px; background-color: ' + peptide.defaultCellColor + '"><button style="width: ' + spotDimension + 'px; height: ' + spotDimension + 'px;"></button></span>')
+                .appendTo(location);
+
+            peptide.cell = $cell;
+
+            peptide.changeSpotOpacity = function(opacity) {
+                // console.log(this.cell);
+                this.cell.children('button').css({opacity: opacity});
+            };
+
+            peptide.changeSpotColor = function(color) {
+                this.cell.children('button').css({'background-color': color});
+            }
+
+            peptide.changeCellColor = function(color) {
+                this.cell.css({"background-color": color});
+            };
+
+            return $cell;
+        };
+
+         var selectPeptide = function(peptide, previousPeptideClicked, previousCellColor, click) {
             if (previousPeptideClicked !== undefined) {
                 previousPeptideClicked.changeCellColor(previousCellColor);
                 }
 
-            if (previousPeptideClicked && peptide.name === previousPeptideClicked.name) {
+            if (previousPeptideClicked && peptide.name === previousPeptideClicked.name && click) {
+                state.peptide = null;
+                fireState(state, previousState);
+                previousState = clone(state);
+
                 displaySampleData(state.sample);
                 previousCellColor = peptide.defaultCellColor;
                 peptide = undefined;
@@ -467,17 +524,9 @@
 
         var displaySampleData = function(sample) {
             // Update the state of the system due to change in sample
-            state.peptide = null;
-            if (changedState(state, previousState)) {
-                stateFunction(clone(state));
-            }
+            pageStructure.metaDataDisplay.empty();
 
-            previousState = clone(state);
-
-            $('#sample-metadata').remove();
-            $('#peptide-metadata').remove();
-
-            var $dataCol = $('<div id="sample-metadata"></div>').insertAfter(pageStructure.cycleExposureRow),
+            var $dataCol = $('<div id="sample-metadata"></div>').appendTo(pageStructure.metaDataDisplay),
                 $dataColHeader = $('<h2 class="page-header">Sample Information</h2>').appendTo($dataCol),
                 $infoRow = $('<div class="row"></div>').appendTo($dataCol),
                 $leftCol = $('<div class="col-xs-6"></div>').appendTo($infoRow),
@@ -505,20 +554,16 @@
         var displayPeptideData = function(peptide) {
             // Update the state of the system due to change in sample
             state.peptide = peptide.name;
-            if (changedState(state, previousState)) {
-                stateFunction(clone(state));
-            }
-
+            fireState(state, previousState);
             previousState = clone(state);
 
             createCycleExposureHtmlScaffold(state.sample);
 
             // remove and re-create
-            $('#sample-metadata').remove();
-            $('#peptide-metadata').remove();
+            pageStructure.metaDataDisplay.empty();
 
             var peptideData = retrievePeptideData(peptide),
-                $dataCol = $('<div id="peptide-metadata"></div>').insertAfter(pageStructure.cycleExposureRow),
+                $dataCol = $('<div class="metadata"></div>').appendTo(pageStructure.metaDataDisplay),
                 $dataColHeader = $('<h2 class="page-header">Peptide Information</h2>').appendTo($dataCol),
                 $infoRow = $('<div class="row"></div>').appendTo($dataCol),
                 $leftCol = $('<div class="col-xs-6"></div>').appendTo($infoRow),
@@ -547,7 +592,7 @@
             $('<h3>Description</h3>').appendTo($rightCol);
             $('<p>' + peptideData.desc.replace(/\([\s\S]+$/g, '') + '</p>').appendTo($rightCol);
 
-            createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo('#peptide-metadata');
+            createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo(pageStructure.metaDataDisplay);
         };
 
 
@@ -594,10 +639,7 @@
 
             // update the state and reveal if there truly is a change
             state[type] = data[dataDefault];
-            if (changedState(state, previousState)) {
-                stateFunction(clone(state));
-            }
-
+            fireState(state, previousState);
             previousState = clone(state);
 
             $slider.slider({
@@ -615,7 +657,7 @@
                     stateFunction(clone(state));
                 }
                 previousState = clone(state);
-                createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo('#peptide-metadata');
+                createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo(pageStructure.metaDataDisplay);
             });
         }
 
@@ -655,7 +697,7 @@
                 imageLink = getImageLink(sample, peptide, cycle, exposure),
                 $tableTitle;
 
-            console.log(imageLink);
+            // console.log(imageLink);
 
             if (imageLink !== undefined && quadfecta.image !== undefined) {
                 $tableTitle = $('<h3 style="display: inline; vertical-align: middle">Data</h3>&nbsp;&nbsp;&nbsp;&nbsp;<p style="display: inline;">(Image: <a href="' + imageLink + '" target="_blank">' + quadfecta.image + '</a>)</p>');
@@ -677,10 +719,10 @@
         };
 
         displaySamples(data, state);
-        return pageStructure.container;
+        return main;
     };
 
-    exports.peptidePicker = display;
+    exports.peptidePicker2 = display;
 
 }(KINOME));
 

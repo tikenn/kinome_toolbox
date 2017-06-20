@@ -78,8 +78,8 @@ div[class^="row-number-"] {
     width: 100% !important;
 }
 
-#peptide-metadata h3,
-#peptide-metadata p {
+.metadata h3,
+.metadata p {
     overflow-wrap: break-word;
 }
 

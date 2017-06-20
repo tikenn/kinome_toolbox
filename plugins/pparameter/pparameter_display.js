@@ -16,8 +16,12 @@
 (function() {
     'use strict';
 
+    // var requires = [
+    //     require('peptide_picker'),
+    //     require('fit')
+    // ];
     var requires = [
-        require('peptide_picker'),
+        require('http://mischiefmanaged.tk/peptide_picker.js'),
         require('fit')
     ];
     // KINOME.fit(data, 'kinetic | linear')
@@ -106,15 +110,19 @@
          * @return Object The object containing the appropriate 'input' and the appropriate 'data'
          */
         var getData = function(state, dataType) {
+            // console.log(state);
             var dataObj = {};
 
-            if (dataType === 'kinetic') {
+            if (dataType === 'kinetic' && state.kinetic && state.kinetic.peptide) {
                 dataObj.data = state.sample.get(state.kinetic);
                 dataObj.input = 'cycle';
             
-            } else if (dataType === 'linear') {
+            } else if (dataType === 'linear' && state.linear && state.linear.peptide) {
                 dataObj.data = state.sample.get(state.linear);
                 dataObj.input = 'exposure';
+            
+            } else {
+                destroyGraphs();
             }
 
             return dataObj;
@@ -202,14 +210,14 @@
             $('<h3>Model</h3>').appendTo($equationLocation);
             $equationRow = $('<div class="row"></div>').appendTo($equationLocation);
 
-            $equationCol = $('<div class="col-xs-6"></div>').appendTo($equationRow);
+            $equationCol = $('<div class="col-md-6"></div>').appendTo($equationRow);
             $('<h4>Equation</h4>').appendTo($equationCol);
             $equation = $('<div>').append($(KINOME.formatEquation(equation.displayEq(outcome.parameters))));
             $equation.css({
                 'padding-left': '20px'
             }).appendTo($equationCol);
 
-            $R2Col = $('<div class="col-xs-6"></div>').appendTo($equationRow);
+            $R2Col = $('<div class="col-md-6"></div>').appendTo($equationRow);
             $('<h4>R Squared</h4>').appendTo($R2Col);
             $R2 = $('<div>').append(outcome.R2.toFixed(5));
             $R2.css({'padding-left': '20px'}).appendTo($R2Col);
@@ -298,7 +306,9 @@
         pageStructure.chartLocations.exposureBackground = $('<div class="graph"></div>').appendTo(pageStructure.backgroundCol);
 
         // Append the graphs to the page structure started by building the graphs
-        pageStructure.dummy.append(KINOME.peptidePicker(data, null, buildGraphs));
+        var pp = KINOME.peptidePicker2(data);
+        pp.change(buildGraphs);
+        pageStructure.dummy.append(pp.div);
 
     };
 
@@ -308,7 +318,8 @@
             data3 = KINOME.get({level: '1.1.2'}),
             div1,
             div2,
-            div3;
+            div3,
+            div4;
 
         if (data1.length > 0) {
             div1 = KINOME.addAnalysis('Level 1.0.0 Visualize');
@@ -316,8 +327,10 @@
         }
 
         if (data2.length > 0) {
-            div2 = KINOME.addAnalysis('Level 1.0.1 Visualize');
+            div2 = KINOME.addAnalysis('Level 1.0.1 Visualize (2)');
+            div4 = KINOME.addAnalysis('Level 1.0.1 Visualize (2)');
             buildTab(div2, data2);
+            buildTab(div4, data2);
         }
 
         if (data3.length > 0) {
