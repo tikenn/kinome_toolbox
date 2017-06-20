@@ -20,9 +20,9 @@ as urls this works by assuming jQuery is present and that Promises exist
     defaults = {
         name: ['set_up_table'],
         '1.0.0': ['set_up_table', 'outlier_tab', 'pparameter_display'],
-        '1.0.1': ['set_up_table', 'pparameter_display'],
+        '1.0.1': ['set_up_table', 'level_1_display', 'normalize_background_tab'],
         // '1.0.1': ['set_up_table'],
-        '1.1.2': ['set_up_table', 'pparameter_display'],
+        '1.1.2': ['set_up_table', 'level_1_display'],
         '2.0.1': ['set_up_table', 'reproduce', 'anova'],
         '2.1.2': ['set_up_table', 'reproduce', 'anova'],
 
@@ -37,7 +37,8 @@ as urls this works by assuming jQuery is present and that Promises exist
 
         //webpage based stuff
         outlier_tab: './js/client/outlier.js',
-        pparameter_display: './plugins/pparameter/pparameter_display.js',
+        normalize_background_tab: './js/client/normalize_background.js',
+        level_1_display: './plugins/level_1_display/level_1_display.js',
         webpage: './js/client/webpage.js',
         set_up_table: './js/client/set_up_table.js',
         'bs_toggle-js': './js/client/general/bootstrap-toggle.min.js',

@@ -2,13 +2,13 @@
 (function () {
     'use strict';
 
-    var buildFigures, pearsonCorr, requires = [require('peptide_picker'), require('bs_toggle-js')];
+    var buildFigures, requires = [require('peptide_picker'), require('bs_toggle-js')];
     require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
-        var f_stat, peps, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
-                my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, limit, useAllGroups = false, buildTooltip,
-                thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase, collapse;
+        var f_stat, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
+                my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, buildTooltip,
+                thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase;
 
         $page_obj.div = $div;
         //defaults
@@ -26,8 +26,7 @@
         $page_obj.width.appendTo($('<div>', {class: 'row'})
             .appendTo($("<div>", {class: 'container', style: "height:0px;visibility: hidden;"})
                 .appendTo('body')));
-        //get peptide list for later use
-        peps = DATA.list('peptides');
+
 
         retSignal = function (object, type) {
             return object.signal.parameters[my_state_obj[type].param];
@@ -79,21 +78,23 @@
             var pnts = {kinetic: [], linear: []}, j, group, addToPnts;
 
 
-            addToPnts = function (peptide, thisInd) {
+            addToPnts = function (peptide, thisInd, grp) {
                 //get data for all groups
                 pnts.kinetic[thisInd] = pnts.kinetic[thisInd] || [];
                 pnts.linear[thisInd] = pnts.linear[thisInd] || [];
                 pnts.kinetic[thisInd] = pnts.kinetic[thisInd].concat(DATA.get({
                     exposure: state_object.exposure,
                     type: 'kinetic',
-                    group: group,
+                    group: grp,
                     peptide: peptide
+                    // get_samples: true
                 }));
                 pnts.linear[thisInd] = pnts.linear[thisInd].concat(DATA.get({
                     cycle: state_object.cycle,
                     type: 'linear',
-                    group: group,
+                    group: grp,
                     peptide: peptide
+                    // get_samples: true
                 }));
             };
 
@@ -115,11 +116,11 @@
                 $page_obj.linear.f_val.empty();
             } else {
                 for (j = 0; j < group.length; j += 1) {
-                    addToPnts(state_object.peptide, j);
+                    addToPnts(state_object.peptide, j, group[j]);
                 }
             }
             if (pnts.kinetic.length && pnts.linear.length) {
-                console.log(pnts);
+                // console.log(pnts);
                 make_reprofigures(pnts, group);
             }
         };
@@ -145,6 +146,8 @@
                 out[0].push({type: 'string', role: 'tooltip', p: {html: true}});
                 outSimple.push([]);
             }
+
+            console.log('hi',pnts);
 
             for (i = 0; i < pnts[type].length; i += 1) { // by group
                 for (j = 0; j < pnts[type][i].length; j += 1) { // by sample
@@ -178,7 +181,7 @@
                 tooltip: {isHtml: true, trigger: 'both'},
                 seriesType: 'scatter',
                 // series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
-                height: $page_obj.width.width(),
+                height: $page_obj.width.width() * 0.68,
                 width: $page_obj.width.width()
             };
 
@@ -188,26 +191,12 @@
             $page_obj[type].f_val.text("f-test = " + f_stat(pnts.stats).toFixed(5));
         };
 
-        collapse = function (arr) {
-            var i, j, arrOut = [];
-            for (i = 0; i < arr.length; i += 1) {
-                arrOut[i] = [];
-                for (j = 0; j < arr[i].length && arrOut[i].length < 2; j += 1) {
-                    if (typeof arr[i][j] === 'number' && !isNaN(arr[i][j])) {
-                        arrOut[i].push(arr[i][j]);
-                    }
-                }
-            }
-            arrOut.shift(); // leave out header
-            return arrOut;
-        };
-
         make_reprofigures = function (pnts, groups) {
             var xys_lin, xys_kin;
 
             //get points for kinetic
             xys_kin = getOneDataSet(pnts, 'kinetic', 'exposure', groups);
-            console.log(xys_kin);
+            // console.log(xys_kin);
             if (xys_kin.chart.length > 1) {
                 makeOneChart(xys_kin, 'kinetic');
             }
@@ -219,43 +208,6 @@
             }
 
             return;
-        };
-
-        limit = function (param2, type) {
-            var get_obj, all;
-            if (type === 'kinetic') {
-                get_obj = {
-                    type: type,
-                    exposure: param2
-                };
-            } else {
-                get_obj = {
-                    type: type,
-                    cycle: param2
-                };
-            }
-            limits[type] = limits[type] || {};
-            limits[type][currentEQnum[type]] = limits[type][currentEQnum[type]] || {};
-            limits[type][currentEQnum[type]][my_state_obj[type].param] = limits[type][currentEQnum[type]][my_state_obj[type].param] || {};
-            if (limits[type][currentEQnum[type]][my_state_obj[type].param][param2] !== undefined) {
-                return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
-            }
-            all = DATA.get(get_obj).map(function (x) {
-                return equation[type](x, type);
-            }).sort(function (a, b) {
-                return a - b;
-            });
-            console.log(all);
-
-            //get rid of really extreme values
-            while (Math.abs(all[0]) > 100 * Math.abs(all[1])) {
-                all.shift();
-            }
-            while (Math.abs(all[all.length - 1]) > 100 * Math.abs(all[all.length - 2])) {
-                all.pop();
-            }
-            limits[type][currentEQnum[type]][my_state_obj[type].param][param2] = [all[0], all[all.length - 1]];
-            return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
         };
 
         //F-test or ANOVA body
@@ -441,6 +393,7 @@
             // .append($page_obj.groupHeading)
             .append($page_obj.figures);
         pep_picker.change(pep_picked);
+        pep_picker.disableSample();
 
         //finally add on resize function, this makes sure that the figures
         // remain the correct size.

@@ -753,7 +753,11 @@
                         that[i].level.match(get_params.levels) &&
                         that[i].name_id.match(get_params.ids)
                     ) {
-                        ret = ret.concat(that[i].get(get_params));
+                        if (get_params.get_samples) {
+                            ret = ret.concat(that[i]);
+                        } else {
+                            ret = ret.concat(that[i].get(get_params));
+                        }
                     }
                 }
                 return ret;

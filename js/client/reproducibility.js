@@ -116,7 +116,7 @@
                 }
             }
             if (pnts.kinetic.length && pnts.linear.length) {
-                make_reprofigures(pnts);
+                make_reprofigures(pnts, DATA.list('groups'));
             }
         };
 
@@ -133,9 +133,14 @@
                     constant + ": " + pnty[constant] + '</div>';
         };
 
-        getOneDataSet = function (pnts, type, constant) {
-            var i, j, k, x, y, out = [["X", "G0", {type: 'string', role: 'tooltip', p: {html: true}}, "G1", {type: 'string', role: 'tooltip', p: {html: true}}, "G2", {type: 'string', role: 'tooltip', p: {html: true}}, "G3", {type: 'string', role: 'tooltip', p: {html: true}}, 'onetoone']],
+        getOneDataSet = function (pnts, type, constant, groups) {
+            var i, j, k, x, y, out = [["X"]],
                     limits_here, diffPer, gInd, oneOut;
+            for (i = 0; i < groups.length; i += 1) {
+                out[0].push('G' + i);
+                out[0].push({type: 'string', role: 'tooltip', p: {html: true}});
+            }
+            out[0].push('one to one');
             for (i = 0; i < pnts[type].length; i += 1) {
                 for (j = 0; j < pnts[type][i].length; j += 1) {
                     for (k = 0; k < pnts[type][i].length; k += 1) {
@@ -160,8 +165,9 @@
             return out;
         };
 
-        makeOneChart = function (pnts, type) {
-            var dataTable = google.visualization.arrayToDataTable(pnts);
+        makeOneChart = function (pnts, type, lineInd) {
+            var dataTable = google.visualization.arrayToDataTable(pnts), theSeries = {};
+            theSeries[lineInd.toString()] = {color: '#e2431e', type: 'line', enableInteractivity: false};
             var options = {
                 title: 'Reproducibility - ' + uppercase(type),
                 titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', bold: false, fontSize: '24'},
@@ -170,7 +176,7 @@
                 legend: 'none',
                 tooltip: {isHtml: true, trigger: 'both'},
                 seriesType: 'scatter',
-                series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
+                series: theSeries,
                 height: $page_obj.width.width(),
                 width: $page_obj.width.width()
             };
@@ -195,19 +201,19 @@
             return arrOut;
         };
 
-        make_reprofigures = function (pnts) {
+        make_reprofigures = function (pnts, groups) {
             var xys_lin, xys_kin;
 
             //get points for kinetic
-            xys_kin = getOneDataSet(pnts, 'kinetic', 'exposure');
+            xys_kin = getOneDataSet(pnts, 'kinetic', 'exposure', groups);
             if (xys_kin.length > 1) {
-                makeOneChart(xys_kin, 'kinetic');
+                makeOneChart(xys_kin, 'kinetic', groups.length);
             }
 
             //get points for linear
-            xys_lin = getOneDataSet(pnts, 'linear', 'cycle');
+            xys_lin = getOneDataSet(pnts, 'linear', 'cycle', groups);
             if (xys_lin.length > 1) {
-                makeOneChart(xys_lin, 'linear');
+                makeOneChart(xys_lin, 'linear', groups.length);
             }
 
             return;

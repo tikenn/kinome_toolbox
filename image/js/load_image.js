@@ -21,10 +21,10 @@
             hslPnts.push(hsl);
         }
         uniqueL = Object.keys(lightness);
-        range = Math.max(uniqueL.length, 18) + 1; //Maximum number of diff
+        range = Math.max(uniqueL.length, 18) + 3; //Maximum number of diff
                                 //values found was only 16.
         for (i = 0; i < range + 1; i += 1) {
-            out[uniqueL[i]] = Math.log((i / range + 1) * Math.E / 2) * 100;
+            out[uniqueL[i]] = Math.log(((i + 3) / range) * (Math.E - 1) + 1) * 100;
         }
         for (i = 0; i < data.length; i += 4) {
             hsl = hslPnts[j];

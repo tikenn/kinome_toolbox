@@ -1,12 +1,11 @@
 /*global amd_ww, KINOME module google Blob jQuery save ID $ window*/
-var lvl1_outlier;
 (function (exports) {
     "use strict";
     /*
         The point of this is to run the quality filtration package. We will
         see how it goes.
     */
-    var div, buildPage, requires, fitCurvesWorker, equationURL, startFits, displayData, non_linear_model;
+    var DIV, buildPage, requires, fitCurvesWorker, equationURL, startFits, displayData, non_linear_model;
 
     fitCurvesWorker = "./js/lib/fitCurvesWorker.min.js";
     equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
@@ -15,8 +14,8 @@ var lvl1_outlier;
 
     buildPage = function (req_arr) {
         non_linear_model = req_arr[0].replace(/\/\/[^\n]*/g, "").replace(/\s+/g, ' ');
-        div.append('<div>This script fits all of the level 1.0.0 curves, linear first, to detect outliers. If applicable it will add in cycle slopes to fit for the non-linear fits. If not then that will be skipped. This can take several minutes to run and is not designed for more than 40 samples at a time (For that please use the command line interface). Once you start the fitting, two loading bars will appear. When they are complete you will be able to see what points have been removed, look at the fits and link to the appropriate images.<div>');
-        $('<button>', {style: "margin: 15px;", class: "btn btn-primary btn-lg", text: "Begin Fits."}).click(startFits).appendTo($('<div>', {class: 'text-center'}).appendTo(div));
+        DIV.append('<div>This script fits all of the level 1.0.0 curves, linear first, to detect outliers. If applicable it will add in cycle slopes to fit for the non-linear fits. If not then that will be skipped. This can take several minutes to run and is not designed for more than 40 samples at a time (For that please use the command line interface). Once you start the fitting, two loading bars will appear. When they are complete you will be able to see what points have been removed, look at the fits and link to the appropriate images.<div>');
+        $('<button>', {style: "margin: 15px;", class: "btn btn-primary btn-lg", text: "Begin Fits."}).click(startFits).appendTo($('<div>', {class: 'text-center'}).appendTo(DIV));
     };
 
     startFits = function (evt) {
@@ -25,7 +24,7 @@ var lvl1_outlier;
         data = KINOME.get({level: '1.0.0'});
 
         barBuilder = function (msg) {
-            div.append('<div>', {text: msg});
+            DIV.append('<div>', {text: msg});
             var bar = $('<div>', {
                 class: "progress-bar",
                 role: "progressbar",
@@ -33,7 +32,7 @@ var lvl1_outlier;
                 "aria-valuemin": "0",
                 "aria-valuemax": "100",
                 style: "width: 0%"
-            }).appendTo($('<div class="progress"></div>').appendTo(div));
+            }).appendTo($('<div class="progress"></div>').appendTo(DIV));
             return function (counts) {
                 var interval, percent;
                 interval = setInterval(function () {
@@ -61,20 +60,25 @@ var lvl1_outlier;
 
         filterPromise.then(function (data) {
             displayData(data);
-            console.log('all fit?', data);
+            // console.log('all fit?', data);
         });
     };
 
-    displayData = function (data) {
-        var options = {}, selected = {};
-        lvl1_outlier = data;
-        return [data, options, selected];
+    displayData = function (outlier_removed) {
+        // var options = {}, selected = {};
+        // var samps = DATA.list('names');
+
+        // $page_build.img_picker = $('<div>', {class: 'row'});
+        // $page_build.samp_picker = $('<input>', {class: 'form-control'});
+        // $
+
+        return [outlier_removed];
     };
 
     //Finally get things started
     (function () {
         //Actually set up page elements
-        div = KINOME.addAnalysis('Find Outliers');
+        DIV = KINOME.addAnalysis('Find Outliers');
 
         //Now require scripts then get going.
         Promise.all(requires).then(buildPage);
