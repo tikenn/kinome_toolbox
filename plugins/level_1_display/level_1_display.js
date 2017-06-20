@@ -16,15 +16,10 @@
 (function() {
     'use strict';
 
-    // var requires = [
-    //     require('peptide_picker'),
-    //     require('fit')
-    // ];
     var requires = [
-        require('http://mischiefmanaged.tk/peptide_picker.js'),
+        require('peptide_picker'),
         require('fit')
     ];
-    // KINOME.fit(data, 'kinetic | linear')
 
     var buildTab = function(div, data) {
         var pageStructure = {},
@@ -295,6 +290,27 @@
             });
         };
 
+        var colorPeptides = function(peptideList, state) {
+            var max = -Infinity,
+                colorScale = [],
+                logDiff;
+
+            for (var i = 0; i < peptideList.length; i++) {
+                logDiff = Math.log(peptideList[i].signal / peptideList[i].background) / Math.log(2);
+                max = (logDiff > max)
+                    ? logDiff
+                    : max;
+
+                colorScale.push(logDiff);
+            }
+
+            for (var i = 0; i < colorScale.length; i++) {
+                colorScale[i] = colorScale[i] / max;
+            }
+
+            return Promise.resolve(colorScale);
+        };
+
         pageStructure.dummy = $('<div></div>').appendTo(div);
         pageStructure.row = $('<div class="row"></div>').appendTo(div);
         pageStructure.signalCol = $('<div id="signal-col" class="col-sm-6"></div>').appendTo(pageStructure.row);
@@ -308,32 +324,42 @@
         // Append the graphs to the page structure started by building the graphs
         var pp = KINOME.peptidePicker(data);
         pp.change(buildGraphs);
+        pp.setColorFunc(colorPeptides);
         pageStructure.dummy.append(pp.div);
-
     };
 
     Promise.all(requires).then(function() {
-        var data1 = KINOME.get({level:'1.0.0'}),
-            data2 = KINOME.get({level:'1.0.1'}),
-            data3 = KINOME.get({level: '1.1.2'}),
-            div1,
-            div2,
-            div3;
+        KINOME.list('levels').map(function(lvl) {
+            var data = KINOME.get({level: lvl}),
+                div;
+                
+            if (data.length) {
+                div = KINOME.addAnalysis('Level ' + lvl + ' Visualize');
+                buildTab(div, data);
+            }
+        })
 
-        if (data1.length > 0) {
-            div1 = KINOME.addAnalysis('Level 1.0.0 Visualize');
-            buildTab(div1, data1);
-        }
+        // var data1 = KINOME.get({level:'1.0.0'}),
+        //     data2 = KINOME.get({level:'1.0.1'}),
+        //     data3 = KINOME.get({level: '1.1.2'}),
+        //     div1,
+        //     div2,
+        //     div3;
 
-        if (data2.length > 0) {
-            div2 = KINOME.addAnalysis('Level 1.0.1 Visualize (2)');
-            buildTab(div2, data2);
-        }
+        // if (data1.length > 0) {
+        //     div1 = KINOME.addAnalysis('Level 1.0.0 Visualize');
+        //     buildTab(div1, data1);
+        // }
 
-        if (data3.length > 0) {
-            div3 = KINOME.addAnalysis('Level 1.2.1 Visualize');
-            buildTab(div3, data3);
-        }
+        // if (data2.length > 0) {
+        //     div2 = KINOME.addAnalysis('Level 1.0.1 Visualize');
+        //     buildTab(div2, data2);
+        // }
+
+        // if (data3.length > 0) {
+        //     div3 = KINOME.addAnalysis('Level 1.2.1 Visualize');
+        //     buildTab(div3, data3);
+        // }
     });
 
 }());
