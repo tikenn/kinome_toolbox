@@ -233,16 +233,19 @@
                 return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
             }
             all = DATA.get(get_obj).map(function (x) {
-                var sol = equation[type](x, type);
-                if (sol < -2.28) {
-                    console.log(sol, type, x);
-                }
-                return sol;
+                return equation[type](x, type);
             }).sort(function (a, b) {
                 return a - b;
             });
             console.log(all);
 
+            //get rid of really extreme values
+            while (Math.abs(all[0]) > 100 * Math.abs(all[1])) {
+                all.shift();
+            }
+            while (Math.abs(all[all.length - 1]) > 100 * Math.abs(all[all.length - 2])) {
+                all.pop();
+            }
             limits[type][currentEQnum[type]][my_state_obj[type].param][param2] = [all[0], all[all.length - 1]];
             return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
         };
@@ -439,7 +442,8 @@
                 dataIn[i][1] = parseFloat(dataIn[i][1]);
                 if (
                     typeof dataIn[i][0] === 'number' && !isNaN(dataIn[i][0]) &&
-                    typeof dataIn[i][1] === 'number' && !isNaN(dataIn[i][1])
+                    typeof dataIn[i][1] === 'number' && !isNaN(dataIn[i][1]) &&
+                    isFinite(dataIn[i][0]) && isFinite(dataIn[i][1])
                 ) {
                     data.push([dataIn[i][0], dataIn[i][1]]);
                 }
