@@ -1,5 +1,5 @@
 /*global amd_ww, KINOME module google Blob jQuery save ID $ window*/
-
+var lvl1_outlier;
 (function (exports) {
     "use strict";
     /*
@@ -67,6 +67,7 @@
 
     displayData = function (data) {
         var options = {}, selected = {};
+        lvl1_outlier = data;
         return [data, options, selected];
     };
 

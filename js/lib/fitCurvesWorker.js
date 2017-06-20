@@ -1,5 +1,4 @@
 /*global self, Math*/
-/*jslint evil: true, todo: true */
 
 // TODO: check user input...
 //Container for all code. Will be run on load
@@ -210,34 +209,55 @@
     }());
 
     robustFit = function (robustCount, fitFunc, X, y, o1, o2, o3, o4) {
-        var i, fitAll, fits = [], sX, sy, k, R2, R2_max, fit, f0;
+        var i, R2_sse, adjR2, fitAll, sX, sy, k, R2, R2_max, fit, f0, R2_arr = [], R2_sum = 0, maxR2;
         if (o2) {
             k = o2.length;
         } else {
             k = 1;
         }
-        f0 = fitFunc(X, y, o1, o2, o3, o4);
+
+        adjR2 = function (fit) {
+            return 1-(1 - fit.R2) * (fit.errors.length - 1) / (fit.errors.length - fit.parameters.length - 1);
+        };
+
         fitAll = fitFunc(X, y, o1, o2, o3, o4);
         fitAll.remove = -1;
+        R2_sum += adjR2(fitAll);
+        R2_arr.push([adjR2(fitAll), fitAll, -1]);
 
-        R2_max = fitAll.R2 * (X.length - 1) / (X.length - k - 1);
+        //Fit leaving one out each time
         for (i = 0; i < X.length; i += 1) {
             sX = JSON.parse(JSON.stringify(X));
             sy = JSON.parse(JSON.stringify(y));
             sX.splice(i, 1);
             sy.splice(i, 1);
             fit = fitFunc(sX, sy, o1, o2, o3, o4);
-            R2 = fit.R2 * (sX.length - 1) / (sX.length - k - 1);
-            if (R2_max < R2) {
-                R2_max = R2;
-                fitAll = fit;
-                fitAll.remove = i.toString();
-            }
-            fits.push(fit);
+            R2_sum += adjR2(fit);
+            R2_arr.push([adjR2(fit), fit, i]);
+        }
+
+        //Now go back and see if one R2 is significantly higher than the others
+        R2_arr = R2_arr.sort(function (a, b) {
+            return a[0] - b[0];
+        });
+        maxR2 = R2_arr.pop();
+        R2_sum -= maxR2[0];
+        R2_sum = R2_sum / R2_arr.length; //average of non maxR2
+        R2_sse = R2_arr.map(function (a) {
+            return Math.pow(R2_sum - a[0], 2);
+        }).reduce(function (a, b) {
+            return a + b;
+        });
+
+        //If it make a huge difference
+        if (R2_sum + Math.sqrt(R2_sse / R2_arr.length) * 2 < maxR2[0]) {
+            fitAll = maxR2[1];
+            fitAll.remove = maxR2[2];
         }
 
         //now actual return
         fitAll.robust = robustCount;
+        // fitAll.tempR = [R2_sse, R2_sum, maxR2, R2_arr, R2_sum + Math.sqrt(R2_sse / (R2_arr.length - 1)) * 2];
         // fitAll.rob_fit = {
         //     all: JSON.parse(JSON.stringify(f0)),
         //     rem: JSON.parse(JSON.stringify(fits))

@@ -101,6 +101,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         if (!match && diff < default_limit) {
             useit = true;
         }
+        // return false; // turns cache off
         return useit;
     };
 
