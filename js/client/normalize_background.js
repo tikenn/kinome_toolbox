@@ -5,7 +5,7 @@
         The point of this is to run the quality filtration package. We will
         see how it goes.
     */
-    var $page_build = {}, buildSlider, buildPage, requires, normalize_background_worker, startFits, displayData;
+    var $page_build = {}, createGradient, buildCanvas, buildSlider, buildPage, requires, normalize_background_worker, startFits, displayData;
 
     normalize_background_worker = "./js/lib/normalize_background_worker.min.js";
     // equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
@@ -88,9 +88,67 @@
         return retDiv;
     };
 
+    buildCanvas = function (data, min_back, max_back) {
+        var sqr_width = $page_build.width.width(),
+            canvas = document.createElement('canvas'),
+            ctx,
+            i,
+            r_max = 0,
+            c_max = 0,
+            sqr_dim;
+
+        for (i = 0; i < data.length; i += 1) {
+            r_max = Math.max(data[i].spot_row, r_max); //indexed from 1
+            c_max = Math.max(data[i].spot_col, c_max); //indexed from 1
+        }
+
+        canvas.width = sqr_width;
+        canvas.height = sqr_width * r_max / c_max;
+        sqr_dim = sqr_width / c_max;
+
+        ctx = canvas.getContext('2d');
+        for (i = 0; i < data.length; i += 1) {
+            console.log((data[i].background - min_back) / (max_back - min_back));
+            ctx.fillStyle = createGradient((data[i].background - min_back) / (max_back - min_back));
+            ctx.fillRect(
+                sqr_dim * (data[i].spot_col - 1),
+                sqr_dim * (data[i].spot_row - 1),
+                sqr_dim,
+                sqr_dim
+            );
+        }
+
+        return $(canvas).css({width: "100%"});
+    };
+
+    createGradient = function (number) {
+        var hue,
+            minHue = 60,
+            maxHue = 255,
+            hueRange = maxHue - minHue,
+            saturation,
+            minSaturation = 70,
+            maxSaturation = 100 - minSaturation,
+            lightness,
+            minLightness = 30,
+            maxLightness = 60 - minLightness,
+            eScale = Math.exp(number) / Math.E;
+
+        hue = hueRange * Math.pow(1 - number, 2) + minHue;
+        saturation = eScale * maxSaturation + minSaturation;
+        lightness = eScale * maxLightness + minLightness;
+
+        return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+    };
+
     displayData = function (data_in, data_out, div) {
         // var options = {};
         var i, samps = data_in.list('names'), selected = {}, buildPageParts, update, buildImage;
+
+        $page_build.width = $('<div>', {class: 'col col-sm-6 col-xs-12'});
+        $page_build.width.appendTo($('<div>', {class: 'row'})
+            .appendTo($("<div>", {class: 'container', style: "height:0px;visibility: hidden;"})
+                .appendTo('body')));
 
         buildPageParts = function () {
             $page_build.cyclePicker.empty();
@@ -101,28 +159,35 @@
         };
 
         buildImage = function () {
-            console.log(selected);
-            console.log('building');
+            var inSamp = selected.sample[0].get(selected);
+            var outSamp = selected.sample[1].get(selected);
+
+            //find max and min backgrounds
+            var maxBack = -Infinity, minBack = Infinity;
+            inSamp.map(function (x) {
+                maxBack = Math.max(x.background, maxBack);
+                minBack = Math.min(x.background, minBack);
+            });
+            outSamp.map(function (x) {
+                maxBack = Math.max(x.background, maxBack);
+                minBack = Math.min(x.background, minBack);
+            });
+
+            buildCanvas(inSamp, minBack, maxBack).appendTo($page_build.canvasIn);
+            buildCanvas(outSamp, minBack, maxBack).appendTo($page_build.canvasOut);
+
+            return [inSamp, outSamp];
         };
 
         //cycle picker
         update = function (key, value) {
-            var j, c;
             if (selected[key] !== value) {
                 selected[key] = value;
                 if (key === 'name') {
-                    selected.sample = [];
-                    c = 0;
-                    for (j = 0; c < 2 && j < data_in.length; j += 1) {
-                        if (data_in[j].name === value) {
-                            selected.sample[0] = data_in[j];
-                            c += 1;
-                        }
-                        if (data_out[j].name === value) {
-                            selected.sample[1] = data_in[j];
-                            c += 1;
-                        }
-                    }
+                    selected.sample = [
+                        data_in.get({name: value, get_samples: true})[0],
+                        data_out.get({name: value, get_samples: true})[0]
+                    ];
                     buildPageParts();
                 } else {
                     buildImage();
@@ -145,8 +210,8 @@
             $page_build.samp_picker.append('<option value="' + samps[i] + '" >' + samps[i] + '</option>');
         }
         $page_build.samp_picker.appendTo($('<div>', {class: 'col-sm-4 col-xs-12'}).appendTo($page_build.img_picker));
-        $page_build.samp_picker.change(function (evt) {
-            console.log(evt);
+        $page_build.samp_picker.change(function () {
+            update('name', $(this).val());
         });
 
         //set up for slide bars
