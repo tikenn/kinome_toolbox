@@ -1,9 +1,12 @@
 /**
- * Peptide Parameter Display
+ * Peptide Level 1 Display
  * Copyright 2017 Tim Kennell Jr.
  * Licensed under the MIT License (http://opensource.org/licenses/MIT)
  **
- * Returns 
+ * Returns a div that contains all of the level 1 display information
+ **
+ * Dependencies:
+ *  * peptide picker
  */
 
 (function(exports) {

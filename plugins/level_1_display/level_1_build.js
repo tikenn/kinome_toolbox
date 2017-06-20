@@ -1,5 +1,12 @@
 /**
- * Calls the level 1 display file and runs it
+ * Peptide Level 1 Display
+ * Copyright 2017 Tim Kennell Jr.
+ * Licensed under the MIT License (http://opensource.org/licenses/MIT)
+ **
+ * Calls the level 1 display function that creates displays for all level 1 data
+ **
+ * Dependencies:
+ *  * peptide picker
  */
 
 requires = [require('level_1_display')];
