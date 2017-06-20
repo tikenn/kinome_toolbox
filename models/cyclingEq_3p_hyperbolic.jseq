@@ -5,34 +5,58 @@
         return (1 / (1 / (P[0] * (xVector[0] - P[1])) + 1 / P[2]));
     },
     setInitial: function (x_vector, y_values) {
-        var vi, Ym, c, yMax;
+        var vi, Ym, c, yMax, x_inv = [], y_inv = [], ysum = 0, xsum = 0, x2sum = 0, y2sum = 0, xysum = 0, n;
 
-        yMax = Math.max.apply(null, y_values);
+        //yMax = Math.max.apply(null, y_values);
 
-        if (y_values.length > 3) {
-            vi = 0.16174 * y_values[1] + 0.0061933 * y_values[3];
-        } else {
-            //For the off chance that < 3 values exist for a
-            // given line, this will allow us to get initial values
-            // for as few as 1 value.
-            vi = 0.16989 * y_values[1];
-        }
-        if (yMax < 400) {
-            Ym = 1.6974 * yMax;
-        } else if (y_values.length > 7) {
-            Ym = 7.8725 * y_values[4] + 1.7523 * y_values[6];
-            Ym = Ym > 1100
-                ? Ym - 1063
-                : Ym;
-        } else {
-            //This is for when there are only 2 or so values
-            // that are good, really >3 are required, but this gets
-            // us a return value at least
-            Ym = y_values[1] * 29.329;
-        }
+        //assume c is 27.6
         c = 27.6;
-                //Determined by looking at the distribution of
-                // this value in well fit results.
+
+        //for all possible values transform the data to linerize it.
+        for (i = 0; i < x_vector.length; i += 1) {
+            // non 0
+            if (x_vector[i][0] - c && y_values[i]) {
+                x_inv.push(1 / (x_vector[i][0] - c));
+                y_inv.push(1 / y_values[i]);
+            }
+        }
+
+
+        n = x_inv.length;
+        //Now linear fit transformed values that remain
+        for (i = 0; i < n; i += 1) {
+            ysum += y_inv[i];
+            xsum += x_inv[i];
+            x2sum += x_inv[i] * x_inv[i];
+            y2sum += y_inv[i] * y_inv[i];
+            xysum += x_inv[i] * y_inv[i];
+        }
+
+        vi = (xysum - xsum * ysum / n) / (x2sum - xsum * xsum / n);
+        Ym = (ysum - vi * xsum) / n;
+
+        if (vi === 0) {
+            //if it cannot be inverted, then give it a large value for typical domain
+            vi = 90;
+        } else {
+            vi = 1 / vi;
+        }
+        if (vi < 0) {
+            vi = 1;
+        }
+
+
+        if (Ym === 0) {
+            Ym = 4000;
+        } else {
+            Ym = 1 / Ym;
+        }
+        if (Ym < -500) {
+            Ym = 500;
+        } else if (Ym < 0) {
+            Ym = 400;
+        }
+ 
         return [vi, c, Ym];
     },
     description: 'Equation for fitting kinetic data.',

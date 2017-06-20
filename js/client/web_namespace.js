@@ -26,7 +26,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         '2.1.2': ['set_up_table', 'reproduce'],
 
         //library functions
-        peptide_picker: 'http://mischiefmanaged.tk/peptide_picker.js?_=1497745198870',
+        peptide_picker: './plugins/peptide_picker/peptide_picker.js',
         shiftToMin: './js/web_main.js',
         amd_ww: './js/lib/amd_ww.3.1.0.min.js',
         enrich_kinome: './js/lib/enrich_kinome.js',
@@ -36,7 +36,7 @@ as urls this works by assuming jQuery is present and that Promises exist
 
         //webpage based stuff
         outlier_tab: './js/client/outlier.js',
-        pparameter_display: 'http://mischiefmanaged.tk/pparameter_display.js',
+        pparameter_display: './plugins/pparameter/pparameter_display.js',
         webpage: './js/client/webpage.js',
         set_up_table: './js/client/set_up_table.js',
         'bs_toggle-js': './js/client/general/bootstrap-toggle.min.js',
@@ -45,7 +45,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         fit: './js/client/fit_one.js',
         'bs_slider-js': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js',
         'bs_slider-css': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css',
-        'peptide_picker-css': 'http://mischiefmanaged.tk/peptide_picker.css'
+        'peptide_picker-css': './plugins/peptide_picker/peptide_picker.css'
     };
 
     //set globals
@@ -101,8 +101,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         if (!match && diff < default_limit) {
             useit = true;
         }
-        // return false; // turns cache off
-        return useit;
+        return false; // turns cache off
+        // return useit;
     };
 
     reqDone = (function () {
