@@ -226,15 +226,28 @@
          * @return Array An array of two pieces that that contains key value pair objects
          */
         var defaultTableFunc = function(quadfecta) {
+            if (quadfecta) {
+                return [
+                    {
+                        "key": "Signal",
+                        "value": quadfecta.signal
+                    },
+                    {
+                        "key": "Background",
+                        "value": quadfecta.background
+                    }
+                ];
+            }
+
             return [
-                {
-                    "key": "Signal",
-                    "value": quadfecta.signal
-                },
-                {
-                    "key": "Background",
-                    "value": quadfecta.background
-                }
+                    {
+                        "key": "Signal",
+                        "value": undefined
+                    },
+                    {
+                        "key": "Background",
+                        "value": undefined
+                    }
             ];
         };
 
