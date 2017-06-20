@@ -34,7 +34,8 @@
             baseImgUrl = "./image/?img=",
             previousState,
             state = {},
-            main = {};
+            main = {},
+            peptideMatrix;
 
         /* ==============================================================
          * Major Page Structure
@@ -125,14 +126,45 @@
             }
          };
 
+
+        /* ==============================================================
+         * Default color functions
+         * ============================================================== */
+
+        var defaultColorPeptideFunc = function(peptideList, state) {
+            var colorArray = [];
+            for (var i = 0; i < peptideList.length; i++) {
+                colorArray.push('#191919');
+            }
+
+            return Promise.resolve(colorArray);
+        };
+
+        var colorPeptideFunc = defaultColorPeptideFunc;
+
+        var colorPeptides = function(peptideColors) {
+            for (var i = 0; i < peptideColors.length; i++) {
+                peptideMatrix[i].changeSpotColor(peptideColors[i]);
+            }
+        };
+
+        var setPeptideColors = function() {
+            var peptideList = state.sample.get({cycle: state.cycle, exposure: state.exposure});
+            colorPeptideFunc(peptideList, state).then(function(peptideColors) {
+                colorPeptides(peptideColors);
+            });
+        };
+
         /* ==============================================================
          * Main Return Object
          * ============================================================== */
+
         main.div = pageStructure.container;
         
         // Create a new state function based on users input
         main.change = function(customStateFunction) {
            stateFunction = customStateFunction;
+           fireState(clone(state), {sample: {name: null}});
         };
 
         // Forcibly set the state
@@ -153,7 +185,17 @@
             }
         };
 
-        // 
+        main.disableSample = function() {
+            pageStructure.peptidePickerCol.children().children().children('select').prop('disabled', true);
+        };
+
+        main.setColorFunc = function(customColorFunc) {
+            if (typeof customColorFunc === 'function') {
+                colorPeptideFunc = customColorFunc;
+            } else {
+                colorPeptideFunc = defaultColorPeptideFunc;
+            }
+        };
 
         /* ==============================================================
          * Main
@@ -346,6 +388,9 @@
 
             // Maintain state if it exists
             peptideSearch($('#peptide-search').val(), peptideList);
+            setPeptideColors();
+
+            peptideMatrix = peptideList;
             return peptideList;
         };
 
@@ -375,7 +420,7 @@
 
             peptide.changeSpotColor = function(color) {
                 this.cell.children('button').css({'background-color': color});
-            }
+            };
 
             peptide.changeCellColor = function(color) {
                 this.cell.css({"background-color": color});
@@ -384,7 +429,7 @@
             return $cell;
         };
 
-         var selectPeptide = function(peptide, previousPeptideClicked, previousCellColor, click) {
+        var selectPeptide = function(peptide, previousPeptideClicked, previousCellColor, click) {
             if (previousPeptideClicked !== undefined) {
                 previousPeptideClicked.changeCellColor(previousCellColor);
                 }
@@ -407,7 +452,7 @@
             }
 
             return [peptide, previousCellColor];
-         };
+        };
 
         /**
          * Creates dynamic popovers for each of the microarray cells
@@ -654,6 +699,7 @@
             }).on('slideStop', function(e) {
                 state[type] = data[e.value];
                 fireState(state, previousState);
+                setPeptideColors();
                 createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo(pageStructure.metaDataDisplay);
             });
         }
