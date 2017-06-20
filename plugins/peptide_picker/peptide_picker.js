@@ -293,6 +293,7 @@
         main.setColorFunc = function(customColorFunc) {
             if (typeof customColorFunc === 'function') {
                 colorPeptideFunc = customColorFunc;
+                setPeptideColors();
                 pageStructure.gradientScale.show();
             } else {
                 colorPeptideFunc = defaultColorPeptideFunc;
