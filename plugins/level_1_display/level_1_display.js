@@ -3,7 +3,7 @@
  * Copyright 2017 Tim Kennell Jr.
  * Licensed under the MIT License (http://opensource.org/licenses/MIT)
  **
- * 
+ * Returns 
  */
 
 (function(exports) {
@@ -337,4 +337,4 @@
     //         }
     //     });
     // });
-}());
+}(KINOME));

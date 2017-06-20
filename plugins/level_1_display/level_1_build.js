@@ -11,7 +11,7 @@ Promise.all(requires).then(function() {
 
         if (data.length) {
             div = KINOME.addAnalysis('Level ' + lvl + ' Visualize');
-            div.append(buildTab(data));
+            div.append(KINOME.levelOneDisplay(data));
         }
     });
 });
