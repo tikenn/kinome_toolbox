@@ -6,13 +6,6 @@
  * 
  */
 
-/**
- * TODO:
- *  * add in extra points for 'good' vs. 'bad' data (same graph, different color)
- *  * add in fit
- *  * add in equations
- */
-
 (function(exports) {
     'use strict';
 
@@ -331,17 +324,17 @@
         return pageStructure.superDiv;
     };
 
-    // exports.levelOneDisplay = buildTab;
+    exports.levelOneDisplay = buildTab;
 
-    Promise.all(requires).then(function() {
-        KINOME.list('levels').map(function(lvl) {
-            var data = KINOME.get({level: lvl}),
-                div;
+    // Promise.all(requires).then(function() {
+    //     KINOME.list('levels').map(function(lvl) {
+    //         var data = KINOME.get({level: lvl}),
+    //             div;
 
-            if (data.length) {
-                div = KINOME.addAnalysis('Level ' + lvl + ' Visualize');
-                div.append(buildTab(data));
-            }
-        });
-    });
+    //         if (data.length) {
+    //             div = KINOME.addAnalysis('Level ' + lvl + ' Visualize');
+    //             div.append(buildTab(data));
+    //         }
+    //     });
+    // });
 }());
