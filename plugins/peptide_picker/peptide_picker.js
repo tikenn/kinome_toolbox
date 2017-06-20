@@ -653,10 +653,7 @@
                 }
             }).on('slideStop', function(e) {
                 state[type] = data[e.value];
-                if (changedState(state, previousState)) {
-                    stateFunction(clone(state));
-                }
-                previousState = clone(state);
+                fireState(state, previousState);
                 createDataTable(state.sample, state.peptide, state.cycle, state.exposure).appendTo(pageStructure.metaDataDisplay);
             });
         }
