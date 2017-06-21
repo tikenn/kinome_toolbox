@@ -19,8 +19,8 @@
 
     require('bs_slider-js');
     require('bs_slider-css');
-    require('peptide_picker-css', 'css', false),
-    require('http://mischiefmanaged.tk/gradient.js');
+    require('peptide_picker-css', 'css', false);
+    require('gradient');
 
     /**
      * Function that displays peptide data at a given level
