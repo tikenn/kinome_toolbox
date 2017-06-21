@@ -5,7 +5,7 @@
         The point of this is to run the quality filtration package. We will
         see how it goes.
     */
-    var $page_build = {}, createGradient, buildCanvas, buildSlider, buildPage, requires, normalize_background_worker, startFits, displayData;
+    var $page_build = {}, createGradient, buildCanvas, buildSlider, getPlotPnts, buildPage, requires, normalize_background_worker, startFits, displayData;
 
     normalize_background_worker = "./js/lib/normalize_background_worker.min.js";
     // equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
@@ -93,6 +93,7 @@
             canvas = document.createElement('canvas'),
             ctx,
             i,
+            scale = 0.8,
             r_max = 0,
             c_max = 0,
             sqr_dim;
@@ -102,9 +103,9 @@
             c_max = Math.max(data[i].spot_col, c_max); //indexed from 1
         }
 
-        canvas.width = sqr_width;
-        canvas.height = sqr_width * r_max / c_max;
-        sqr_dim = sqr_width / c_max;
+        canvas.width = sqr_width * scale; // 80% of the column
+        canvas.height = sqr_width * r_max / c_max * scale;
+        sqr_dim = sqr_width / c_max * scale;
 
         ctx = canvas.getContext('2d');
         for (i = 0; i < data.length; i += 1) {
@@ -118,7 +119,7 @@
             );
         }
 
-        return $(canvas).css({width: "100%"});
+        return $(canvas).css({width: "70%", 'margin-top': '15px'});
     };
 
     createGradient = function (number) {
@@ -143,7 +144,7 @@
 
     displayData = function (data_in, data_out, div) {
         // var options = {};
-        var i, samps = data_in.list('names'), selected = {}, buildPageParts, update, buildImage;
+        var i, buildChart, samps = data_in.list('names'), selected = {}, buildPageParts, update, buildImage;
 
         $page_build.width = $('<div>', {class: 'col col-sm-6 col-xs-12'});
         $page_build.width.appendTo($('<div>', {class: 'row'})
@@ -158,17 +159,39 @@
             buildImage();
         };
 
+        getPlotPnts = function (arr) {
+            var ii, ret = [['signal', 'background', {type: 'string', role: 'tooltip'}]];
+            for (ii = 0; ii < arr.length; ii += 1) {
+                ret.push([
+                    arr[ii].signal, arr[ii].background,
+                    "(" + arr[ii].signal.toFixed(1) + ', ' +
+                            arr[ii].background.toFixed(1) + ')\nPeptide: '
+                            + arr[ii].peptide
+                ]);
+            }
+            return ret;
+        };
+
         buildImage = function () {
             var inSamp = selected.sample[0].get(selected);
             var outSamp = selected.sample[1].get(selected);
+            var getObj = {exposure: selected.exposure};
+
+            $page_build.canvasIn.empty();
+            $page_build.canvasOut.empty();
+            $page_build.gplot1.empty();
+            $page_build.gplot2.empty();
 
             //find max and min backgrounds
             var maxBack = -Infinity, minBack = Infinity;
-            inSamp.map(function (x) {
+            if (selected.cycle === 'Post Wash') {
+                getObj.cycle = 'Post Wash';
+            }
+            data_in.get(getObj).map(function (x) {
                 maxBack = Math.max(x.background, maxBack);
                 minBack = Math.min(x.background, minBack);
             });
-            outSamp.map(function (x) {
+            data_out.get(getObj).map(function (x) {
                 maxBack = Math.max(x.background, maxBack);
                 minBack = Math.min(x.background, minBack);
             });
@@ -176,7 +199,34 @@
             buildCanvas(inSamp, minBack, maxBack).appendTo($page_build.canvasIn);
             buildCanvas(outSamp, minBack, maxBack).appendTo($page_build.canvasOut);
 
+            console.log(inSamp);
+
+            buildChart(getPlotPnts(inSamp), "In", $page_build.gplot1[0]);
+            buildChart(getPlotPnts(outSamp), "Out", $page_build.gplot2[0]);
+
             return [inSamp, outSamp];
+        };
+
+        buildChart = function (pnts, type, thisDiv) {
+            console.log(pnts);
+            var dataTable = google.visualization.arrayToDataTable(pnts);
+            var options = {
+                title: 'Signal v Background ' + type,
+                titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', bold: false, fontSize: '24'},
+                hAxis: {title: 'Signal', titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
+                vAxis: {title: 'Background', titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
+                legend: 'none',
+                // tooltip: {isHtml: true, trigger: 'both'},
+                seriesType: 'scatter',
+                // series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
+                height: $page_build.width.width(),
+                width: $page_build.width.width()
+            };
+
+            var chart = new google.visualization.ComboChart(thisDiv);
+
+            chart.draw(dataTable, options);
+            // $page_obj[type].f_val.text("f-test = " + f_stat(pnts.stats).toFixed(5));
         };
 
         //cycle picker
@@ -222,15 +272,15 @@
         $page_build.img_picker.appendTo(div);
 
         //result
-        $page_build.titleIn = $('<h2>', {text: 'Background In'});
-        $page_build.titleOut = $('<h2>', {text: 'Background Out'});
+        $page_build.titleIn = $('<h2>', {style: 'margin-top:30px;', class: 'page-header', text: 'Background In'});
+        $page_build.titleOut = $('<h2>', {style: 'margin-top:30px;', class: 'page-header', text: 'Background Out'});
 
         //set up region for canvases
-        $page_build.canvasIn = $('<div>');
-        $page_build.canvasOut = $('<div>');
+        $page_build.canvasIn = $('<div>', {class: 'center-block text-center'});
+        $page_build.canvasOut = $('<div>', {class: 'center-block text-center'});
 
         //set up region for google plots
-        $page_build.gplot1 = $('<div>');
+        $page_build.gplot1 = $('<div>', {style: "margin-top:15px;"});
         $page_build.gplot2 = $('<div>');
 
         $('<div>', {class: 'row'})
