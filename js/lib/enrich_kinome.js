@@ -770,7 +770,7 @@
                 }
                 var i, listKeys = Object.keys(allLists);
                 for (i = 0; i < listKeys.length; i += 1) {
-                    if (list_str.match(new RegExp(listKeys[i], 'i'))) {
+                    if (list_str.match(new RegExp(listKeys[i], 'i')) || listKeys[i].match(new RegExp(list_str, 'i'))) {
                         return copy(allLists[listKeys[i]]);
                     }
                 }
