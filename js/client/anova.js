@@ -1,4 +1,4 @@
-/*global M require KINOME module google jQuery save $ window*/
+/*global M require PROMISE KINOME module google jQuery save $ window*/
 (function () {
     'use strict';
 
@@ -6,9 +6,9 @@
     require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
-        var f_stat, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
+        var f_stat, build_columns, pep_picker, color_it, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
                 my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, buildTooltip,
-                thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase;
+                thisState, color_it_on = 'linear', currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase;
 
         $page_obj.div = $div;
         //defaults
@@ -21,6 +21,9 @@
             //I have to assume for this that this is consistent across data presented.
             params: DATA[0].kinetic.equation.mathParams
         };
+
+        //Have it when you want it
+        pep_picker = KINOME.peptidePicker(DATA);
 
         $page_obj.width = $('<div>', {class: 'col col-sm-6 col-xs-12'});
         $page_obj.width.appendTo($('<div>', {class: 'row'})
@@ -76,6 +79,8 @@
         //peptide picker response
         pep_picked = function (state_object) {
             var pnts = {kinetic: [], linear: []}, j, group, addToPnts;
+
+            pep_picker.setColorFunc(color_it);
 
 
             addToPnts = function (peptide, thisInd, grp) {
@@ -147,7 +152,7 @@
                 outSimple.push([]);
             }
 
-            console.log('hi',pnts);
+            console.log('hi', pnts);
 
             for (i = 0; i < pnts[type].length; i += 1) { // by group
                 for (j = 0; j < pnts[type][i].length; j += 1) { // by sample
@@ -168,6 +173,41 @@
             //     out.push([limits_here[1] + diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[1] + diffPer]);
             // }
             return {chart: out, stats: outSimple};
+        };
+
+        color_it = function (pointsList, state) {
+            var ii, jj, kk, groups = DATA.list('groups'), oneft, minF = Infinity, maxF = -Infinity, oneANOVA, oneGet, oneGrp, f_tests = [];
+            // console.log(pointsList);
+            for (jj = 0; jj < pointsList[color_it_on].length; jj += 1) {
+                oneANOVA = [];
+                for (ii = 0; ii < groups.length; ii += 1) {
+                    oneGet = DATA.get({
+                        peptide: pointsList[color_it_on][jj].peptide,
+                        exposure: state.exposure,
+                        type: color_it_on,
+                        group: groups[ii]
+                    });
+                    oneGrp = [];
+                    for (kk = 0; kk < oneGet.length; kk += 1) {
+                        oneGrp.push(equation[color_it_on](oneGet[kk], color_it_on));
+                    }
+                    oneANOVA.push(oneGrp);
+
+                }
+                oneft = f_stat(oneANOVA);
+                if (!isNaN(oneft)) {
+                    minF = Math.min(minF, oneft);
+                    maxF = Math.max(maxF, oneft);
+                }
+                f_tests.push(oneft);
+            }
+            // console.log(f_tests, 'yeppers');
+            return Promise.resolve(f_tests.map(function (t) {
+                if (isNaN(t)) {
+                    return 0;
+                }
+                return (t - minF) / (maxF - minF);
+            }));
         };
 
         makeOneChart = function (pnts, type) {
@@ -279,13 +319,32 @@
         $page_obj.figures = $('<div>', {class: 'row'});
         $page_obj.linear = {};
         $page_obj.kinetic = {};
+        $page_obj.buttons = [];
 
         //Now build each side
         build_columns = function (type) {
-            var part = $page_obj[type], i;
+            var part = $page_obj[type], i, btn;
 
             part.col = $('<div>', {class: 'col col-xs-12 col-sm-6'});
-            part.title = $('<h3>' + uppercase(type) + ' Options</h3>');
+            part.title = $('<div>');
+            part.title.append($('<h3>' + uppercase(type) + ' Options</h3>'));
+            btn = $('<button>', {text: 'Color By', class: 'btn btn-default'}).click(function () {
+                $page_obj.buttons.map(function (x) {
+                    x.removeClass('active');
+                });
+                $page_obj.buttons.map(function (x) {
+                    x.text('Color By');
+                });
+                $(this).addClass('active');
+                $(this).text('Colored By');
+                color_it_on = type;
+                pep_picker.setColorFunc(color_it);
+                console.log(color_it_on);
+            });
+            part.title.append(btn);
+            $page_obj.buttons.push(btn);
+
+
             //equation displays
             part.equationTitle = $('<h4>Model Parameterized</h4>');
             part.equation = $('<div>', {
@@ -380,19 +439,20 @@
 
         build_columns('linear');
         build_columns('kinetic');
+        $page_obj.buttons[0].click();
         $page_obj.figures
             .append($page_obj.linear.col)
             .append($page_obj.kinetic.col);
 
 
         //add parts to the div
-        var pep_picker = KINOME.peptidePicker(DATA);
         $page_obj.div
             .append($page_obj.title)
             .append(pep_picker.div)
             // .append($page_obj.groupHeading)
             .append($page_obj.figures);
         pep_picker.change(pep_picked);
+        pep_picker.setColorFunc(color_it);
         pep_picker.disableSample();
 
         //finally add on resize function, this makes sure that the figures

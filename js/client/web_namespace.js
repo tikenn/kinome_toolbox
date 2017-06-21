@@ -22,8 +22,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         '1.0.0': ['set_up_table', 'outlier_tab', 'level_1_build'],
         '1.0.1': ['set_up_table', 'level_1_build', 'normalize_background_tab'],
         '1.1.2': ['set_up_table', 'level_1_build'],
-        '2.0.1': ['set_up_table', 'reproduce', 'anova'],
-        '2.1.2': ['set_up_table', 'reproduce', 'anova'],
+        '2.0.1': ['set_up_table', 'reproduce', 'anova', 'heatmap'],
+        '2.1.2': ['set_up_table', 'reproduce', 'anova', 'heatmap'],
 
         //library functions
         peptide_picker: './plugins/peptide_picker/peptide_picker.js',
@@ -46,6 +46,10 @@ as urls this works by assuming jQuery is present and that Promises exist
         reproduce: './js/client/reproducibility.js',
         fit: './js/client/fit_one.js',
         anova: './js/client/anova.js',
+        heatmap: './plugins/heat_map/heat_map.js',
+        d3: 'http://d3js.org/d3.v3.min.js',
+        hcluster: './plugins/heat_map/hclust.js',
+        'img-picker': './plugins/img_picker.js',
         'bs_slider-js': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js',
         'bs_slider-css': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css',
         'peptide_picker-css': './plugins/peptide_picker/peptide_picker.css',
