@@ -48,7 +48,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         anova: './js/client/anova.js',
         'bs_slider-js': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js',
         'bs_slider-css': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css',
-        'peptide_picker-css': './plugins/peptide_picker/peptide_picker.css'
+        'peptide_picker-css': './plugins/peptide_picker/peptide_picker.css',
+        gradient: './plugins/gradient/gradient.js'
     };
 
     //set globals
