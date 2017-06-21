@@ -5,17 +5,20 @@
         The point of this is to run the quality filtration package. We will
         see how it goes.
     */
-    var $page_build = {}, createGradient, buildCanvas, buildSlider, getPlotPnts, buildPage, requires, normalize_background_worker, startFits, displayData;
+    var $page_build = {}, capitalize, createGradient, buildCanvas, buildSlider, getPlotPnts, buildPage, requires, normalize_background_worker, startFits, displayData;
 
     normalize_background_worker = "./js/lib/normalize_background_worker.min.js";
     // equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
 
-    requires = [require('amd_ww'), require('enrich_kinome'), require('normalize_background'), require('bs_slider-js')];
+    requires = [require('amd_ww'), require('gradient'), require('enrich_kinome'), require('normalize_background'), require('bs_slider-js')];
     require('bs_slider-css');
 
     buildPage = function (data, div) {
         div.append('<div>This script normalizes all of the level 1.0.1 image backgrounds utilizing multiple linear regression. Once you start the fitting, a loading bar will appear and you will be able to investigate before and after of the normalization on an image by image basis.<div>');
-        $('<button>', {style: "margin: 15px;", class: "btn btn-primary btn-lg", text: "Begin Correction."}).click(startFits(data, div)).appendTo($('<div>', {class: 'text-center'}).appendTo(div));
+        $('<button>', {style: "margin: 15px;", class: "btn btn-primary btn-lg", text: "Begin Correction."}).click(function (evt) {
+            $(this).unbind('click');
+            startFits(data, div)(evt);
+        }).appendTo($('<div>', {class: 'text-center'}).appendTo(div));
     };
 
     startFits = function (data, div) {
@@ -63,16 +66,22 @@
         };
     };
 
+    capitalize = function (string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    };
+
+
     buildSlider = function (thisDiv, arr, setVal, update, type) {
-        var retDiv, i;
+        var retDiv, i, title;
         for (i = 0; i < arr.length; i += 1) {
             if (arr[i] === setVal) {
                 setVal = i;
                 break;
             }
         }
+        title = $('<h2>' + capitalize(type) + '</h2>');
         retDiv = $('<input type="text" />');
-        thisDiv.append($('<div>', {class: 'center-block', style: 'width:90%'}).append(retDiv));
+        thisDiv.append(title).append($('<div>', {class: 'center-block', style: 'width:90%'}).append(retDiv));
         retDiv.slider({
             value: setVal,
             min: 0,
@@ -109,7 +118,7 @@
 
         ctx = canvas.getContext('2d');
         for (i = 0; i < data.length; i += 1) {
-            console.log((data[i].background - min_back) / (max_back - min_back));
+            // console.log((data[i].background - min_back) / (max_back - min_back));
             ctx.fillStyle = createGradient((data[i].background - min_back) / (max_back - min_back));
             ctx.fillRect(
                 sqr_dim * (data[i].spot_col - 1),
@@ -122,25 +131,6 @@
         return $(canvas).css({width: "70%", 'margin-top': '15px'});
     };
 
-    createGradient = function (number) {
-        var hue,
-            minHue = 60,
-            maxHue = 255,
-            hueRange = maxHue - minHue,
-            saturation,
-            minSaturation = 70,
-            maxSaturation = 100 - minSaturation,
-            lightness,
-            minLightness = 30,
-            maxLightness = 60 - minLightness,
-            eScale = Math.exp(number) / Math.E;
-
-        hue = hueRange * Math.pow(1 - number, 2) + minHue;
-        saturation = eScale * maxSaturation + minSaturation;
-        lightness = eScale * maxLightness + minLightness;
-
-        return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
-    };
 
     displayData = function (data_in, data_out, div) {
         // var options = {};
@@ -199,7 +189,7 @@
             buildCanvas(inSamp, minBack, maxBack).appendTo($page_build.canvasIn);
             buildCanvas(outSamp, minBack, maxBack).appendTo($page_build.canvasOut);
 
-            console.log(inSamp);
+            // console.log(inSamp);
 
             buildChart(getPlotPnts(inSamp), "In", $page_build.gplot1[0]);
             buildChart(getPlotPnts(outSamp), "Out", $page_build.gplot2[0]);
@@ -208,7 +198,7 @@
         };
 
         buildChart = function (pnts, type, thisDiv) {
-            console.log(pnts);
+            // console.log(pnts);
             var dataTable = google.visualization.arrayToDataTable(pnts);
             var options = {
                 title: 'Signal v Background ' + type,
@@ -255,12 +245,15 @@
         $page_build.img_picker = $('<div>', {class: 'row'});
 
         //sample picker
-        $page_build.samp_picker = $('<select>', {class: 'form-control'});
+        $page_build.samp_picker = $('<div>');
+        $('<h2>Sample</h2>').appendTo($page_build.samp_picker);
+        $page_build.samp_dropdown = $('<select>', {class: 'form-control'}).appendTo($page_build.samp_picker);
+
         for (i = 0; i < samps.length; i += 1) {
-            $page_build.samp_picker.append('<option value="' + samps[i] + '" >' + samps[i] + '</option>');
+            $page_build.samp_dropdown.append('<option value="' + samps[i] + '" >' + samps[i] + '</option>');
         }
         $page_build.samp_picker.appendTo($('<div>', {class: 'col-sm-4 col-xs-12'}).appendTo($page_build.img_picker));
-        $page_build.samp_picker.change(function () {
+        $page_build.samp_dropdown.change(function () {
             update('name', $(this).val());
         });
 
@@ -272,8 +265,8 @@
         $page_build.img_picker.appendTo(div);
 
         //result
-        $page_build.titleIn = $('<h2>', {style: 'margin-top:30px;', class: 'page-header', text: 'Background In'});
-        $page_build.titleOut = $('<h2>', {style: 'margin-top:30px;', class: 'page-header', text: 'Background Out'});
+        $page_build.titleIn = $('<h2>', {style: 'margin-top:40px;', class: 'page-header', text: 'Background In'});
+        $page_build.titleOut = $('<h2>', {style: 'margin-top:40px;', class: 'page-header', text: 'Background Out'});
 
         //set up region for canvases
         $page_build.canvasIn = $('<div>', {class: 'center-block text-center'});
@@ -308,6 +301,7 @@
         //Now require scripts then get going.
         Promise.all(requires).then(function () {
             var samples = KINOME.get({level: '1.0.1'});
+            createGradient = KINOME.gradient.convert;
             if (samples.length) {
                 buildPage(samples, KINOME.addAnalysis('Normalize Background'));
             }
