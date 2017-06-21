@@ -1,3 +1,13 @@
+/**
+ * Image Picker
+ * Copyright 2017 Tim Kennell Jr.
+ * Licensed under the MIT License (http://opensource.org/licenses/MIT)
+ **
+ * Allows selection of samples, cycles, and exposures
+ **
+ * Dependencies
+ *  * Bootstrap Slider (http://seiyria.com/bootstrap-slider/)
+ */
 
 (function(exports) {
     'use strict';
@@ -83,7 +93,11 @@
             } else {
                 console.error('The change function requires a function, not this', customStateFunc);
             }
-        }
+        };
+
+        main.disableSample = function() {
+            $page_build.samp_dropdown.prop('disabled', true);
+        };
 
         buildPageParts = function () {
             $page_build.cyclePicker.empty();
