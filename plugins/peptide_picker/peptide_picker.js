@@ -187,7 +187,15 @@
         };
 
         var setPeptideColors = function() {
-            var peptideList = state.sample.get({cycle: state.cycle, exposure: state.exposure});
+            var peptideList;
+            if (state.sample.level.match(/^1/i)) {
+                peptideList = state.sample.get({cycle: state.cycle, exposure: state.exposure});
+            } else if (state.sample.level.match(/^2/i)) {
+                peptideList = {
+                    kinetic: state.sample.get({cycle: state.cycle, exposure: state.exposure, type: 'kinetic'}),
+                    linear: state.sample.get({cycle: state.cycle, exposure: state.exposure, type: 'linear'})
+                }
+            }
             colorPeptideFunc(peptideList, state).then(function(peptideColors) {
                 colorPeptides(peptideColors);
             })
@@ -196,22 +204,6 @@
                 return err;
             });
         };
-
-        // pageStructure.gradientScale = (function() {
-        //     var maxTransitions = 10,
-        //         canvas = document.createElement('canvas'),
-        //         ctx;
-
-        //     canvas.height = 10;
-        //     canvas.width = 150;
-        //     ctx = canvas.getContext('2d');
-        //     for (var i = 0; i < canvas.width; i++) {
-        //         ctx.fillStyle = createGradient(i / canvas.width);
-        //         ctx.fillRect(i, 0, 1, canvas.height);
-        //     }
-
-        //     return $(canvas).hide();
-        // }());
 
         pageStructure.gradientScale = KINOME.gradient.colorBar(10, 150).hide();
 
