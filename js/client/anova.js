@@ -141,18 +141,25 @@
                     constant + ": " + pntx[constant] + '</div>';
         };
 
+        var retit = function (x) {
+            return x;
+        };
+
         getOneDataSet = function (pnts, type, constant, groups) {
-            var i, j, x, y, out = [["Group Number"]],
+            var i, j, x, y, out = [["Group Number"]], oneEx = ["X"],
                     gInd, oneOut, outSimple = [];
 
             //for total number of groups
+            console.log('these', groups);
             for (i = 0; i < groups.length; i += 1) {
                 out[0].push('G' + i);
                 out[0].push({type: 'string', role: 'tooltip', p: {html: true}});
+                oneEx.push(NaN);
+                oneEx.push("");
                 outSimple.push([]);
             }
 
-            console.log('hi', pnts);
+            console.log('hi', out);
 
             for (i = 0; i < pnts[type].length; i += 1) { // by group
                 for (j = 0; j < pnts[type][i].length; j += 1) { // by sample
@@ -160,7 +167,8 @@
                     x = pnts[type][i][j].group + (Math.random() * 0.3 - 0.15); // to scatter sideways a bit.
                     y = equation[type](pnts[type][i][j], type);
                     outSimple[pnts[type][i][j].group].push(y);
-                    oneOut = [x, NaN, "", NaN, "", NaN, "", NaN, ""];
+                    oneOut = oneEx.map(retit);
+                    oneOut[0] = x;
                     oneOut[gInd] = y;
                     oneOut[gInd + 1] = buildTooltip(pnts[type][i][j].group, y, pnts[type][i][j], constant);
                     out.push(oneOut);

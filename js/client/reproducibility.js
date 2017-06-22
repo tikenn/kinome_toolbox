@@ -132,14 +132,20 @@
                     "peptide: " + pnty.peptide + '<br />' +
                     constant + ": " + pnty[constant] + '</div>';
         };
+        var retit = function (x) {
+            return x;
+        };
 
         getOneDataSet = function (pnts, type, constant, groups) {
             var i, j, k, x, y, out = [["X"]],
-                    limits_here, diffPer, gInd, oneOut;
+                    limits_here, diffPer, gInd, oneOut, oneEx = ['X'];
             for (i = 0; i < groups.length; i += 1) {
                 out[0].push('G' + i);
                 out[0].push({type: 'string', role: 'tooltip', p: {html: true}});
+                oneEx.push(NaN);
+                oneEx.push("");
             }
+            oneEx.push(NaN);//one to one
             out[0].push('one to one');
             for (i = 0; i < pnts[type].length; i += 1) {
                 for (j = 0; j < pnts[type][i].length; j += 1) {
@@ -148,7 +154,8 @@
                             gInd = pnts[type][i][k].group * 2 + 1;
                             x = equation[type](pnts[type][i][j], type);
                             y = equation[type](pnts[type][i][k], type);
-                            oneOut = [x, NaN, "", NaN, "", NaN, "", NaN, "", NaN];
+                            oneOut = oneEx.map(retit);
+                            oneOut[0] = x;
                             oneOut[gInd] = y;
                             oneOut[gInd + 1] = buildTooltip(x, y, pnts[type][i][j], pnts[type][i][k], constant);
                             out.push(oneOut);
@@ -159,9 +166,21 @@
             if (pnts[type][0][0]) {
                 limits_here = limit(pnts[type][0][0][constant], type);
                 diffPer = 0.05 * (limits_here[1] - limits_here[0]);
-                out.push([limits_here[0] - diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[0] - diffPer]);
-                out.push([limits_here[1] + diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[1] + diffPer]);
+
+                // bottom left
+                oneOut = oneEx.map(retit);
+                oneOut[0] = limits_here[0] - diffPer;
+                oneOut[oneOut.length - 1] = limits_here[0] - diffPer;
+                out.push(oneOut);
+
+                // top right
+                oneOut = oneEx.map(retit);
+                oneOut[0] = limits_here[1] + diffPer;
+                oneOut[oneOut.length - 1] = limits_here[1] + diffPer;
+                out.push(oneOut);
             }
+
+            console.log(out, oneOut, oneEx);
             return out;
         };
 
@@ -252,6 +271,7 @@
             while (Math.abs(all[all.length - 1]) > 100 * Math.abs(all[all.length - 2])) {
                 all.pop();
             }
+            // console.log(all);
             limits[type][currentEQnum[type]][my_state_obj[type].param][param2] = [all[0], all[all.length - 1]];
             return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
         };
