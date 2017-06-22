@@ -150,7 +150,7 @@
                     gInd, oneOut, outSimple = [];
 
             //for total number of groups
-            console.log('these', groups);
+            // console.log('these', groups);
             for (i = 0; i < groups.length; i += 1) {
                 out[0].push('G' + i);
                 out[0].push({type: 'string', role: 'tooltip', p: {html: true}});
@@ -159,7 +159,7 @@
                 outSimple.push([]);
             }
 
-            console.log('hi', out);
+            // console.log('hi', out);
 
             for (i = 0; i < pnts[type].length; i += 1) { // by group
                 for (j = 0; j < pnts[type][i].length; j += 1) { // by sample
@@ -347,7 +347,7 @@
                 $(this).text('Colored By');
                 color_it_on = type;
                 pep_picker.setColorFunc(color_it);
-                console.log(color_it_on);
+                // console.log(color_it_on);
             });
             part.title.append(btn);
             $page_obj.buttons.push(btn);
