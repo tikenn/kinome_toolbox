@@ -2,7 +2,7 @@
 (function (exports) {
     'use strict';
 
-    var pearsonCorr, spearmanCorr, buildPage, getData, changResp, makeFigure, DATA, $page = {}, requires = [require('img-picker'), require('equation-picker')];
+    var pearsonCorr, allSamples = false, lastState, spearmanCorr, buildPage, getData, changResp, makeFigure, DATA, $page = {}, requires = [require('img-picker'), require('equation-picker')];
 
     buildPage = function (div, data) {
         var imgPicker = KINOME.imagePicker(data);
@@ -24,8 +24,18 @@
         $page.figures.append($page.kinetic.picker)
             .append($page.kinetic.figure);
 
-        //clear class to make it the right size
-        $page.kinetic.picker.append(eqPicker.col.kinetic.attr('class', "")).append($page.correlation);
+        //Add in a toggle
+        $page.allTog = $('<input type="checkbox" data-on="All Samples" data-off="One Sample" data-width="125" data-toggle="toggle">');
+        $page.kinetic.picker
+            .append('<div height="15px;">&nbsp;</div>') //could not add margin for some reason...
+            .append($page.allTog)
+            .append(eqPicker.col.kinetic.attr('class', "")) //clear class to make this the right size.
+            .append($page.correlation);
+        //activate toggle
+        $page.allTog.bootstrapToggle().change(function () {
+            allSamples = $(this).prop('checked');
+            changResp(lastState);
+        });
 
         //put them all together
         div.append(imgPicker.div)
@@ -41,6 +51,7 @@
     };
 
     changResp = function (state_change) {
+        lastState = state_change;
         makeFigure(state_change, 'kinetic', 'exposure');
     };
 
@@ -71,11 +82,17 @@
     };
 
     getData = function (state_change, type, constant) {
-        var getObj, xData, yData, combined;
+        var getObj, xData, yData, combined, dataObj;
         //Get the data for the x-axis, this is the Cycle Series stuff
-        getObj = {name: state_change.name, type: type};
+        if (allSamples) {
+            dataObj = DATA;
+        } else {
+            dataObj = state_change.sample;
+        }
+
+        getObj = {type: type};
         getObj[constant] = "Cycle Slope";
-        xData = DATA.get(getObj);
+        xData = dataObj.get(getObj);
         // console.log(getObj, JSON.parse(JSON.stringify(xData)));
         xData = xData.map(function (obj) {
             return state_change.eq[type].eval(obj, "Cycle Slope"); // force ce type
@@ -83,9 +100,9 @@
         // console.log(getObj, xData);
 
         //Get the data for the y-axis
-        getObj = {name: state_change.name, type: type};
+        getObj = {type: type};
         getObj[constant] = state_change[constant];
-        yData = state_change.sample.get(getObj);
+        yData = dataObj.get(getObj);
 
         //combine the two
         combined = yData.map(function (obj, index) {
