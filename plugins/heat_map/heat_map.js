@@ -127,6 +127,8 @@
         pep_picked = function (state_object) {
             thisState = state_object;
 
+            // console.log(state_object);
+
             var linearValues,
                 kineticValues,
                 linearHeatMapValues,

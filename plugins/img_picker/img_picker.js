@@ -15,8 +15,7 @@
     var requires = [require('bs_slider-js')];
     require('bs_slider-css');
 
-    var defaultStateFunc = function(state) { /*console.log(state);*/ },
-        stateFunction = defaultStateFunc;
+    var defaultStateFunc = function(state) { /*console.log(state);*/ };
 
     /**
      * Capitalizes the first letter of a string
@@ -83,7 +82,8 @@
             cycleDisabled = false,
             exposureDisable = false,
             $page_build = {},
-            main = {};
+            main = {},
+            stateFunction = defaultStateFunc;
         
         $page_build.div = $('<div>');
 
@@ -100,7 +100,6 @@
 
         main.disableSample = function () {
             $page_build.samp_dropdown.prop('disabled', true);
-            exposureDisable = true;
         };
 
         main.disableExposure = function () {
