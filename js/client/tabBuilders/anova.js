@@ -192,6 +192,7 @@
                     oneGet = DATA.get({
                         peptide: pointsList[color_it_on][jj].peptide,
                         exposure: state.exposure,
+                        cycle: state.cycle,
                         type: color_it_on,
                         group: groups[ii]
                     });
@@ -209,6 +210,7 @@
                 }
                 f_tests.push(oneft);
             }
+            // console.log(pointsList, f_tests, color_it_on, state);
             // console.log(f_tests, 'yeppers');
             return Promise.resolve(f_tests.map(function (t) {
                 if (isNaN(t)) {
