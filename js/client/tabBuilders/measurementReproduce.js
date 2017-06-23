@@ -75,7 +75,7 @@
         var chart = new google.visualization.ComboChart($page.kinetic.figure[0]);
         chart.draw(dataTable, options);
         $page.correlation.html(
-            "<span>Peason's r = " + pearsonCorr(data).toFixed(4) +
+            "<span>Pearson's r = " + pearsonCorr(data).toFixed(4) +
             ";</span> <span>Spearman's &rho; = " + spearmanCorr(data).toFixed(4) +
             "</span>"
         );
