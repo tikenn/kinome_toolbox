@@ -203,6 +203,19 @@
             var chart = new google.visualization.ComboChart($page_obj[type].fig[0]);
 
             chart.draw(dataTable, options);
+
+            google.visualization.events.addListener(chart, 'ready', function () {
+                $.each($('text'), function (index, label) {
+                    var labelText = $(label).text();
+                    if (labelText.match(/_|\^/)) {
+                        labelText = labelText.replace(/_([^\{])|_\{([^\}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="sub">$1$2</tspan>');
+                        labelText = labelText.replace(/\^([^\{])|\^\{([^\}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="super">$1$2</tspan>');
+                        $(label).html(labelText);
+                    }
+                    return index; //shut up jslint
+                });
+            });
+
             $page_obj[type].corr.text("pearson's r = " + pearsonCorr(collapse(pnts)).toFixed(5));
         };
 

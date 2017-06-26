@@ -222,6 +222,18 @@
 
             var chart = new google.visualization.ComboChart(thisDiv);
 
+            google.visualization.events.addListener(chart, 'ready', function () {
+                $.each($('text'), function (index, label) {
+                    var labelText = $(label).text();
+                    if (labelText.match(/_|\^/)) {
+                        labelText = labelText.replace(/_([^\{])|_\{([^\}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="sub">$1$2</tspan>');
+                        labelText = labelText.replace(/\^([^\{])|\^\{([^\}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="super">$1$2</tspan>');
+                        $(label).html(labelText);
+                    }
+                    return index; //shut up jslint
+                });
+            });
+
             chart.draw(dataTable, options);
             // $page_obj[type].f_val.text("f-test = " + f_stat(pnts.stats).toFixed(5));
         };
