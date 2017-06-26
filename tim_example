@@ -1,6 +1,0 @@
-div = KINOME.addAnalysis('tims special');
-data = KINOME.get({level:'1.0.1'});
-
-console.log(data);
-//console.log(data[0].get({...}));
-div.append('<p>Tim was here</p>');
