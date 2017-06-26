@@ -290,8 +290,8 @@
         $page_obj.kineticHeatMap = $('<div>', {'class': 'col-sm-6'}).appendTo($page_obj.heatMaps);
         $page_obj.dummyHeatMap = $('<div>', {class: 'col-sm-6'})
             .appendTo($('<div>', {class: 'row'})
-                .appendTo($('<div>', {class: 'container'})
-                    .appendTo('body', {style: 'height: 0px'})));
+                .appendTo($('<div>', {style: 'height: 0px; visibility: hidden;', class: 'container'})
+                    .appendTo('body')));
 
         // add everything to the main page divs
         $page_obj.div
