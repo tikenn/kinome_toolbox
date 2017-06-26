@@ -19,16 +19,29 @@
             maxLightness = 60 - minLightness,
             eScale = Math.exp(number) / Math.E;
 
-            hue = hueRange * Math.pow(1 - number, 2) + minHue;
-            saturation = eScale * maxSaturation + minSaturation;
-            lightness = eScale * maxLightness + minLightness;
+        hue = hueRange * Math.pow(1 - number, 2) + minHue;
+        saturation = eScale * maxSaturation + minSaturation;
+        lightness = eScale * maxLightness + minLightness;
 
-            return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+        return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
     };
 
-    main.colorBar = function(height, width) {
+    /**
+     * Creates a color bar that displays a representation of the gradient created above
+     * @param Int height The height of the bar to be 
+     * @param Int 
+     */
+    main.colorBar = function(height, width, leftLabel, rightLabel) {
         var canvas = document.createElement('canvas'),
-            ctx;
+            ctx,
+            $canvasContainer = $('<div>'),
+            $labelContainer,
+            fontSize;
+
+        leftLabel = leftLabel || 'Lo';
+        rightLabel = rightLabel || 'Hi';
+        fontSize = height + 1;
+        $labelContainer = $('<p>').css({'display': 'inline', 'font-weight': 'normal', 'font-size': fontSize});
 
         canvas.height = height;
         canvas.width = width;
@@ -38,7 +51,13 @@
             ctx.fillRect(i, 0, 1, canvas.height);
         }
 
-        return $(canvas);
+        $canvasContainer
+            .append($labelContainer.clone().text(leftLabel).css({'padding-right': '5px'}))
+            .append($(canvas))
+            .append($labelContainer.clone().text(rightLabel).css({'padding-left': '5px'}));
+
+        $canvasContainer.css({'display': 'inline'});
+        return $canvasContainer;
     };
 
     exports.gradient = main;
