@@ -481,6 +481,9 @@ as urls this works by assuming jQuery is present and that Promises exist
 
         index = pages.length;
 
+        //append a clear left
+        $('<div>', {style: 'clear: left;'}).appendTo('body');
+
         ret = $('<div>', {
             class: "container",
             style: "display: none",

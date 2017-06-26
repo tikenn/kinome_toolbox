@@ -2,12 +2,12 @@
 (function (exports) {
     'use strict';
 
-    var pearsonCorr, allSamples = false, lastState, spearmanCorr, buildPage, getData, changResp, makeFigure, DATA, $page = {}, requires = [require('img-picker'), require('equation-picker')];
+    var pearsonCorr, allSamples = false, lastState, spearmanCorr, buildPage, getData, changResp, makeFigure, DATA, $page = {},
+            requires = [require('img-picker'), require('equation-picker')];
 
     buildPage = function (div, data) {
         var imgPicker = KINOME.imagePicker(data);
         var eqPicker = KINOME.equationPicker(data, imgPicker);
-
 
         //only going to use imgPicker for sample and exposure
         imgPicker.disableCycle();
@@ -46,6 +46,7 @@
         $page.width.appendTo($('<div>', {class: 'row'})
             .appendTo($("<div>", {class: 'container', style: "height:0px;visibility: hidden;"})
                 .appendTo('body')));
+
 
         eqPicker.change(changResp);
     };
