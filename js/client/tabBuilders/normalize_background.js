@@ -205,10 +205,17 @@
                 titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', bold: false, fontSize: '24'},
                 hAxis: {title: 'Signal', titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
                 vAxis: {title: 'Background', titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
+
+                //for publication
+                // hAxis: {title: 'Signal', titleTextStyle: {fontName: 'Arial', fontSize: '12', bold: false}, textStyle: {fontName: 'Arial', fontSize: '10', bold: false}},
+                // vAxis: {title: 'Background', titleTextStyle: {fontName: 'Arial', fontSize: '12', bold: false}, textStyle: {fontName: 'Arial', fontSize: '10', bold: false}},
+                // height: 400,
+                // width: 400,
+
                 legend: 'none',
                 // tooltip: {isHtml: true, trigger: 'both'},
                 seriesType: 'scatter',
-                // series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
+                series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
                 height: $page_build.width.width(),
                 width: $page_build.width.width()
             };

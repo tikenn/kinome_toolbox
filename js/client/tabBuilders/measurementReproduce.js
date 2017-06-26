@@ -65,9 +65,16 @@
             hAxis: {title: "Cycle Series " + state_change.eq.kinetic.parameter, titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
             vAxis: {title: state_change[constant] + " " + state_change.eq.kinetic.parameter, titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
             legend: 'none',
+
+            //for publication
+                // hAxis: {title: 'a<sub>2</sub>', titleTextStyle: {isHtml: true, fontName: 'Arial', fontSize: '12', bold: false}, textStyle: {fontName: 'Arial', fontSize: '10', bold: false}},
+                // vAxis: {title: '', titleTextStyle: {fontName: 'Arial', fontSize: '12', bold: false}, textStyle: {fontName: 'Arial', fontSize: '10', bold: false}},
+                // height: 400,
+                // width: 400,
             // tooltip: {isHtml: true, trigger: 'both'},
+
             seriesType: 'scatter',
-            // series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
+            series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
             height: $page.width.width(),
             width: $page.width.width()
         };

@@ -208,11 +208,16 @@
                     minF = Math.min(minF, oneft);
                     maxF = Math.max(maxF, oneft);
                 }
+                // f_tests.push([oneft, pointsList[color_it_on][jj].peptide]);
                 f_tests.push(oneft);
             }
+            // console.log(JSON.parse(JSON.stringify(f_tests)).sort(function (a, b) {
+            //     return b[0] - a[0];
+            // }));
             // console.log(pointsList, f_tests, color_it_on, state);
             // console.log(f_tests, 'yeppers');
             return Promise.resolve(f_tests.map(function (t) {
+                // t = t[0];
                 if (isNaN(t)) {
                     return 0;
                 }
