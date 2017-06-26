@@ -6,6 +6,43 @@
     require('bs_toggle-js');
     require("bs_toggle-css", 'style');
 
+    /*
+        Takes two parameters:
+            data array: an array of enriched kinome objects
+            picker object: a 'picker' either peptide picker or image picker, this object
+                will have the color and change functions overwritten and the ability to
+                update them removed.
+
+        Returns an object with the following properties:
+            div: The equation picker div as a single row, linear left, kinetic right
+            col: {
+                kinetic: The kinetic eq picker column, unformatted
+                linear: The linear eq picker column, unformatted
+            }
+            change: function that takes a function that fires on change of selection. (More below)
+
+        Change function:
+            This function when set above will recieve an object when it fires
+            {
+                //Whatever properties are created by the picker passed in
+
+                eq: {
+                    linear: {
+                        eval: function that takes a data.get object and evaluates the function the user has selected
+                                <optional> and a second parameter forcing the c_e to be based on a specific cycle number ie (32, 36, ... 'Post Wash')
+                        parameter: the parameter string they have chosen
+                        equation_str: string of the equation being used
+                    }
+                    kinetic: {
+                        eval: function that takes a data.get object and evaluates the function the user has selected
+                                <optional> and a second parameter forcing the c_e to be based on a specific exposure time ie (10,20,50,100,200,'Cycle Series')
+                        parameter: the parameter string they have chosen
+                        equation_str: string of the equation being used
+                    }
+                }
+            }
+    */
+
     equation_selector = function (DATA, picker) {
 
         //This has a lot of state objects.... Should combine, but this was easier at first
@@ -79,10 +116,10 @@
             };
 
             equationOpts = [
-                ['Signal', 'signal', retSignal],
-                ['Background', 'background', retBack],
-                ['log_2(s / b)', M.sToMathE("log_2({signal}/{background})").outerHTML, retSigDBack],
-                ['log_2(100(s - b + c_e))', M.sToMathE("log_2{100(signal-background+c_e)}").outerHTML, retSigMBack]
+                ['Signal', 'signal', retSignal, 'signal'],
+                ['Background', 'background', retBack, 'background'],
+                ['log_2(s / b)', M.sToMathE("log_2({signal}/{background})").outerHTML, retSigDBack, "log_2({signal}/{background})"],
+                ['log_2(100(s - b + c_e))', M.sToMathE("log_2{100(signal-background+c_e)}").outerHTML, retSigMBack, "log_2{100(signal-background+c_e)}"]
             ];
 
             equation_state = {kinetic: retSigDBack, linear: retSigDBack};
@@ -144,13 +181,15 @@
                 eval: function (data, baseCe) {
                     return equation_state.linear(data, 'linear', baseCe);
                 },
-                parameter: my_state_obj.linear.params[my_state_obj.linear.param]
+                parameter: my_state_obj.linear.params[my_state_obj.linear.param],
+                equation_str: equationOpts[currentEQnum.linear][3]
             };
             objectOut.eq.kinetic = {
                 eval: function (data, baseCe) {
                     return equation_state.kinetic(data, 'kinetic', baseCe);
                 },
-                parameter: my_state_obj.kinetic.params[my_state_obj.kinetic.param]
+                parameter: my_state_obj.kinetic.params[my_state_obj.kinetic.param],
+                equation_str: equationOpts[currentEQnum.kinetic][3]
             };
 
             changeFunc(objectOut);
