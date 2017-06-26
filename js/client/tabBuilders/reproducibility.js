@@ -202,8 +202,6 @@
 
             var chart = new google.visualization.ComboChart($page_obj[type].fig[0]);
 
-            chart.draw(dataTable, options);
-
             google.visualization.events.addListener(chart, 'ready', function () {
                 $.each($('text'), function (index, label) {
                     var labelText = $(label).text();
@@ -215,6 +213,8 @@
                     return index; //shut up jslint
                 });
             });
+
+            chart.draw(dataTable, options);
 
             $page_obj[type].corr.text("pearson's r = " + pearsonCorr(collapse(pnts)).toFixed(5));
         };

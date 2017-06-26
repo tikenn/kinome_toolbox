@@ -63,7 +63,10 @@
             title: 'Measurement Reproducibility',
             titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', bold: false, fontSize: '24'},
             hAxis: {title: "Cycle Series " + state_change.eq.kinetic.parameter, titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
-            vAxis: {title: state_change[constant] + " " + state_change.eq.kinetic.parameter, titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
+            vAxis: {title: state_change[constant] + (Number.isInteger(1 * state_change[constant])
+                ? " ms "
+                : " ")
+                    + state_change.eq.kinetic.parameter, titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '20', bold: false}, textStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14'}},
             legend: 'none',
 
             //for publication
