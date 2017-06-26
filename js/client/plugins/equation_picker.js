@@ -169,8 +169,16 @@
         $page_obj.parameterSelector = $('<div>', {class: 'row'});
         $page_obj.linear = {};
         $page_obj.kinetic = {};
-        $page_obj.linear.col = $('<div>', {class: 'col col-xs-12 col-sm-6'});
-        $page_obj.kinetic.col = $('<div>', {class: 'col col-xs-12 col-sm-6'});
+        $page_obj.linear.colHolder = $('<div>', {class: 'col col-xs-12 col-sm-6'});
+        $page_obj.kinetic.colHolder = $('<div>', {class: 'col col-xs-12 col-sm-6'});
+        $page_obj.linear.col = $('<div>');
+        $page_obj.kinetic.col = $('<div>');
+
+        //essentially the holder sets the width, and the col itself is returned
+        // without any formatting of width.
+        $page_obj.linear.colHolder.append($page_obj.linear.col);
+        $page_obj.kinetic.colHolder.append($page_obj.kinetic.col);
+
         $page_obj.buttons = [];
 
         //Now build each side
@@ -295,8 +303,8 @@
         };
 
         $page_obj.parameterSelector
-            .append($page_obj.linear.col)
-            .append($page_obj.kinetic.col);
+            .append($page_obj.linear.colHolder)
+            .append($page_obj.kinetic.colHolder);
 
         pepChangedSetter(pep_picked);
 

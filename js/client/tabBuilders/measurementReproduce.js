@@ -29,7 +29,7 @@
         $page.kinetic.picker
             .append('<div height="15px;">&nbsp;</div>') //could not add margin for some reason...
             .append($page.allTog)
-            .append(eqPicker.col.kinetic.attr('class', "")) //clear class to make this the right size.
+            .append(eqPicker.col.kinetic)
             .append($page.correlation);
         //activate toggle
         $page.allTog.bootstrapToggle().change(function () {
