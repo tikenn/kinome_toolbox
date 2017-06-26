@@ -273,7 +273,7 @@
         $page_build.canvasOut = $('<div>', {class: 'center-block text-center'});
 
         //set up region for google plots
-        $page_build.gplot1 = $('<div>', {style: "margin-top:15px;"});
+        $page_build.gplot1 = $('<div>');
         $page_build.gplot2 = $('<div>');
 
         $('<div>', {class: 'row'})

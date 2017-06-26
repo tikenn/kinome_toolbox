@@ -15,8 +15,7 @@
     var requires = [require('bs_slider-js')];
     require('bs_slider-css');
 
-    var defaultStateFunc = function(state) { console.log(state); },
-        stateFunction = defaultStateFunc;
+    var defaultStateFunc = function(state) { /*console.log(state);*/ };
 
     /**
      * Capitalizes the first letter of a string
@@ -65,6 +64,7 @@
         }).on('slideStop', function (e) {
             update(type, arr[e.value]);
         });
+        return retDiv;
     };
 
     var displayData = function (data) {
@@ -79,8 +79,11 @@
             },
             buildPageParts,
             update,
+            cycleDisabled = false,
+            exposureDisable = false,
             $page_build = {},
-            main = {};
+            main = {},
+            stateFunction = defaultStateFunc;
         
         $page_build.div = $('<div>');
 
@@ -95,15 +98,33 @@
             }
         };
 
-        main.disableSample = function() {
+        main.disableSample = function () {
             $page_build.samp_dropdown.prop('disabled', true);
+        };
+
+        main.disableExposure = function () {
+            $page_build.exposureSlider.slider("disable");
+            $page_build.exposurePicker.find('.tooltip').hide();
+            exposureDisable = true;
+        };
+
+        main.disableCycle = function () {
+            $page_build.cycleSlider.slider("disable");
+            $page_build.cyclePicker.find('.tooltip').hide();
+            cycleDisabled = true;
         };
 
         buildPageParts = function () {
             $page_build.cyclePicker.empty();
             $page_build.exposurePicker.empty();
-            buildSlider($page_build.cyclePicker, selected.sample.list('cycle'), selected.cycle, update, 'cycle');
-            buildSlider($page_build.exposurePicker, selected.sample.list('exposure'), selected.exposure, update, 'exposure');
+            $page_build.cycleSlider = buildSlider($page_build.cyclePicker, selected.sample.list('cycle'), selected.cycle, update, 'cycle');
+            $page_build.exposureSlider = buildSlider($page_build.exposurePicker, selected.sample.list('exposure'), selected.exposure, update, 'exposure');
+            if (cycleDisabled) {
+                main.disableCycle();
+            }
+            if (exposureDisable) {
+                main.disableExposure();
+            }
         };
 
         //cycle picker

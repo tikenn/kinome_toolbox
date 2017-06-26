@@ -108,7 +108,7 @@
                 });
                 min = allVals[Math.floor(allVals.length / 20) - 1];
                 minimums[type][my_state_obj[type].param][key2] = min;
-                console.log(all, get_obj, min);
+                // console.log(all, get_obj, min);
             }
             if (object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] < min) {
                 return 0;
@@ -126,6 +126,8 @@
         //peptide picker response
         pep_picked = function (state_object) {
             thisState = state_object;
+
+            // console.log(state_object);
 
             var linearValues,
                 kineticValues,
@@ -438,7 +440,7 @@
             json;
 
         cluster = clusterSamples(values);
-        console.log(data);
+        // console.log(data);
         json = tree(cluster, data);
 
         var width = widthDiv.width(),

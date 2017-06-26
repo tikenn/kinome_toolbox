@@ -22,8 +22,8 @@ as urls this works by assuming jQuery is present and that Promises exist
         '1.0.0': ['set_up_table', 'outlier_tab', 'level_1_build'],
         '1.0.1': ['set_up_table', 'level_1_build', 'normalize_background_tab'],
         '1.1.2': ['set_up_table', 'level_1_build'],
-        '2.0.1': ['set_up_table', 'reproduce', 'anova', 'heatmap'],
-        '2.1.2': ['set_up_table', 'reproduce', 'anova', 'heatmap'],
+        '2.0.1': ['set_up_table', 'measurement-reproducibility', 'reproduce', 'anova', 'heatmap'],
+        '2.1.2': ['set_up_table', 'measurement-reproducibility', 'reproduce', 'anova', 'heatmap'],
 
         //library functions
         peptide_picker: './plugins/peptide_picker/peptide_picker.js',
@@ -34,26 +34,42 @@ as urls this works by assuming jQuery is present and that Promises exist
         normalize_background: './js/lib/background_normalization.js',
         fit_curves: './js/lib/parameterize_curves.js',
 
-        //webpage based stuff
-        outlier_tab: './js/client/outlier.js',
-        normalize_background_tab: './js/client/normalize_background.js',
-        level_1_display: './plugins/level_1_display/level_1_display.js',
-        level_1_build: './plugins/level_1_display/level_1_build.js',
+        //general
         webpage: './js/client/webpage.js',
         set_up_table: './js/client/set_up_table.js',
+
+        //plugins - visual
+        level_1_build: './plugins/level_1_display/level_1_build.js',
+        'img-picker': './plugins/img_picker/img_picker.js',
+        'equation-picker': './js/client/plugins/equation_picker.js',
+
+        //plugins - math
+        fit: './js/client/plugins/fit_one.js',
+        hcluster: './plugins/heat_map/hcluster.js',
+        gradient: './plugins/gradient/gradient.js',
+
+        //tabs
+        outlier_tab: './js/client/tabBuilders/outlier.js',
+        normalize_background_tab: './js/client/tabBuilders/normalize_background.js',
+        level_1_display: './plugins/level_1_display/level_1_display.js',
+        reproduce: './js/client/tabBuilders/reproducibility.js',
+        anova: './js/client/tabBuilders/anova.js',
+        heatmap: './plugins/heat_map/heat_map.js',
+        'measurement-reproducibility': './js/client/tabBuilders/measurementReproduce.js',
+
+        //other
         'bs_toggle-js': './js/client/general/bootstrap-toggle.min.js',
         'bs_toggle-css': 'https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css',
-        reproduce: './js/client/reproducibility.js',
-        fit: './js/client/fit_one.js',
-        anova: './js/client/anova.js',
-        heatmap: './plugins/heat_map/heat_map.js',
-        d3: 'http://d3js.org/d3.v3.min.js',
-        hcluster: './plugins/heat_map/hclust.js',
-        'img-picker': './plugins/img_picker.js',
-        'bs_slider-js': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js',
+        d3: './js/client/general/d3.min.js',
+        'bs_slider-js': './js/client/general/bootstrap-slider.min.js',
         'bs_slider-css': 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css',
         'peptide_picker-css': './plugins/peptide_picker/peptide_picker.css',
-        gradient: './plugins/gradient/gradient.js'
+
+        //data
+        tb_paper1: 'http://138.26.31.155:8000/db/kinome/lvl_2.0.1?find={"name_id":{"$in":["4a39ff16-2322-4037-8912-91a8d0c16921","b9dc1baa-5a54-4785-b4ca-d6e5ecca8982","35df93bf-8a1e-4f12-a76a-1835de02e0bf"]}}',
+        tb_paper2: 'http://138.26.31.155:8000/db/kinome/lvl_2.0.1?find={"name_id":{"$in":["d23a15e2-082d-4896-b1c4-e808c731dda2","588ba377-4b75-43a8-b4e8-e39c35d3024d","22703a41-4064-4d6f-8939-20586409428b"]}}',
+        tb_paper3: 'http://138.26.31.155:8000/db/kinome/lvl_2.0.1?find={"name_id":{"$in":["fa7fadd6-e3eb-475d-a8a9-393f0b70cc73","1208b67c-3109-4b8f-bb4a-bc4b96b0c20a","81941543-ad28-450f-a788-b75437ac72c5"]}}',
+        tb_paper4: 'http://138.26.31.155:8000/db/kinome/lvl_2.0.1?find={"name_id":{"$in":["ece0ab9c-4a2a-4fd2-ac63-fc0fa72c988a","0e564f09-e2d8-4d6c-98bd-d297950b757c","1c95945b-7f63-4e4a-a92b-63c7a081d42f"]}}'
     };
 
     //set globals

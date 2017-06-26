@@ -1,14 +1,14 @@
-/*global M require KINOME module google jQuery save $ window*/
+/*global M require PROMISE KINOME module google jQuery save $ window*/
 (function () {
     'use strict';
 
-    var buildFigures, pearsonCorr, requires = [require('peptide_picker'), require('bs_toggle-js')];
+    var buildFigures, requires = [require('peptide_picker'), require('bs_toggle-js')];
     require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
-        var peps, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
-                my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, limit, useAllGroups = false, buildTooltip,
-                thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase, collapse;
+        var f_stat, build_columns, pep_picker, color_it, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
+                my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, buildTooltip,
+                thisState, color_it_on = 'linear', currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase;
 
         $page_obj.div = $div;
         //defaults
@@ -22,12 +22,14 @@
             params: DATA[0].kinetic.equation.mathParams
         };
 
+        //Have it when you want it
+        pep_picker = KINOME.peptidePicker(DATA);
+
         $page_obj.width = $('<div>', {class: 'col col-sm-6 col-xs-12'});
         $page_obj.width.appendTo($('<div>', {class: 'row'})
             .appendTo($("<div>", {class: 'container', style: "height:0px;visibility: hidden;"})
                 .appendTo('body')));
-        //get peptide list for later use
-        peps = DATA.list('peptides');
+
 
         retSignal = function (object, type) {
             return object.signal.parameters[my_state_obj[type].param];
@@ -76,47 +78,55 @@
 
         //peptide picker response
         pep_picked = function (state_object) {
-            var pnts = {kinetic: [], linear: []}, i, j, group, addToPnts;
+            var pnts = {kinetic: [], linear: []}, j, group, addToPnts;
+
+            pep_picker.setColorFunc(color_it);
 
 
-            addToPnts = function (group, peptide) {
-                pnts.kinetic.push(DATA.get({
+            addToPnts = function (peptide, thisInd, grp) {
+                //get data for all groups
+                pnts.kinetic[thisInd] = pnts.kinetic[thisInd] || [];
+                pnts.linear[thisInd] = pnts.linear[thisInd] || [];
+                pnts.kinetic[thisInd] = pnts.kinetic[thisInd].concat(DATA.get({
                     exposure: state_object.exposure,
                     type: 'kinetic',
-                    group: group,
+                    group: grp,
                     peptide: peptide
+                    // get_samples: true
                 }));
-                pnts.linear.push(DATA.get({
+                pnts.linear[thisInd] = pnts.linear[thisInd].concat(DATA.get({
                     cycle: state_object.cycle,
                     type: 'linear',
-                    group: group,
+                    group: grp,
                     peptide: peptide
+                    // get_samples: true
                 }));
             };
 
             thisState = state_object;
-            if (useAllGroups) {
-                $page_obj.selectedGroup.html('Displaying All Groups');
-                group = DATA.list('groups');
+            // if (useAllGroups) {
+                // $page_obj.selectedGroup.html('Displaying All Groups');
+            group = DATA.list('groups');
                 // console.log(group);
-            } else {
-                $page_obj.selectedGroup.html('Displaying Group: ' + state_object.sample.group);
-                group = [state_object.sample.group];
-            }
+            // } else {
+                // $page_obj.selectedGroup.html('Displaying Group: ' + state_object.sample.group);
+                // group = [state_object.sample.group];
+            // }
 
             if (!state_object.peptide) {
-                for (i = 0; i < peps.length; i += 1) {
-                    for (j = 0; j < group.length; j += 1) {
-                        addToPnts(group[j], peps[i]);
-                    }
-                }
+                // empty the figures
+                $page_obj.kinetic.fig.empty();
+                $page_obj.kinetic.f_val.empty();
+                $page_obj.linear.fig.empty();
+                $page_obj.linear.f_val.empty();
             } else {
                 for (j = 0; j < group.length; j += 1) {
-                    addToPnts(group[j], state_object.peptide);
+                    addToPnts(state_object.peptide, j, group[j]);
                 }
             }
             if (pnts.kinetic.length && pnts.linear.length) {
-                make_reprofigures(pnts, DATA.list('groups'));
+                // console.log(pnts);
+                make_reprofigures(pnts, group);
             }
         };
 
@@ -124,50 +134,94 @@
             return str.charAt(0).toUpperCase() + str.slice(1);
         };
 
-        buildTooltip = function (x, y, pntx, pnty, constant) {
-            return '<div style="min-width: 170px; padding:5px;">(' + x.toFixed(2) + ', ' + y.toFixed(2) + '), ' +
+        buildTooltip = function (x, y, pntx, constant) {
+            return '<div style="min-width: 170px; padding:5px;">(Group: ' + x + ', Value:' + y.toFixed(2) + '), ' +
                     '<div>(<a target="_blank" href="' + pntx.lvl_1 + '">' + pntx.name + '</a>, ' +
-                    '<a target="_blank" href="' + pnty.lvl_1 + '">' + pnty.name + '</a>)</div>' +
-                    "group: " + pnty.group + ', <br />' +
-                    "peptide: " + pnty.peptide + '<br />' +
-                    constant + ": " + pnty[constant] + '</div>';
+                    "peptide: " + pntx.peptide + '<br />' +
+                    constant + ": " + pntx[constant] + '</div>';
+        };
+
+        var retit = function (x) {
+            return x;
         };
 
         getOneDataSet = function (pnts, type, constant, groups) {
-            var i, j, k, x, y, out = [["X"]],
-                    limits_here, diffPer, gInd, oneOut;
+            var i, j, x, y, out = [["Group Number"]], oneEx = ["X"],
+                    gInd, oneOut, outSimple = [];
+
+            //for total number of groups
+            // console.log('these', groups);
             for (i = 0; i < groups.length; i += 1) {
                 out[0].push('G' + i);
                 out[0].push({type: 'string', role: 'tooltip', p: {html: true}});
+                oneEx.push(NaN);
+                oneEx.push("");
+                outSimple.push([]);
             }
-            out[0].push('one to one');
-            for (i = 0; i < pnts[type].length; i += 1) {
-                for (j = 0; j < pnts[type][i].length; j += 1) {
-                    for (k = 0; k < pnts[type][i].length; k += 1) {
-                        if (j !== k) {
-                            gInd = pnts[type][i][k].group * 2 + 1;
-                            x = equation[type](pnts[type][i][j], type);
-                            y = equation[type](pnts[type][i][k], type);
-                            oneOut = [x, NaN, "", NaN, "", NaN, "", NaN, "", NaN];
-                            oneOut[gInd] = y;
-                            oneOut[gInd + 1] = buildTooltip(x, y, pnts[type][i][j], pnts[type][i][k], constant);
-                            out.push(oneOut);
-                        }
-                    }
+
+            // console.log('hi', out);
+
+            for (i = 0; i < pnts[type].length; i += 1) { // by group
+                for (j = 0; j < pnts[type][i].length; j += 1) { // by sample
+                    gInd = pnts[type][i][j].group * 2 + 1;
+                    x = pnts[type][i][j].group + (Math.random() * 0.3 - 0.15); // to scatter sideways a bit.
+                    y = equation[type](pnts[type][i][j], type);
+                    outSimple[pnts[type][i][j].group].push(y);
+                    oneOut = oneEx.map(retit);
+                    oneOut[0] = x;
+                    oneOut[gInd] = y;
+                    oneOut[gInd + 1] = buildTooltip(pnts[type][i][j].group, y, pnts[type][i][j], constant);
+                    out.push(oneOut);
                 }
             }
-            if (pnts[type][0][0]) {
-                limits_here = limit(pnts[type][0][0][constant], type);
-                diffPer = 0.05 * (limits_here[1] - limits_here[0]);
-                out.push([limits_here[0] - diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[0] - diffPer]);
-                out.push([limits_here[1] + diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[1] + diffPer]);
-            }
-            return out;
+            // if (pnts[type][0][0]) {
+            //     limits_here = limit(pnts[type][0][0][constant], type);
+            //     diffPer = 0.05 * (limits_here[1] - limits_here[0]);
+            //     out.push([limits_here[0] - diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[0] - diffPer]);
+            //     out.push([limits_here[1] + diffPer, NaN, "", NaN, "", NaN, "", NaN, "", limits_here[1] + diffPer]);
+            // }
+            return {chart: out, stats: outSimple};
         };
 
-        makeOneChart = function (pnts, type, lineInd) {
-            var dataTable = google.visualization.arrayToDataTable(pnts), theSeries = {};
-            theSeries[lineInd.toString()] = {color: '#e2431e', type: 'line', enableInteractivity: false};
+        color_it = function (pointsList, state) {
+            var ii, jj, kk, groups = DATA.list('groups'), oneft, minF = Infinity, maxF = -Infinity, oneANOVA, oneGet, oneGrp, f_tests = [];
+            // console.log(pointsList);
+            for (jj = 0; jj < pointsList[color_it_on].length; jj += 1) {
+                oneANOVA = [];
+                for (ii = 0; ii < groups.length; ii += 1) {
+                    oneGet = DATA.get({
+                        peptide: pointsList[color_it_on][jj].peptide,
+                        exposure: state.exposure,
+                        cycle: state.cycle,
+                        type: color_it_on,
+                        group: groups[ii]
+                    });
+                    oneGrp = [];
+                    for (kk = 0; kk < oneGet.length; kk += 1) {
+                        oneGrp.push(equation[color_it_on](oneGet[kk], color_it_on));
+                    }
+                    oneANOVA.push(oneGrp);
+
+                }
+                oneft = f_stat(oneANOVA);
+                if (!isNaN(oneft)) {
+                    minF = Math.min(minF, oneft);
+                    maxF = Math.max(maxF, oneft);
+                }
+                f_tests.push(oneft);
+            }
+            // console.log(pointsList, f_tests, color_it_on, state);
+            // console.log(f_tests, 'yeppers');
+            return Promise.resolve(f_tests.map(function (t) {
+                if (isNaN(t)) {
+                    return 0;
+                }
+                return (t - minF) / (maxF - minF);
+            }));
+        };
+
+        makeOneChart = function (pnts, type) {
+            var dataTable = google.visualization.arrayToDataTable(pnts.chart);
             var options = {
                 title: 'Reproducibility - ' + uppercase(type),
                 titleTextStyle: {fontName: '"Helvetica Neue", Helvetica, Arial, sans-serif', bold: false, fontSize: '24'},
@@ -176,29 +230,15 @@
                 legend: 'none',
                 tooltip: {isHtml: true, trigger: 'both'},
                 seriesType: 'scatter',
-                series: theSeries,
-                height: $page_obj.width.width(),
+                // series: {'4': {color: '#e2431e', type: 'line', enableInteractivity: false}},
+                height: $page_obj.width.width() * 0.68,
                 width: $page_obj.width.width()
             };
 
             var chart = new google.visualization.ComboChart($page_obj[type].fig[0]);
 
             chart.draw(dataTable, options);
-            $page_obj[type].corr.text("pearson's r = " + pearsonCorr(collapse(pnts)).toFixed(5));
-        };
-
-        collapse = function (arr) {
-            var i, j, arrOut = [];
-            for (i = 0; i < arr.length; i += 1) {
-                arrOut[i] = [];
-                for (j = 0; j < arr[i].length && arrOut[i].length < 2; j += 1) {
-                    if (typeof arr[i][j] === 'number' && !isNaN(arr[i][j])) {
-                        arrOut[i].push(arr[i][j]);
-                    }
-                }
-            }
-            arrOut.shift(); // leave out header
-            return arrOut;
+            $page_obj[type].f_val.text("f-test = " + f_stat(pnts.stats).toFixed(5));
         };
 
         make_reprofigures = function (pnts, groups) {
@@ -206,55 +246,55 @@
 
             //get points for kinetic
             xys_kin = getOneDataSet(pnts, 'kinetic', 'exposure', groups);
-            if (xys_kin.length > 1) {
-                makeOneChart(xys_kin, 'kinetic', groups.length);
+            // console.log(xys_kin);
+            if (xys_kin.chart.length > 1) {
+                makeOneChart(xys_kin, 'kinetic');
             }
 
             //get points for linear
             xys_lin = getOneDataSet(pnts, 'linear', 'cycle', groups);
-            if (xys_lin.length > 1) {
-                makeOneChart(xys_lin, 'linear', groups.length);
+            if (xys_lin.chart.length > 1) {
+                makeOneChart(xys_lin, 'linear');
             }
 
             return;
         };
 
-        limit = function (param2, type) {
-            var get_obj, all;
-            if (type === 'kinetic') {
-                get_obj = {
-                    type: type,
-                    exposure: param2
-                };
-            } else {
-                get_obj = {
-                    type: type,
-                    cycle: param2
-                };
-            }
-            limits[type] = limits[type] || {};
-            limits[type][currentEQnum[type]] = limits[type][currentEQnum[type]] || {};
-            limits[type][currentEQnum[type]][my_state_obj[type].param] = limits[type][currentEQnum[type]][my_state_obj[type].param] || {};
-            if (limits[type][currentEQnum[type]][my_state_obj[type].param][param2] !== undefined) {
-                return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
-            }
-            all = DATA.get(get_obj).map(function (x) {
-                return equation[type](x, type);
-            }).sort(function (a, b) {
-                return a - b;
-            });
-            // console.log(all);
+        //F-test or ANOVA body
+        f_stat = (function () {
+            var add = function (a, b) {
+                return a + b;
+            };
+            var mean = function (arr) {
+                return arr.reduce(add) / arr.length;
+            };
+            var sse = function (arr, avg) {
+                var i, sum = 0;
+                avg = avg || mean(arr);
+                for (i = 0; i < arr.length; i += 1) {
+                    sum += Math.pow(arr[i] - avg, 2);
+                }
+                return sum;
+            };
+            var concatArrs = function (a, b) {
+                return a.concat(b);
+            };
+            return function (arrs) {
+                var i, totalSampleSize = 0, bgv = 0, wgv = 0, indMean, overallMean = mean(arrs.reduce(concatArrs));
+                for (i = 0; i < arrs.length; i += 1) {
+                    indMean = mean(arrs[i]);
+                    bgv += arrs[i].length * Math.pow(indMean - overallMean, 2);
+                    wgv += sse(arrs[i], indMean);
+                    totalSampleSize += arrs[i].length;
+                }
 
-            //get rid of really extreme values
-            while (Math.abs(all[0]) > 100 * Math.abs(all[1])) {
-                all.shift();
-            }
-            while (Math.abs(all[all.length - 1]) > 100 * Math.abs(all[all.length - 2])) {
-                all.pop();
-            }
-            limits[type][currentEQnum[type]][my_state_obj[type].param][param2] = [all[0], all[all.length - 1]];
-            return limits[type][currentEQnum[type]][my_state_obj[type].param][param2];
-        };
+                bgv /= (arrs.length - 1);
+                wgv /= (totalSampleSize - arrs.length);
+
+                return bgv / wgv;
+            };
+        }());
+
 
 
         /*                          //
@@ -266,22 +306,22 @@
         */
 
         //Title
-        $page_obj.title = $('<h1 style="page-header">Parameter Reproducibility</h1>');
+        $page_obj.title = $('<h1 style="page-header">Parameter ANOVA</h1>');
 
         //Peptide Picker
 
         //Group heading
-        $page_obj.groupHeading = $('<div>');
-        $page_obj.selectedGroup = $('<h2>', {class: 'page-header'});
-        $page_obj.allTog = $('<input type="checkbox" data-on="All Groups" data-off="One Group" data-width="125" data-toggle="toggle">');
-        $page_obj.groupHeading
-            .append($page_obj.selectedGroup)
-            .append($page_obj.allTog);
+        // $page_obj.groupHeading = $('<div>');
+        // $page_obj.selectedGroup = $('<h2>', {class: 'page-header'});
+        // $page_obj.allTog = $('<input type="checkbox" data-on="All Groups" data-off="One Group" data-width="125" data-toggle="toggle">');
+        // $page_obj.groupHeading
+        //     .append($page_obj.selectedGroup)
+        //     .append($page_obj.allTog);
         //activate toggle
-        $page_obj.allTog.bootstrapToggle().change(function () {
-            useAllGroups = $(this).prop('checked');
-            pep_picked(thisState);
-        });
+        // $page_obj.allTog.bootstrapToggle().change(function () {
+        //     useAllGroups = $(this).prop('checked');
+        //     pep_picked(thisState);
+        // });
 
         /*
             Figures for each side
@@ -289,14 +329,32 @@
         $page_obj.figures = $('<div>', {class: 'row'});
         $page_obj.linear = {};
         $page_obj.kinetic = {};
-
+        $page_obj.buttons = [];
 
         //Now build each side
         build_columns = function (type) {
-            var part = $page_obj[type], i;
+            var part = $page_obj[type], i, btn;
 
             part.col = $('<div>', {class: 'col col-xs-12 col-sm-6'});
-            part.title = $('<h3>' + uppercase(type) + ' Options</h3>');
+            part.title = $('<div>');
+            part.title.append($('<h3>' + uppercase(type) + ' Options</h3>'));
+            btn = $('<button>', {text: 'Color By', class: 'btn btn-default'}).click(function () {
+                $page_obj.buttons.map(function (x) {
+                    x.removeClass('active');
+                });
+                $page_obj.buttons.map(function (x) {
+                    x.text('Color By');
+                });
+                $(this).addClass('active');
+                $(this).text('Colored By');
+                color_it_on = type;
+                pep_picker.setColorFunc(color_it);
+                // console.log(color_it_on);
+            });
+            part.title.append(btn);
+            $page_obj.buttons.push(btn);
+
+
             //equation displays
             part.equationTitle = $('<h4>Model Parameterized</h4>');
             part.equation = $('<div>', {
@@ -317,7 +375,7 @@
             //Finally the figures themselves
             part.fig = $('<div>');
             //And the place for correlation
-            part.corr = $('<p>', {class: "text-center lead"});
+            part.f_val = $('<p>', {class: "text-center lead"});
 
             //add in all the parts in order
             part.col
@@ -330,7 +388,7 @@
                 .append(part.backCorrPicker)
                 .append(part.backCorrSelected)
                 .append(part.fig)
-                .append(part.corr);
+                .append(part.f_val);
 
             //Add in the menu options for the parameter
             for (i = 0; i < my_state_obj[type].params.length; i += 1) {
@@ -391,20 +449,21 @@
 
         build_columns('linear');
         build_columns('kinetic');
+        $page_obj.buttons[0].click();
         $page_obj.figures
             .append($page_obj.linear.col)
             .append($page_obj.kinetic.col);
 
 
         //add parts to the div
-        var pep_picker = KINOME.peptidePicker(DATA);
         $page_obj.div
             .append($page_obj.title)
             .append(pep_picker.div)
-            .append($page_obj.groupHeading)
+            // .append($page_obj.groupHeading)
             .append($page_obj.figures);
-
         pep_picker.change(pep_picked);
+        pep_picker.setColorFunc(color_it);
+        pep_picker.disableSample();
 
         //finally add on resize function, this makes sure that the figures
         // remain the correct size.
@@ -429,57 +488,9 @@
 
     };
 
-    pearsonCorr = (function () {
-        var add2, sqr2, cross, add;
-        add2 = function (a, b) {
-            return [a[0] + b[0], a[1] + b[1]];
-        };
-        sqr2 = function (x) {
-            return [x[0] * x[0], x[1] * x[1]];
-        };
-        cross = function (x) {
-            return x[0] * x[1];
-        };
-        add = function (a, b) {
-            return a + b;
-        };
-        return function (dataIn) {
-            var i = 0, data = [];
-            //remove all bad points
-            for (i = 0; i < dataIn.length; i += 1) {
-                dataIn[i][0] = parseFloat(dataIn[i][0]);
-                dataIn[i][1] = parseFloat(dataIn[i][1]);
-                if (
-                    typeof dataIn[i][0] === 'number' && !isNaN(dataIn[i][0]) &&
-                    typeof dataIn[i][1] === 'number' && !isNaN(dataIn[i][1]) &&
-                    isFinite(dataIn[i][0]) && isFinite(dataIn[i][1])
-                ) {
-                    data.push([dataIn[i][0], dataIn[i][1]]);
-                }
-            }
-            if (!data.length) {
-                return 0;
-            }
-            var sums = data.reduce(add2);
-            var sqrSums = data.map(sqr2).reduce(add2);
-            var pSum = data.map(cross).reduce(add);
-            var n = data.length;
-
-            var num = pSum - (sums[0] * sums[1] / n);
-            var den = Math.sqrt((sqrSums[0] - sums[0] * sums[0] / n) *
-                    (sqrSums[1] - sums[1] * sums[1] / n));
-
-            if (den === 0) {
-                return 0;
-            }
-
-            return num / den;
-        };
-    }());
-
     //get stuff building
     (function () {
-        var $div = KINOME.addAnalysis('Reproducibility');
+        var $div = KINOME.addAnalysis('ANOVA');
         Promise.all(requires).then(function () {
             buildFigures($div, KINOME.get({level: '^2'}));
         });
