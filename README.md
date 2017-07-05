@@ -4,8 +4,8 @@
 
 This toolbox has 3 distinct parts.
 
-1. [Hosting server](#monogo-with-restify) A server component made to host your own data. This is set up to run with just about any flavor of linux, it is the exact server configuration that we utilize (CentOS 7-3 and Ubuntu 16 tested).
-2. [File Parsing](#server-side-file-parsing) A small bit of node code that can be utilized to automatically parse a new file into all the different components and add them to the database.
+1. [File Parsing](#server-side-file-parsing) A small bit of node code that can be utilized to automatically parse a new file into all the different components and add them to the database.
+2. [Hosting server](#monogo-with-restify) A server component made to host your own data. This is set up to run with just about any flavor of linux, it is the exact server configuration that we utilize (CentOS 7-3 and Ubuntu 16 tested).
 3. [Web Toolbox](#web-toolbox)A bulkier series of client side JavaScript scripts that create the pages for the toolbox.
 
 ## Getting started (server side)
@@ -32,6 +32,12 @@ Once those dependencies are met, you need to build the npm modules. Navigate to 
 This will download all the local repositories that are needed for a working server and for the server side parsing. Unfortunately these are not currently seperable.
 
 
+## Server Side File Parsing
+
+Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
+
+After following the instructions in [Getting Started](#getting-started-server-side) you will be able to get this component up
+
 ## Monogo with Restify
 
 Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
@@ -45,12 +51,6 @@ If that works for you then just use your favorite forever program and type:
 ```forever <or pm2> start server.js```
 
 And you have a database server set up.
-
-## Server Side File Parsing
-
-Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
-
-After following the instructions in [Getting Started](#getting-started-server-side) you will be able to get this component up
 
 
 ## Web Toolbox
