@@ -173,7 +173,7 @@
     server.use(restify.CORS({}));
 
     server.get(/\/img\/kinome\/?.*/, restify.serveStatic({
-        directory: "./server_imgs"
+        directory: "/var/www"
     }));
 
     //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
