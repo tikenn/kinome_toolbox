@@ -22,9 +22,9 @@ To get our updates you will have to issue a pull command from within the folder 
 
 ```git pull```
 
-There are only three things missing from a full installation. All of these have to be installed globally.
+There are only three things missing from a full installation. All of these have to be installed globally with root privileges. The monogdb instance will likely require some work to get the dependencies set up correctly, this is out of the scope of this readme, but can be found on their [website](https://docs.mongodb.com/).
 1. [Node and npm](https://nodejs.org/en/download/), (these come packaged together).
-2. (Only required if you are hosting your own data.) A [mongodb](https://docs.mongodb.com/manual/installation/) instance.
+2. (Only required if you are hosting your own data.) A [mongodb](https://docs.mongodb.com/manual/installation/) instance. Once this is installed you will have to start it up and make sure it runs on reboot.
 3. (Only required if you are hosting your own data for external use.) Either [forever](https://github.com/foreverjs/forever) or [pm2](http://pm2.keymetrics.io/) to ensure the server keeps running through restarts and non-fatal errors. 
 
 Once those dependencies are met, you need to build the npm modules. Navigate to the folder that you have downloaded with the clone then type:
