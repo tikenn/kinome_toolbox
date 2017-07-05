@@ -31,7 +31,7 @@
     "optimist": "^0.6.1",
     "progress": "^2.0.0",
     "prompt": "^1.0.0",
-    "restify": "^5.0.0",
+    "restify": "^4.3.1",
     "webworker-threads": "^0.7.11"
   }
 }
