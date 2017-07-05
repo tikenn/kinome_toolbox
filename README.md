@@ -4,9 +4,9 @@
 
 This toolbox has 3 distinct parts.
 
-1. [Hosting server](#Monogo-with-Restify) A server component made to host your own data. This is set up to run with a linux platform, it is the exact server configuration that we utilize.
-2. [File Parsing](#Server-Side-File-Parsing) A small bit of node code that can be utilized to automatically parse a new file into all the different components and add them to the database.
-3. [Web Toolbox](#Web-Toolbox)A bulkier series of client side JavaScript scripts that create the pages for the toolbox.
+1. [Hosting server](#monogo-with-restify) A server component made to host your own data. This is set up to run with a linux platform, it is the exact server configuration that we utilize.
+2. [File Parsing](#server-side-file-parsing) A small bit of node code that can be utilized to automatically parse a new file into all the different components and add them to the database.
+3. [Web Toolbox](#web-toolbox)A bulkier series of client side JavaScript scripts that create the pages for the toolbox.
 
 ## Monogo with Restify
 
