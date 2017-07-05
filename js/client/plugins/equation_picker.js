@@ -68,8 +68,10 @@
                 return object.background.parameters[my_state_obj[type].param];
             };
             retSigDBack = function (object, type) {
-                return Math.log(object.signal.parameters[my_state_obj[type].param] /
-                        object.background.parameters[my_state_obj[type].param]) / Math.log(2);
+                return Math.log(
+                    object.signal.parameters[my_state_obj[type].param] /
+                    object.background.parameters[my_state_obj[type].param]
+                ) / Math.log(2);
             };
             retSigMBack = function (object, type, baseCe) {
                 //this is the hard one...
@@ -77,7 +79,7 @@
                 if (object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] < min) {
                     return NaN;
                 } else {
-                    return Math.log(object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] - (min) + 1) / Math.log(2);
+                    return Math.log(100 * (object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] - (min) + 1)) / Math.log(2);
                 }
             };
 
@@ -288,8 +290,10 @@
             }
 
             for (i = 0; i < my_state_obj[type].params.length; i += 1) {
-                oneOpt = $('<option value="' + i + '">' +
-                        my_state_obj[type].params[i] + "</option>");
+                oneOpt = $(
+                    '<option value="' + i + '">' +
+                    my_state_obj[type].params[i] + "</option>"
+                );
 
                 if (my_state_obj[type].param * 1 === i) {
                     oneOpt.attr('selected', 'true');
@@ -305,8 +309,10 @@
 
             //Now add in menu options for the correction picker
             for (i = 0; i < equationOpts.length; i += 1) {
-                oneOpt = $('<option value="' + i + '">' +
-                        equationOpts[i][0] + "</option>");
+                oneOpt = $(
+                    '<option value="' + i + '">' +
+                    equationOpts[i][0] + "</option>"
+                );
                 if (currentEQnum[type] * 1 === i) {
                     oneOpt.attr('selected', 'true');
                 }

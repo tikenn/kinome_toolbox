@@ -316,7 +316,7 @@ as urls this works by assuming jQuery is present and that Promises exist
     get_function_type = function (url, type) {
         var datafunc, blocking = false;
         if (type) {
-            if (type.match(/^js$|scripts*|codes*/i)) {
+            if (type.match(/^js$|scripts*|codes*/im)) {
                 datafunc = get_script_promise;
                 blocking = true;
             } else if (type.match(/json|data/i)) {

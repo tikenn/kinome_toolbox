@@ -1,0 +1,506 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: kinomic database
+  description: The API for the database for the kinomic toolbox (http://toolbox.kinomecore.com)
+produces:
+  - application/json
+  - img/tiff
+  - img/png
+paths:
+  /img/{img_file_name}:
+    get:
+      tags:
+      - Database
+      description: returns the tiff image that matches the given image file name (img_file_name).
+      parameters:
+      - in: path
+        name: img_file_name
+        required: true
+        type: string
+  /db/1.0.0/name/{doc_id}:
+    get:
+      tags:
+      - Database
+      description: returns all data for in the name collection that matches either {doc_id} or the query
+      operationId: getDevices
+      parameters:
+      - in: path
+        name: level
+        required: true
+        type: "string"
+        default: "0.0"
+        description: "Level 2.X.X data to be returned"
+      - in: path
+        name: doc_id
+        required: false
+        type: "string"
+        description: "If one document is needed, and the id known, fill this in."
+      - in: query
+        name: find
+        required: false
+        type: json
+        description: mongo query object https://docs.mongodb.com/manual/tutorial/query-documents/
+      - in: query
+        name: fields
+        required: false
+        type: json
+        description: mongo fields object https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/
+      - in: query
+        name: sort
+        required: false
+        type: json
+        description: mongo query object https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: limit
+        required: false
+        type: integer
+        format: int32
+        description: max number of records to return https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: skip
+        required: false
+        type: json
+        description: mongo query object https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: maxTimeMS
+        required: false
+        type: integer
+        format: int32
+        description: max amount of time to wait for query return https://mongodb.github.io/node-mongodb-native/driver-articles/anintroductionto1_4_and_2_6.html#maxtimems
+      responses:
+        200:
+          description: Some number of name data objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/names_json'
+
+  /db/1.0.0/1.{level}/{doc_id}:
+    get:
+      tags:
+      - Database
+      description: returns all data for a given {level} that matches either {doc_id} or the query
+      operationId: getDevices
+      parameters:
+      - in: path
+        name: level
+        required: true
+        type: "string"
+        default: "0.0"
+        description: "Level 1.X.X data to be returned"
+      - in: path
+        name: doc_id
+        required: false
+        type: "string"
+        description: "If one document is needed, and the id known, fill this in."
+      - in: query
+        name: find
+        required: false
+        type: json
+        description: mongo query object https://docs.mongodb.com/manual/tutorial/query-documents/
+      - in: query
+        name: fields
+        required: false
+        type: json
+        description: mongo fields object https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/
+      - in: query
+        name: sort
+        required: false
+        type: json
+        description: mongo query object https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: limit
+        required: false
+        type: integer
+        format: int32
+        description: max number of records to return https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: skip
+        required: false
+        type: json
+        description: mongo query object https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: maxTimeMS
+        required: false
+        type: integer
+        format: int32
+        description: max amount of time to wait for query return https://mongodb.github.io/node-mongodb-native/driver-articles/anintroductionto1_4_and_2_6.html#maxtimems
+      responses:
+        200:
+          description: Some number of level 1 data objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Level_1_json'
+  /db/1.0.0/2.{level}/{doc_id}:
+    get:
+      tags:
+      - Database
+      description: returns all data for a given {level} that matches either {doc_id} or the query
+      operationId: getDevices
+      parameters:
+      - in: path
+        name: level
+        required: true
+        type: "string"
+        default: "0.0"
+        description: "Level 2.X.X data to be returned"
+      - in: path
+        name: doc_id
+        required: false
+        type: "string"
+        description: "If one document is needed, and the id known, fill this in."
+      - in: query
+        name: find
+        required: false
+        type: json
+        description: mongo query object https://docs.mongodb.com/manual/tutorial/query-documents/
+      - in: query
+        name: fields
+        required: false
+        type: json
+        description: mongo fields object https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/
+      - in: query
+        name: sort
+        required: false
+        type: json
+        description: mongo query object https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: limit
+        required: false
+        type: integer
+        format: int32
+        description: max number of records to return https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: skip
+        required: false
+        type: json
+        description: mongo query object https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options
+      - in: query
+        name: maxTimeMS
+        required: false
+        type: integer
+        format: int32
+        description: max amount of time to wait for query return https://mongodb.github.io/node-mongodb-native/driver-articles/anintroductionto1_4_and_2_6.html#maxtimems
+      responses:
+        200:
+          description: Some number of level 2 data objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Level_2_json'
+definitions:
+  names_json:
+    type: object
+    properties:
+      cyles:
+        type: array
+        description: cycle number of each image
+        items:
+          type: number
+          format: int
+      exposures:
+        type: array
+        description: exposure time of each image
+        items:
+          type: number
+          format: int
+      level:
+        type: string
+        value: "name"
+      name:
+        type: string
+        description: "Barcode_arr combination"
+      _id:
+        type: string
+        description: "uuid generated to be identical for each level"
+      peptides:
+        type: array
+        description: "list of peptides on chip"
+        items:
+          type: array
+          description: meta data array
+          items:
+            type: object
+            description: meta data object
+            properties:
+              key: 
+                type: string
+              value:
+                type: string
+      run_data:
+        type: array
+        description: meta data array for run data, should be generate by every run
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string | array
+              description: "If entry is same for every image taken then it is a single string. Otherwise it is an array of strings."
+            origin:
+              type: string
+              description: only occurs if signal file and background file generate different values for a given key.
+      sample_data:
+        type: array
+        description: meta data array for samples
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string
+    description: "Name object"
+  Level_1_json:
+    type: object
+    properties:
+      background: 
+        type: array
+        description: "background values for each image/peptide"
+        items: 
+          type: array
+          description: "For each image captured"
+          items: 
+            type: number
+            format: double
+            description: "For each spot/peptide on chip"
+      background_valid: 
+        type: array
+        description: "background valid for each image/peptide ?"
+        items: 
+          type: array
+          description: "For each image captured"
+          items: 
+            type: boolean
+            description: "For each spot/peptide on chip"
+      signal: 
+        type: array
+        description: "signal values for each image/peptide"
+        items: 
+          type: array
+          description: "For each image captured"
+          items: 
+            type: number
+            format: double
+            description: "For each spot/peptide on chip"
+      signal_valid: 
+        type: array
+        description: "signal valid for each image/peptide ?"
+        items: 
+          type: array
+          description: "For each image captured"
+          items: 
+            type: boolean
+            description: "For each spot/peptide on chip"
+      cyles:
+        type: array
+        description: cycle number of each image
+        items:
+          type: number
+          format: int
+      exposures:
+        type: array
+        description: exposure time of each image
+        items:
+          type: number
+          format: int
+      level:
+        type: string
+        description: "data level, 1.0.0; 1.0.1 etc"
+      name:
+        type: string
+        description: "Barcode_arr combination"
+      _id:
+        type: string
+        description: "uuid generated to be identical for each level"
+      peptides:
+        type: array
+        description: "list of peptides on chip"
+        items:
+          type: array
+          description: meta data array
+          items:
+            type: object
+            description: meta data object
+            properties:
+              key: 
+                type: string
+              value:
+                type: string
+      run_data:
+        type: array
+        description: meta data array for run data, should be generate by every run
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string | array
+              description: "If entry is same for every image taken then it is a single string. Otherwise it is an array of strings."
+            origin:
+              type: string
+              description: only occurs if signal file and background file generate different values for a given key.
+      sample_data:
+        type: array
+        description: meta data array for samples
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string
+    description: "Level 1 object"
+  Level_2_json:
+    type: object
+    properties:
+      kinetic:
+        type: object
+        properties:
+          exposures: 
+            type: array
+            description: "All exposures that were utilited to create kinetic models, typically just 50ms."
+            items:
+              type: number
+          equation_string: 
+            type: string
+            description: "'eval'-able string to resolve the equation object used to generate the parameterization."
+          background: 
+            type: array
+            description: "background values for each image series"
+            items: 
+              type: array
+              description: "For each peptide series captured"
+              items: 
+                type: object
+                properties:
+                  R2:
+                    type: number
+                    description: "R2 of the corresponding kinetic model"
+                  WW:
+                    type: number
+                    description: "Wald-Wolfowitz p-value for the randomness of the residuals (higher = more random)"
+                  paramters:
+                    type: array
+                    description: "Parameterization of curve fit"
+                    items:
+                      type: number
+          signal:
+            type: array
+            description: "background values for each image series"
+            items: 
+              type: array
+              description: "For each peptide series captured"
+              items: 
+                type: object
+                properties:
+                  R2:
+                    type: number
+                    description: "R2 of the corresponding kinetic model"
+                  WW:
+                    type: number
+                    description: "Wald-Wolfowitz p-value for the randomness of the residuals (higher = more random)"
+                  paramters:
+                    type: array
+                    description: "Parameterization of curve fit"
+                    items:
+                      type: number
+      linear:
+        type: object
+        properties:
+          cycles: 
+            type: array
+            description: "All cycle numbers that were utilited to create linear models, typically just post-wash."
+            items:
+              type: number
+          background: 
+            type: array
+            description: "background values for each image series"
+            items: 
+              type: array
+              description: "For each peptide series captured"
+              items: 
+                type: object
+                properties:
+                  R2:
+                    type: number
+                    description: "R2 of the corresponding kinetic model"
+                  paramters:
+                    type: array
+                    description: "Parameterization of curve fit"
+                    items:
+                      type: number
+          signal:
+            type: array
+            description: "background values for each image series"
+            items: 
+              type: array
+              description: "For each peptide series captured"
+              items: 
+                type: object
+                properties:
+                  R2:
+                    type: number
+                    description: "R2 of the corresponding kinetic model"
+                  paramters:
+                    type: array
+                    description: "Parameterization of curve fit"
+                    items:
+                      type: number
+      level:
+        type: string
+        description: "data level, 1.0.0; 1.0.1 etc"
+      name:
+        type: string
+        description: "Barcode_arr combination"
+      _id:
+        type: string
+        description: "uuid generated to be identical for each level"
+      peptides:
+        type: array
+        description: "list of peptides on chip"
+        items:
+          type: array
+          description: meta data array
+          items:
+            type: object
+            description: meta data object
+            properties:
+              key: 
+                type: string
+              value:
+                type: string
+      run_data:
+        type: array
+        description: meta data array for run data, should be generate by every run
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string
+              description: "If entry is same for every image taken then it is a single string and is kept. Otherwise it does not transfer to level 2."
+            origin:
+              type: string
+              description: only occurs if signal file and background file generate different values for a given key.
+      sample_data:
+        type: array
+        description: meta data array for samples
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string
+    description: "Level 2 object"
+# Added by API Auto Mocking Plugin
+host: db.kinomecore.com
+basePath: /db/1.0.0
+schemes:
+  - http
