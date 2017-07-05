@@ -13,14 +13,16 @@
     // this is to ensure that this remains a query only server
 
     var acceptedRegex = "", sanatize, j, grabDbName, grabDocument,
-            accepted$ = ["all", "and", "bitsAllClear", "bitsAllSet", "bitsAnyClear",
-            "bitsAnySet", "collStats", "comment", "elemMatch", "elemMatch",
-            "eq", "exists", "explain", "geoIntersects", "geoWithin", "gt",
-            "gte", "hint", "in", "limit", "lte", "match", "max", "maxScan",
-            "maxTimeMS", "meta", "min", "mod", "natural", "ne", "near",
-            "nearShpere", "nin", "nor", "not", "or", "orderby", "query",
-            "regex", "returnKey", "showDiskLoc", "size", "skip", "slice",
-            "snapshot", "text", "type", "where"];
+            accepted$ = [
+        "all", "and", "bitsAllClear", "bitsAllSet", "bitsAnyClear",
+        "bitsAnySet", "collStats", "comment", "elemMatch",
+        "eq", "exists", "explain", "geoIntersects", "geoWithin", "gt",
+        "gte", "hint", "in", "limit", "lte", "match", "max", "maxScan",
+        "maxTimeMS", "meta", "min", "mod", "natural", "ne", "near",
+        "nearShpere", "nin", "nor", "not", "or", "orderby", "query",
+        "regex", "returnKey", "showDiskLoc", "size", "skip", "slice",
+        "snapshot", "text", "type", "where"
+    ];
 
 
     for (j = 0; j < accepted$.length; j += 1) {
@@ -125,6 +127,7 @@
                 url = 'mongodb://localhost:27017/' + myDbName;
 
         //Deal with the objects
+        myDbName = myDbName || 'kinome';
         request.query.fields = request.query.fields || "-1";
         request.query.fields = decodeURIComponent(request.query.fields);
 
@@ -166,24 +169,43 @@
     };
 
     //sets up the server stuff
-    var server = restify.createServer({
-        accept: ['application/json', 'image/tif']
+    var server1 = restify.createServer({
+        accept: ['application/json', 'image/tif', 'image/png']
     });
-    server.use(restify.queryParser());
-    server.use(restify.CORS({}));
+    server1.use(restify.queryParser());
+    server1.use(restify.CORS({}));
 
-    server.get(/\/img\/kinome\/?.*/, restify.serveStatic({
+    server1.get(/\/img\/kinome\/?.*/, restify.serveStatic({
         directory: "/var/www"
     }));
 
     //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
 
-    server.get("/db/:db_name/:collection_name", grabDbName);
-    server.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
-
-
-    //starts the server listening on port :8080
-    server.listen(8000, function () {
-        console.log('%s listening at %s', server.name, server.url);
+    /*the following is for the internal db (accesible as a registered UAB user only)*/
+    server1.get("/db/:db_name/:collection_name", grabDbName);
+    server1.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
+    server1.listen(8000, function () {
+        console.log('%s listening at %s', server1.name, server1.url);
     });
+
+
+    // var server2 = restify.createServer({
+    //     accept: ['application/json', 'image/tif', 'image/png']
+    // });
+    // server2.use(restify.queryParser());
+    // server2.use(restify.CORS({}));
+
+    // server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
+    //     directory: "./server_imgs"
+    // }));
+
+
+
+    // /*The following is for the external db*/
+    // server2.get("/db/1.0.0/:collection_name", grabDbName);
+    // server2.get("/db/1.0.0/:collection_name/:doc_id", grabDocument);
+    // server2.listen(80, function () {
+    //     console.log('%s listening at %s', server2.name, server2.url);
+    // });
+
 }());
