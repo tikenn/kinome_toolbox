@@ -10,6 +10,8 @@ This toolbox has 3 distinct parts.
 
 ## Getting started (server side)
 
+Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
+
 Download the repository with:
 
 ```git clone https://github.com/kinome/kinome_toolbox.git```
@@ -18,30 +20,37 @@ To get our updates you will have to issue a pull command from within the folder 
 
 ```git pull```
 
-## Monogo with Restify
-
 There are only three things missing from a full installation. All of these have to be installed globally.
-1. A [mongodb](https://docs.mongodb.com/manual/installation/) instance. 
-2. [Node and npm](https://nodejs.org/en/download/), (these come packaged together).
-3. Either [forever](https://github.com/foreverjs/forever) or [pm2](http://pm2.keymetrics.io/) for making sure the server keeps running. (Coming soon: Docker).
+1. [Node and npm](https://nodejs.org/en/download/), (these come packaged together).
+2. (Only required if you are hosting your own data.) A [mongodb](https://docs.mongodb.com/manual/installation/) instance.
+3. (Only required if you are hosting your own data for external use.) Either [forever](https://github.com/foreverjs/forever) or [pm2](http://pm2.keymetrics.io/) for making sure the server keeps running. (Coming soon: Docker).
 
 Once those dependencies are met, you need to build the npm modules. Navigate to the folder that you have downloaded with the clone then type:
 
 ```npm install```
 
-This will download all the local repositories that are needed for a working server and for the server side parsing. Unfortunately these are not currently seperable. If you are not installing the server side file parsing just installing resitfy (v4), assert, and mongodb would be sufficient.
+This will download all the local repositories that are needed for a working server and for the server side parsing. Unfortunately these are not currently seperable.
 
-Once this is done you can make sure the server will work by typing:
+
+## Monogo with Restify
+
+Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
+
+After following the instructions in [Getting Started](#getting-started-server-side) you can make sure the server will work by typing:
 
 ```node server.js```
 
 If that works for you then just use your favorite forever program and type:
 
-```forever start server.js```
+```forever <or pm2> start server.js```
 
-And you should be good to go.
+And you have a database server set up.
 
 ## Server Side File Parsing
+
+Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
+
+After following the instructions in [Getting Started](#getting-started-server-side) you will be able to get this component up
 
 
 ## Web Toolbox
