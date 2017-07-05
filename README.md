@@ -12,6 +12,8 @@ This toolbox has 3 distinct parts.
 
 Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
 
+(Coming soon: Docker).
+
 Download the repository with:
 
 ```git clone https://github.com/kinome/kinome_toolbox.git```
@@ -23,7 +25,7 @@ To get our updates you will have to issue a pull command from within the folder 
 There are only three things missing from a full installation. All of these have to be installed globally.
 1. [Node and npm](https://nodejs.org/en/download/), (these come packaged together).
 2. (Only required if you are hosting your own data.) A [mongodb](https://docs.mongodb.com/manual/installation/) instance.
-3. (Only required if you are hosting your own data for external use.) Either [forever](https://github.com/foreverjs/forever) or [pm2](http://pm2.keymetrics.io/) for making sure the server keeps running. (Coming soon: Docker).
+3. (Only required if you are hosting your own data for external use.) Either [forever](https://github.com/foreverjs/forever) or [pm2](http://pm2.keymetrics.io/) to ensure the server keeps running through restarts and non-fatal errors. 
 
 Once those dependencies are met, you need to build the npm modules. Navigate to the folder that you have downloaded with the clone then type:
 
