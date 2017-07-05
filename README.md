@@ -8,7 +8,7 @@ This toolbox has 3 distinct parts.
 2. [File Parsing](#server-side-file-parsing) A small bit of node code that can be utilized to automatically parse a new file into all the different components and add them to the database.
 3. [Web Toolbox](#web-toolbox)A bulkier series of client side JavaScript scripts that create the pages for the toolbox.
 
-## Get started
+## Getting started (server side)
 
 Download the repository with:
 
@@ -29,7 +29,17 @@ Once those dependencies are met, you need to build the npm modules. Navigate to 
 
 ```npm install```
 
-This will download all the local repositories that are needed for a working server and for the server side parsing. Unfortunately these are not currently seperable. If you are not installing the server side file parsing just installing resitfy, assert, and mongodb would be sufficient.
+This will download all the local repositories that are needed for a working server and for the server side parsing. Unfortunately these are not currently seperable. If you are not installing the server side file parsing just installing resitfy (v4), assert, and mongodb would be sufficient.
+
+Once this is done you can make sure the server will work by typing:
+
+```node server.js```
+
+If that works for you then just use your favorite forever program and type:
+
+```forever start server.js```
+
+And you should be good to go.
 
 ## Server Side File Parsing
 
