@@ -8,6 +8,27 @@ This toolbox has 3 distinct parts.
 2. [Hosting server](#monogo-with-restify) A server component made to host your own data. This is set up to run with just about any flavor of linux, it is the exact server configuration that we utilize (CentOS 7-3 and Ubuntu 16 tested).
 3. [Web Toolbox](#web-toolbox) A series of client side JavaScript scripts that create the pages for the toolbox.
 
+## Getting started (client side)
+
+There is a lot of details possible to discuss in this, however the easiest way to get started will be to load in the data documents described in the publication with the following shortened url.
+
+http://bit.kinomecore.com/p1_1.0.0
+
+From here you can either use the [developer console](https://developers.google.com/web/tools/chrome-devtools/console/) or create your own script, loading it in by adding the &code="*\<script_url\>*" [More info...](toolbox-parameters).
+
+After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one data point to the console and on a new analysis tab.
+
+```
+(function () {
+    'use strict';
+
+    var dataArr = KINOME.get({level: '1.0.0'});
+    var ids = dataArr.list('id');
+    //Just get the first one.
+
+}());
+```
+
 ## Getting started (server side)
 
 Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
