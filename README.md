@@ -97,9 +97,9 @@ In addition to this there are few default global functions that are created, and
 
    As for the actual parameters: 
 
-  -url: (required) The url [string] to the actual script of interest, or a string that as defined by [https://github.com/kinome/kinome_toolbox/blob/master/js/client/web_namespace.js#L20](require.defaults). Automatic type dection assumes JavaScript unless the file ends with .txt, .css or .json or if type is overwritten by the second optional parameter.
-  -type: (optional) Options: 'text, txt, string' (resolves as text); 'style, css' (resolves as style sheet), 'json, data', resolves as JSON.
-  -cache: true/false for cacheing. If false then cache will clear and be replaced by the newest file. If true, then it will always pull from the cache when possible (with the same limits as above).
+  *url: (required) The url [string] to the actual script of interest, or a string that as defined by [https://github.com/kinome/kinome_toolbox/blob/master/js/client/web_namespace.js#L20](require.defaults). Automatic type dection assumes JavaScript unless the file ends with .txt, .css or .json or if type is overwritten by the second optional parameter.
+  *type: (optional) Options: 'text, txt, string' (resolves as text); 'style, css' (resolves as style sheet), 'json, data', resolves as JSON.
+  *cache: true/false for cacheing. If false then cache will clear and be replaced by the newest file. If true, then it will always pull from the cache when possible (with the same limits as above).
 
 
 
