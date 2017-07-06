@@ -207,6 +207,7 @@ Starting from: http://toolbox.kinomecore.com/ we can add a large number of param
 Starting from: http://toolbox.kinomecore.com/ we can add parameters as described below.
 
 * ?img="*\<image_file_name\>*"
+
    This will load in the image file indicated and alter the image for viewing online. It also provides a link to the original image file since the web version is low quality. [Example](http://toolbox.kinomecore.com/image/?img=%22631308612_W1_F1_T50_P154_I1285_A29%22)
 
 ### Kinome Data Objects
