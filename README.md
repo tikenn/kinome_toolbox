@@ -90,6 +90,8 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>require(<i>url</i> [,<i>type</i> [,<i>cache</i>]])</summary>
 
+   ### require
+
    require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](JavaScript Promise). This promise will resolve when the script or other data has been loaded. If it is a text or json file, the then function will be passed the result, if it is a script or style element the then function will just be passed true.
 
    Additionally, when require is used in a module that only defines functions (example: [https://github.com/kinome/kinome_toolbox/blob/master/plugins/peptide_picker/peptide_picker.js](Peptide Picker)) there is no need to wait for the resolve in your file. They will resolve before your function does.
@@ -136,9 +138,7 @@ In addition to this there are number default global functions and objects that a
 
 <details>
 <summary>KINOME.loadData(<i>urls</i>)</summary>
-<blockquote>
    Details coming soon
-</blockquote>
 </details>
 
 <details>
