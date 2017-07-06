@@ -14,7 +14,7 @@ There is a lot of details possible to discuss in this, however the easiest way t
 
 http://bit.kinomecore.com/?p1_1.0.0
 
-From here you can either use the [developer console](https://developers.google.com/web/tools/chrome-devtools/console/) or create your own script, loading it in by adding the &code="*\<script_url\>*" [More info...](toolbox-parameters) to the resolved url, or the url above.
+From here you can either use the [developer console](https://developers.google.com/web/tools/chrome-devtools/console/) or create your own script, loading it in by adding the &code="*\<script_url\>*" to the resolved url, or the url above. [More info...](toolbox-parameters)
 
 After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one data point to the console and on a new analysis tab.
 
