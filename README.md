@@ -103,4 +103,50 @@ In addition to this there are few default global functions that are created, and
   - *cache*: (optional) true/false for cacheing. If false then cache will clear and be replaced by the newest file. If true, then it will always pull from the cache when possible (with the same limits as above).
 </details>
 
+<details>
+<summary>KINOME.addAnalysis(<i>title</i>)</summary>
+   Details coming soon
+</details>
 
+<details>
+<summary>KINOME.error(<i>error_obj, error_message</i>)</summary>
+   Details coming soon
+</details>
+
+<details>
+<summary>KINOME.formatEquation(<i>equation_str</i>)</summary>
+   Details coming soon
+</details>
+
+<details>
+<summary>KINOME.enrich(<i>data_object</i>)</summary>
+   Details coming soon
+</details>
+
+<details>
+<summary>KINOME.list(<i>list_object</i>)</summary>
+   Details coming soon
+</details>
+
+<details>
+<summary>KINOME.get(<i>get_object</i>)</summary>
+   Details coming soon
+</details>
+
+
+<details>
+<summary>KINOME.loadData(<i>urls</i>)</summary>
+   Details coming soon
+</details>
+
+<details>
+<summary>KINOME.params</summary>
+   Details coming soon
+</details>
+
+<details>
+<summary>KINOME.page</summary>
+
+   jQuery div for the contents of the 'home page' (This is the page that shows all currently loaded in information.)
+
+</details>
