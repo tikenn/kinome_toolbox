@@ -77,6 +77,8 @@ And you have a database server set up.
 
 ## Web Toolbox
 
+This toolbox is avaliable at: (http://toolbox.kinomecore.com) unfortunately for now you must be inside of UAB's network in order to gain access to the data. This will be changed soon.
+
 ### Default Functions and Packages
 
 Every page in this enviornment will have the following standard packages loaded in:
