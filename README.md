@@ -44,6 +44,8 @@ After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one
 }());
 ```
 
+The functions above and many more are described below [Web Toolbox](#web-toolbox). 
+
 ## Getting started (server side)
 
 Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
