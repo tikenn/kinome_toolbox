@@ -166,7 +166,7 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.loadData(<i>urls</i>)</summary>
 
 * #### KINOME.loadData
-   This is a specialized require function. It will accepts urls as an array of strings. The urls must be to arrays of kinome objects (lvl1, lvl2 or names). It has the added benifits of adding the results the the KINOME.params object so that KINOME.get and KINOME.list recognize it. Additionally it will KINOME.enrich the returned object. It returns a https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](JavaScript Promise) which will pass the resultant object as an array to the then function.
+   This is a specialized require function. It will accepts urls as an array of strings. The urls must be to arrays of kinome objects (lvl1, lvl2 or names). It has the added benifits of adding the results the the KINOME.params object so that KINOME.get and KINOME.list recognize it. Additionally it will KINOME.enrich the returned object. It returns a [JavaScript Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) which will pass the resultant object as an array to the then function.
 
 </details>
 
