@@ -188,7 +188,20 @@ In addition to this there are number default global functions and objects that a
 
 ### URL Parameter Options
 
-Coming soon, this will describe how to build the URL to get groups and with utilize script tag loading.
+We have two base URLs, one for the toolbox and one for images. They both accept query parameters. They are as follows:
+
+(http://toolbox.kinomecore.com/) [?params](#toolbox_parameters)
+
+(http://toolbox.kinomecore.com/image) [?params](#image_parameters)
+
+#### Toolbox Parameters
+
+
+#### Image Parameters
+
+Image only accepts one parameter: ?img="*\<image_file_name\>*"
+
+This will load in the image file indicated and alter the image for viewing online. It also provides a link to the original image file since the web version is low quality. [Example](http://toolbox.kinomecore.com/image/?img=%22631308612_W1_F1_T50_P154_I1285_A29%22)
 
 ### Kinome Data Objects
 
