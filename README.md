@@ -158,7 +158,7 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.enrich(<i>data_object</i>)</summary>
 
 * #### KINOME.enrich
-   This is passed a JSON kinome object as outlined at [https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0](Swagger Hub KINOME). It returns the same object but with an additional series of functions. These functions include list, get, clone, stringify, and depending on the level: put and level_up. More information below at [#kinome-data-objects](Kinome Data Objects).
+   This is passed a JSON kinome object as outlined at [Swagger Hub KINOME](https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0). It returns the same object but with an additional series of functions. These functions include list, get, clone, stringify, and depending on the level: put and level_up. More information below at [Kinome Data Objects](#kinome-data-objects).
 
 </details>
 
@@ -174,7 +174,7 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.params</summary>
 
 * #### KINOME.params
-   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [#url_parameter_options](URL Parameter Options).
+   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
 
 </details>
 
