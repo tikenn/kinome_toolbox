@@ -190,9 +190,9 @@ In addition to this there are number default global functions and objects that a
 
 We have two base URLs, one for the toolbox and one for images. They both accept query parameters. They are as follows:
 
-http://toolbox.kinomecore.com/ [?params](#toolbox_parameters) (click "?params" for details)
+http://toolbox.kinomecore.com/ [?params](#toolbox-parameters) (click "?params" to jump to details)
 
-http://toolbox.kinomecore.com/image [?params](#image_parameters) (click "?params" for details)
+http://toolbox.kinomecore.com/image [?params](#image-parameters) (click "?params" to jump to details)
 
 #### Toolbox Parameters
 
