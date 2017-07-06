@@ -134,7 +134,7 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.get(<i>get_object</i>)</summary>
 
 * #### KINOME.get
-   Details coming soon
+   The easiest way to use this function is to pass it nothing. It will then return an array of all the objects currently loaded in. These objects will be enriched. (See KINOME.enrich for more). Beyond this an object may be passed in with property names corresponding to the properties from KINOME.list. Each property may be passed either an array or a string and get will return an array of values that matches what was passed in.
 
 </details>
 
