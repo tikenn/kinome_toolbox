@@ -323,7 +323,7 @@ as urls this works by assuming jQuery is present and that Promises exist
                 datafunc = get_data_promise;
             } else if (type.match(/styles*|css/)) {
                 datafunc = get_style_promise;
-            } else if (type.match(/texts*|strings*/)) {
+            } else if (type.match(/txts*|texts*|strings*/)) {
                 datafunc = get_text_promise;
             }
         } else {

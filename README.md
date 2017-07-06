@@ -52,7 +52,9 @@ Prints help options which are:
 | -o | (Highly recommended) Base location and file name to create all the mongodb and json files that are created by the series of command prompts. This is recommended because without it all files are created in the current working directory. |
 | -d | (Coming Soon!) Database name to upsert all documents into a mongodb. |
 
-The _id field is generated for each of these files so it is the same for 'name' as it is for each level. This prevents multiple documents being created for a given _id in each collection.
+This script expects that you have exported your bionavigator crosstab files seperately as median signal and median background. Both of these files are required for parsing to take place. This toolbox does not accept median signal - background combination files.
+
+The _id field for mongo is generated for each of these files so it is the same for 'name' as it is for each level. This prevents multiple documents being created for a given _id in each collection.
 
 This generates .json and .mdb files. The only difference is that the .json is an array so it can be imported directly into the toolbox, and the .mdb is documents seperated by newlines so it can be directly imported into the mongodb database with the following commands:
 
@@ -74,4 +76,29 @@ And you have a database server set up.
 
 
 ## Web Toolbox
+
+Every page in this enviornment will have the following standard packages loaded in:
+
+*[Google Charts](https://developers.google.com/chart/)
+*[JQuery 3](https://jquery.com/)
+*[Bootstrap 3](http://getbootstrap.com/) (Both JS and CSS)
+*[Dexie](http://dexie.org/)
+*[jqMath](http://mathscribe.com/author/jqmath.html)
+
+In addition to this there are few default global functions that are created, and a few that are on the KINOME object.
+
+*require(<url>, <type>, <cache>)
+
+   require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](JavaScript Promise). This promise will resolve when the script or other data has been loaded. If it is a text or json file, the then function will be passed the result, if it is a script or style element the then function will just be passed true.
+
+   Additionally, when require is used in a module that only defines functions (example: [https://github.com/kinome/kinome_toolbox/blob/master/plugins/peptide_picker/peptide_picker.js](Peptide Picker)) there is no need to wait for the resolve in your file. They will resolve before your function does.
+
+   Finally require caches everything except scripts. Text and JSON default to a 30 minute cache. If the system is getting specific documents from a mongodb instance these are cached for 90 days as are all style documents.
+
+   As for the actual parameters: 
+      -url: (required) The url [string] to the actual script of interest, or a string that as defined by [https://github.com/kinome/kinome_toolbox/blob/master/js/client/web_namespace.js#L20](require.defaults). Automatic type dection assumes JavaScript unless the file ends with .txt, .css or .json or if type is overwritten by the second optional parameter.
+      -type: (optional) Options: 'text, txt, string' (resolves as text); 'style, css' (resolves as style sheet), 'json, data', resolves as JSON.
+      -cache: true/false for cacheing. If false then cache will clear and be replaced by the newest file. If true, then it will always pull from the cache when possible (with the same limits as above).
+
+
 
