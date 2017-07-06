@@ -288,4 +288,53 @@ Starting from: http://toolbox.kinomecore.com/ we can add parameters as described
 
 ### Kinome Data Objects
 
-WHile this is at the bottom of this readme, it is still essential. Coming soon, this will describe the objects by linking to [Swagger Hub KINOME](https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0) and talk about the enrichment functions.
+There are currently three major data types: names; level 1; level 2. The actual data models are described here: [Swagger Hub KINOME](https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0). However the power of this toolbox is that you do not need to know what these data objects look like. You only need the following series of functions and a general description of each data type.
+
+#### Data Array
+
+This is an enriched array containing some number of enriched KINOME objects. While this could have multiple types in theory, it has only been tested on individual types. The easiest way to get one of these is with a [KINOME.get()](#kinomeget) command, which returns an enriched array. The enriched array has the following functions:
+
+<details>
+<summary>data_arr.get(<i>get_object</i>)</summary>
+
+* #### data_arr.get(<i>get_object</i>)
+   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+
+</details>
+
+<details>
+<summary>data_arr.list(<i>list_string</i>)</summary>
+
+* #### data_arr.list(<i>list_string</i>)
+   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+
+</details>
+
+<details>
+<summary>data_arr.clone()</summary>
+
+* #### data_arr.clone()
+   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+
+</details>
+
+<details>
+<summary>data_arr.stringify()</summary>
+
+* #### data_arr.stringify()
+   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+
+</details>
+
+
+#### Name
+
+This is just the meta data and peptide list for each data object loaded in. This data exists for quick load and for the building of down the line analytic groups. It has the following functions attached:
+
+
+
+#### Level 1
+
+
+
+#### Level 2
