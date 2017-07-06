@@ -79,7 +79,7 @@ And you have a database server set up.
 
 This toolbox is avaliable at: (http://toolbox.kinomecore.com) unfortunately for now you must be inside of UAB's network in order to gain access to the data. This will be changed soon.
 
-### Default Functions and Packages
+### Default Global Functions and Packages
 
 Every page in this enviornment will have the following standard packages loaded in:
 
@@ -158,7 +158,7 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.enrich(<i>data_object</i>)</summary>
 
 * #### KINOME.enrich
-   Details coming soon
+   This is passed a JSON kinome object as outlined at [https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0](Swagger Hub KINOME). It returns the same object but with an additional series of functions. These functions include list, get, clone, stringify, and depending on the level: put and level_up. More information below at [#kinome-data-objects](Kinome Data Objects).
 
 </details>
 
@@ -189,3 +189,5 @@ In addition to this there are number default global functions and objects that a
 ### URL Parameter Options
 
 Coming soon, this will describe how to build the URL to get groups and with utilize script tag loading.
+
+### Kinome Data Objects
