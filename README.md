@@ -101,59 +101,76 @@ In addition to this there are number default global functions and objects that a
   - *url*: (required) The url [string] to the actual script of interest, or a string that as defined by [https://github.com/kinome/kinome_toolbox/blob/master/js/client/web_namespace.js#L20](require.defaults). Automatic type dection assumes JavaScript unless the file ends with .txt, .css or .json or if type is overwritten by the second optional parameter. This may also be an array of strings. If you set a type with an array it will be utilized for all parts of that array.
   - *type*: (optional) Options: 'text, txt, string' (resolves as text); 'style, css' (resolves as style sheet), 'json, data', resolves as JSON.
   - *cache*: (optional) true/false for cacheing. If false then cache will clear and be replaced by the newest file. If true, then it will always pull from the cache when possible (with the same limits as above).
+
 </details>
 
 <details>
 <summary>KINOME.addAnalysis(<i>title</i>)</summary>
+
 * ### addAnalysis
    Details coming soon
+
 </details>
 
 <details>
 <summary>KINOME.error(<i>error_obj, error_message</i>)</summary>
+
 * ### error
    Details coming soon
+
 </details>
 
 <details>
 <summary>KINOME.formatEquation(<i>equation_str</i>)</summary>
+
 * ### formatEquation
    Details coming soon
+
 </details>
 
 <details>
 <summary>KINOME.enrich(<i>data_object</i>)</summary>
+
 * ### enrich
    Details coming soon
+
 </details>
 
 <details>
 <summary>KINOME.list(<i>list_object</i>)</summary>
+
 * ### list
    Details coming soon
+
 </details>
 
 <details>
 <summary>KINOME.get(<i>get_object</i>)</summary>
+
 * ### get
    Details coming soon
-</details>
 
+</details>
 
 <details>
 <summary>KINOME.loadData(<i>urls</i>)</summary>
+
 * ### loadData
    Details coming soon
+
 </details>
 
 <details>
 <summary>KINOME.params</summary>
+
 * ### params
    Details coming soon
+
 </details>
 
 <details>
 <summary>KINOME.page</summary>
+
 * ### page
    jQuery div for the contents of the 'home page' (This is the page that shows all currently loaded in information.)
 
