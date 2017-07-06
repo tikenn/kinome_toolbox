@@ -87,7 +87,8 @@ Every page in this enviornment will have the following standard packages loaded 
 
 In addition to this there are few default global functions that are created, and a few that are on the KINOME object.
 
-* require(*url*, *type*, *cache*)
+<details>
+<summary>* require(*url*, *type*, *cache*)</summary>
 
    require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](JavaScript Promise). This promise will resolve when the script or other data has been loaded. If it is a text or json file, the then function will be passed the result, if it is a script or style element the then function will just be passed true.
 
@@ -100,6 +101,6 @@ In addition to this there are few default global functions that are created, and
   - *url*: (required) The url [string] to the actual script of interest, or a string that as defined by [https://github.com/kinome/kinome_toolbox/blob/master/js/client/web_namespace.js#L20](require.defaults). Automatic type dection assumes JavaScript unless the file ends with .txt, .css or .json or if type is overwritten by the second optional parameter.
   - *type*: (optional) Options: 'text, txt, string' (resolves as text); 'style, css' (resolves as style sheet), 'json, data', resolves as JSON.
   - *cache*: true/false for cacheing. If false then cache will clear and be replaced by the newest file. If true, then it will always pull from the cache when possible (with the same limits as above).
-
+</details>
 
 
