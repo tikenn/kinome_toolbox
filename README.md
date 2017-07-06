@@ -292,13 +292,13 @@ There are currently three major data types: names; level 1; level 2. The actual 
 
 #### Data Array
 
-This is an enriched array containing some number of enriched KINOME objects. While this could have multiple types in theory, it has only been tested on individual types. The easiest way to get one of these is with a [KINOME.get()](#kinomeget) command, which returns an enriched array. The enriched array has the following functions:
+This is an enriched array containing some number of enriched KINOME objects. While this could have multiple types in theory, it has only been tested on individual types. The easiest way to get one of these is with a [KINOME.get()](#default-global-functions-and-packages) command, which returns an enriched array. The enriched array has the following functions:
 
 <details>
 <summary>data_arr.get(<i>get_object</i>)</summary>
 
 * #### data_arr.get(<i>get_object</i>)
-   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+   This can take as entry any of the parameters that return from an argumentless *data_arr.list()* call. It will iteratively call get functions on all members that match the main object filters (ie name or id) and return an array will all matching objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this.
 
 </details>
 
@@ -306,7 +306,7 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 <summary>data_arr.list(<i>list_string</i>)</summary>
 
 * #### data_arr.list(<i>list_string</i>)
-   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+   This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action.
 
 </details>
 
@@ -314,7 +314,7 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 <summary>data_arr.clone()</summary>
 
 * #### data_arr.clone()
-   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+   This iteratively calls .clone() on all member objects. This clone is special in that it preserves the enrich functions and the non-enumerable properties.
 
 </details>
 
@@ -322,7 +322,7 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 <summary>data_arr.stringify()</summary>
 
 * #### data_arr.stringify()
-   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [URL Parameter Options](#url_parameter_options).
+   This calls JSON.stringify on all member objects, but only after going through and rounding all numbers to a six digit precision. The idea being that beyond that the data is not useful and the storage cost increases greatly.
 
 </details>
 
