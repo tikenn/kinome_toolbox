@@ -136,9 +136,9 @@ In addition to this there are number default global functions and objects that a
 
 <details>
 <summary>KINOME.loadData(<i>urls</i>)</summary>
-<div style="margin-left: 20px">
+<blockquote>
    Details coming soon
-</div>
+</blockquote>
 </details>
 
 <details>
