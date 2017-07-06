@@ -22,7 +22,11 @@ After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one
 (function () {
     'use strict';
 
+    //Get all level 1.0.0 data in here
     var dataArr = KINOME.get({level: '1.0.0'});
+
+    //Get the data list information explicitly, 
+    // these can also be listed with a single dataArr.list().
     var ids = dataArr.list('ids');
     var cycles = dataArr.list('cycles');
     var exposures = dataArr.list('exposures');
@@ -36,11 +40,18 @@ After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one
         peptide: peptides[0]
     });
 
+    //Log it to the developers console
     console.log(onePoint);
 
+    //create div
     var myDiv = KINOME.addAnalysis('Print One');
-    //pretty print
-    myDiv.html(JSON.stringify(onePoint, null, 2).replace(/\ /g, '&nbsp;').replace(/\n/g,'<br />'));
+
+    //pretty print the object to the div (this clears all functions)
+    myDiv.html(
+        JSON.stringify(onePoint, null, 2)
+            .replace(/\ /g, '&nbsp;')
+            .replace(/\n/g,'<br />')
+    );
 
 }());
 ```
