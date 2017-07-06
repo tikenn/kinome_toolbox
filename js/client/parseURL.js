@@ -159,7 +159,9 @@
                 return KINOME.enrich(x);
             });
             exports.params.data.push({value: data, url: urls});
-            return data;
+            return KINOME.enrich(data.map(function (x) {
+                return x;
+            }));
         });
     };
     exports.loadStyle = getSTYLES;

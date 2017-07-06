@@ -297,15 +297,15 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 <details>
 <summary>data_arr.get(<i>get_object</i>)</summary>
 
-* #### data_arr.get(<i>get_object</i>)
-   This can take as entry any of the parameters that return from an argumentless *data_arr.list()* call. It will iteratively call get functions on all members that match the main object filters (ie name or id) and return an array will all matching objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this.
+* ##### data_arr.get(<i>get_object</i>)
+   This can take as entry any of the parameters that return from an argumentless *data_arr.list()* call. It will iteratively call get functions on all members that match the main object filters (ie name or id) and return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this.
 
 </details>
 
 <details>
 <summary>data_arr.list(<i>list_string</i>)</summary>
 
-* #### data_arr.list(<i>list_string</i>)
+* ##### data_arr.list(<i>list_string</i>)
    This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action.
 
 </details>
@@ -313,7 +313,7 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 <details>
 <summary>data_arr.clone()</summary>
 
-* #### data_arr.clone()
+* ##### data_arr.clone()
    This iteratively calls .clone() on all member objects. This clone is special in that it preserves the enrich functions and the non-enumerable properties.
 
 </details>
@@ -321,7 +321,7 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 <details>
 <summary>data_arr.stringify()</summary>
 
-* #### data_arr.stringify()
+* ##### data_arr.stringify()
    This calls JSON.stringify on all member objects, but only after going through and rounding all numbers to a six digit precision. The idea being that beyond that the data is not useful and the storage cost increases greatly.
 
 </details>
@@ -331,10 +331,103 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 
 This is just the meta data and peptide list for each data object loaded in. This data exists for quick load and for the building of down the line analytic groups. It has the following functions attached:
 
+<details>
+<summary>name.get(<i>get_object</i>)</summary>
+
+* ##### name.get(<i>get_object</i>)
+   This can take as entry any of the parameters that return from an argumentless *name.list()* call. It will return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>name.list(<i>list_string</i>)</summary>
+
+* ##### name.list(<i>list_string</i>)
+   This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>name.clone()</summary>
+
+* ##### name.clone()
+   This clone is special in that it preserves the enrich functions and the non-enumerable properties.
+
+</details>
+
+<details>
+<summary>name.stringify()</summary>
+
+* ##### name.stringify()
+   This calls JSON.stringify, but only after going through and rounding all numbers to a six digit precision. The idea being that beyond that the data is not useful and the storage cost increases greatly.
+
+</details>
 
 
 #### Level 1
+<details>
+<summary>lvl1.get(<i>get_object</i>)</summary>
 
+* ##### lvl1.get(<i>get_object</i>)
+   This can take as entry any of the parameters that return from an argumentless *lvl1.list()* call. It will return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>lvl1.list(<i>list_string</i>)</summary>
+
+* ##### lvl1.list(<i>list_string</i>)
+   This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>lvl1.clone()</summary>
+
+* ##### lvl1.clone()
+   This clone is special in that it preserves the enrich functions and the non-enumerable properties.
+
+</details>
+
+<details>
+<summary>lvl1.stringify()</summary>
+
+* ##### lvl1.stringify()
+   This calls JSON.stringify, but only after going through and rounding all numbers to a six digit precision. The idea being that beyond that the data is not useful and the storage cost increases greatly.
+
+</details>
 
 
 #### Level 2
+
+<details>
+<summary>lvl2.get(<i>get_object</i>)</summary>
+
+* ##### lvl2.get(<i>get_object</i>)
+   This can take as entry any of the parameters that return from an argumentless *lvl2.list()* call. It will return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>lvl2.list(<i>list_string</i>)</summary>
+
+* ##### lvl2.list(<i>list_string</i>)
+   This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>lvl2.clone()</summary>
+
+* ##### lvl2.clone()
+   This clone is special in that it preserves the enrich functions and the non-enumerable properties.
+
+</details>
+
+<details>
+<summary>lvl2.stringify()</summary>
+
+* ##### lvl2.stringify()
+   This calls JSON.stringify, but only after going through and rounding all numbers to a six digit precision. The idea being that beyond that the data is not useful and the storage cost increases greatly.
+
+</details>
