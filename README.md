@@ -206,7 +206,7 @@ Starting from: http://toolbox.kinomecore.com/ we can add a large number of param
 
 * &data=\*\[ *data_url1* \[, *data_url2* \[, ... \] \] \]\*
 
-    (Coming Soon, do not use currently) This notation for *data_urls* works identically to the above expect if all URLs are from the same base then you can indicate only the end of the URL. For example: &data=\*\[http://example.com/param1/?param=param1;http://example.com/param2/?param=param2;\]\* is identical to &data=\*\[http://example.com/param1/?param=param1,/param2/?param=param2;\]\*.
+    (Coming Soon, do not use currently) This notation for *data_urls* works identically to the above expect if all URLs are from the same base then you can indicate only the end of the URL. For example: &data=\*\[http://example.com/param1/?param=param1;http\:\/\/example.com/param2/?param=param2;\]\* is identical to &data=\*\[http\:\/\/example.com/param1/?param=param1,/param2/?param=param2;\]\*.
 
 #### Image Parameters
 
