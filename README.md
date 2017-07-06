@@ -125,6 +125,7 @@ In addition to this there are number default global functions and objects that a
   - groups: a list of the groups loaded in (0, 1, 2, ...)
   - levels: a list of the levels loaded in (name, level_1.0.0, ...)
   - ids: a list of the unique ids loaded in
+
    This will all be returned as an object if no parameters are added in, if a string matching one of the above is passed in it will return an array corresponding to the requested variable.
 
 </details>
