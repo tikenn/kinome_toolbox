@@ -77,6 +77,8 @@ And you have a database server set up.
 
 ## Web Toolbox
 
+### Default Functions and Packages
+
 Every page in this enviornment will have the following standard packages loaded in:
 
 * [Google Charts](https://developers.google.com/chart/)
@@ -90,7 +92,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>require(<i>url</i> [,<i>type</i> [,<i>cache</i>]])</summary>
 
-* ### require
+* #### require
    require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](JavaScript Promise). This promise will resolve when the script or other data has been loaded. If it is a text or json file, the then function will be passed the result, if it is a script or style element the then function will just be passed true.
 
    Additionally, when require is used in a module that only defines functions (example: [https://github.com/kinome/kinome_toolbox/blob/master/plugins/peptide_picker/peptide_picker.js](Peptide Picker)) there is no need to wait for the resolve in your file. They will resolve before your function does.
@@ -107,31 +109,31 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.addAnalysis(<i>title</i>)</summary>
 
-* ### KINOME.addAnalysis
-   Details coming soon
+* #### KINOME.addAnalysis
+   This function is passed a string and adds that string as an option to the dropdown menu 'Analyses Avaliable'. It returns a jQuery object that is the container avaliable to build your specific tool in.
 
 </details>
 
 <details>
 <summary>KINOME.error(<i>error_obj, error_message</i>)</summary>
 
-* ### KINOME.error
-   Details coming soon
+* #### KINOME.error
+   This will console.error the error object and the error message. Additionally it creates a dismisable error message based on the error message passed in.
 
 </details>
 
 <details>
 <summary>KINOME.formatEquation(<i>equation_str</i>)</summary>
 
-* ### KINOME.formatEquation
-   Details coming soon
+* #### KINOME.formatEquation
+   This takes a [jqMath](http://mathscribe.com/author/jqmath.html) string and converts it into the appropriate HTML for appending to the page.
 
 </details>
 
 <details>
 <summary>KINOME.enrich(<i>data_object</i>)</summary>
 
-* ### KINOME.enrich
+* #### KINOME.enrich
    Details coming soon
 
 </details>
@@ -139,7 +141,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.list(<i>list_object</i>)</summary>
 
-* ### KINOME.list
+* #### KINOME.list
    Details coming soon
 
 </details>
@@ -147,7 +149,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.get(<i>get_object</i>)</summary>
 
-* ### KINOME.get
+* #### KINOME.get
    Details coming soon
 
 </details>
@@ -155,23 +157,27 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.loadData(<i>urls</i>)</summary>
 
-* ### KINOME.loadData
-   Details coming soon
+* #### KINOME.loadData
+   This is a specialized require function. It will accepts urls as an array of strings. The urls must be to arrays of kinome objects (lvl1, lvl2 or names). It has the added benifits of adding the results the the KINOME.params object so that KINOME.get and KINOME.list recognize it. Additionally it will KINOME.enrich the returned object. It returns a https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](JavaScript Promise) which will pass the resultant object as an array to the then function.
 
 </details>
 
 <details>
 <summary>KINOME.params</summary>
 
-* ### KINOME.params
-   Details coming soon
+* #### KINOME.params
+   This is the object that is parsed from the URL parameters passed in. It has a data array that has all data loaded in by group. A list of the scripts loaded in by the URL and an array of the strings loaded in my URL. For more on this see [#url_parameter_options](URL Parameter Options).
 
 </details>
 
 <details>
 <summary>KINOME.page</summary>
 
-* ### KINOME.page
+* #### KINOME.page
    jQuery div for the contents of the 'home page' (This is the page that shows all currently loaded in information.)
 
 </details>
+
+### URL Parameter Options
+
+Coming soon, this will describe how to build the URL to get groups and with utilize script tag loading.
