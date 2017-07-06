@@ -79,6 +79,12 @@ And you have a database server set up.
 
 This toolbox is avaliable at: (http://toolbox.kinomecore.com) unfortunately for now you must be inside of UAB's network in order to gain access to the data. This will be changed soon.
 
+There are three major components to the web toolbox:
+
+1.  [Default Global Functions and Packages](#default-global-functions-and-packages) Functions availabe for use on every page created.
+2.  [URL Parameter Options](#url-parameter-options) The URL itself is used to load data into the pages. This data determines the default packages loaded in. A list of these defaults along with a short description of each is [avaliable here](https://github.com/kinome/kinome_toolbox/tree/master/js/client/plugins). Additionally the URL can be used to load in scripts for the purpose of development.
+3.  [Kinome Data Objects](#kinome-data-objects) These objects build the infrastructure of all the pages. There are several functions added to them that make working with them as simple as possible.
+
 ### Default Global Functions and Packages
 
 Every page in this enviornment will have the following standard packages loaded in:
