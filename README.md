@@ -199,6 +199,7 @@ http://toolbox.kinomecore.com/image [?params](#image_parameters) (click "?params
 Starting from: http://toolbox.kinomecore.com/ we can add a large number of parameters. As is is the standard, the first parameter is indicated by a '?', all subsequent ones are seperated by an '&'.
 
 * &data=\*\[ *data_url1* \[; *data_url2* \[; ... \] \] \]\*
+
    You can add any number of &data objects. They expect a list of 
 
 #### Image Parameters
