@@ -10,7 +10,7 @@ This toolbox has 3 distinct parts.
 
 ## Getting started (client side)
 
-There is a lot of details possible to discuss in this, however the easiest way to get started will be to load in the data documents described in the publication with the following shortened url.
+There is a lot of details possible to discuss in this, however the easiest way to get started will be to load in the data documents described in the pending publication with the following shortened url.
 
 http://bit.kinomecore.com/?p1_1.0.0
 
