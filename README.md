@@ -196,10 +196,15 @@ http://toolbox.kinomecore.com/image [?params](#image_parameters) (click "?params
 
 #### Toolbox Parameters
 
+Starting from: http://toolbox.kinomecore.com/ we can add a large number of parameters. As is is the standard, the first parameter is indicated by a '?', all subsequent ones are seperated by an '&'.
+
+&data=\*\[*data_url1*\[;*data_url2*\[;...\]\]\]\*
 
 #### Image Parameters
 
 Image only accepts one parameter: ?img="*\<image_file_name\>*"
+
+Starting from: http://toolbox.kinomecore.com/ we can add parameters as described below.
 
 This will load in the image file indicated and alter the image for viewing online. It also provides a link to the original image file since the web version is low quality. [Example](http://toolbox.kinomecore.com/image/?img=%22631308612_W1_F1_T50_P154_I1285_A29%22)
 
