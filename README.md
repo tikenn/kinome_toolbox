@@ -182,7 +182,7 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.page</summary>
 
 * #### KINOME.page
-   jQuery div for the contents of the 'home page' (This is the page that shows all currently loaded in information.)
+   jQuery div for the contents of the 'home page' (This is the page that shows all currently loaded in information as a table and builds links to other data levels.)
 
 </details>
 
@@ -191,3 +191,5 @@ In addition to this there are number default global functions and objects that a
 Coming soon, this will describe how to build the URL to get groups and with utilize script tag loading.
 
 ### Kinome Data Objects
+
+Coming soon, this will describe the objects by linking to [Swagger Hub KINOME](https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0) and talk about the enrichment functions.
