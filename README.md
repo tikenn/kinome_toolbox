@@ -18,7 +18,7 @@ From here you can either use the [developer console](https://developers.google.c
 
 After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one data point to the console and on a new analysis tab.
 
-```
+```JavaScript
 (function () {
     'use strict';
 
