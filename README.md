@@ -115,6 +115,22 @@ In addition to this there are number default global functions and objects that a
 </details>
 
 <details>
+<summary>KINOME.list(<i>list_object</i>)</summary>
+
+* #### KINOME.list
+   Details coming soon
+
+</details>
+
+<details>
+<summary>KINOME.get(<i>get_object</i>)</summary>
+
+* #### KINOME.get
+   Details coming soon
+
+</details>
+
+<details>
 <summary>KINOME.error(<i>error_obj, error_message</i>)</summary>
 
 * #### KINOME.error
@@ -134,22 +150,6 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.enrich(<i>data_object</i>)</summary>
 
 * #### KINOME.enrich
-   Details coming soon
-
-</details>
-
-<details>
-<summary>KINOME.list(<i>list_object</i>)</summary>
-
-* #### KINOME.list
-   Details coming soon
-
-</details>
-
-<details>
-<summary>KINOME.get(<i>get_object</i>)</summary>
-
-* #### KINOME.get
    Details coming soon
 
 </details>
