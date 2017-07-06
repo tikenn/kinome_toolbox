@@ -107,7 +107,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.addAnalysis(<i>title</i>)</summary>
 
-* ### addAnalysis
+* ### KINOME.addAnalysis
    Details coming soon
 
 </details>
@@ -115,7 +115,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.error(<i>error_obj, error_message</i>)</summary>
 
-* ### error
+* ### KINOME.error
    Details coming soon
 
 </details>
@@ -123,7 +123,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.formatEquation(<i>equation_str</i>)</summary>
 
-* ### formatEquation
+* ### KINOME.formatEquation
    Details coming soon
 
 </details>
@@ -131,7 +131,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.enrich(<i>data_object</i>)</summary>
 
-* ### enrich
+* ### KINOME.enrich
    Details coming soon
 
 </details>
@@ -139,7 +139,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.list(<i>list_object</i>)</summary>
 
-* ### list
+* ### KINOME.list
    Details coming soon
 
 </details>
@@ -147,7 +147,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.get(<i>get_object</i>)</summary>
 
-* ### get
+* ### KINOME.get
    Details coming soon
 
 </details>
@@ -155,7 +155,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.loadData(<i>urls</i>)</summary>
 
-* ### loadData
+* ### KINOME.loadData
    Details coming soon
 
 </details>
@@ -163,7 +163,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.params</summary>
 
-* ### params
+* ### KINOME.params
    Details coming soon
 
 </details>
@@ -171,7 +171,7 @@ In addition to this there are number default global functions and objects that a
 <details>
 <summary>KINOME.page</summary>
 
-* ### page
+* ### KINOME.page
    jQuery div for the contents of the 'home page' (This is the page that shows all currently loaded in information.)
 
 </details>
