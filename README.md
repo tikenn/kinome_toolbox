@@ -88,7 +88,7 @@ Every page in this enviornment will have the following standard packages loaded 
 In addition to this there are few default global functions that are created, and a few that are on the KINOME object.
 
 <details>
-<summary>require(<i>url</i>, <i>type</i>, <i>cache</i>)</summary>
+<summary>require(<i>url</i>, [<i>type</i>, [<i>cache</i>]])</summary>
 
    require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](JavaScript Promise). This promise will resolve when the script or other data has been loaded. If it is a text or json file, the then function will be passed the result, if it is a script or style element the then function will just be passed true.
 
