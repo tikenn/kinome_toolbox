@@ -12,7 +12,7 @@ This toolbox has 3 distinct parts.
 
 There is a lot of details possible to discuss in this, however the easiest way to get started will be to load in the data documents described in the publication with the following shortened url.
 
-http://bit.kinomecore.com/p1_1.0.0
+http://bit.kinomecore.com/?p1_1.0.0
 
 From here you can either use the [developer console](https://developers.google.com/web/tools/chrome-devtools/console/) or create your own script, loading it in by adding the &code="*\<script_url\>*" [More info...](toolbox-parameters).
 
