@@ -39,6 +39,7 @@ After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one
     console.log(onePoint);
 
     var myDiv = KINOME.addAnalysis('Print One');
+    //pretty print
     myDiv.html(JSON.stringify(onePoint, null, 2).replace(/\ /g, '&nbsp;').replace(/\n/g,'<br />'));
 
 }());
