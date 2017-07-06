@@ -206,7 +206,19 @@ Starting from: http://toolbox.kinomecore.com/ we can add a large number of param
 
 * &data=\*\[ *data_url1* \[, *data_url2* \[, ... \] \] \]\*
 
-    (Coming Soon, do not use currently) This notation for *data_urls* works identically to the above expect if all URLs are from the same base then you can indicate only the end of the URL. For example: `&data=*[http://example.com/param1/?param=param1;http://example.com/param2/?param=param2;]*` is identical to `&data=*[http://example.com/param1/?param=param1,/param2/?param=param2;]*`.
+   (Coming Soon, do not use) This notation for *data_urls* works identically to the above expect if all URLs are from the same base then you can indicate only the end of the URL. For example: `&data=*[http://example.com/param1/?param=param1;http://example.com/param2/?param=param2;]*` is identical to `&data=*[http://example.com/param1/?param=param1,/param2/?param=param2;]*`.
+
+* &code="*\<script_url\>*"
+
+   Based on loading preferences this will be the last thing that loads. So all indicated data and text will be avaliable when this loads. This will allow you to develop an add on/plug in for the toolbox. Which can then be formalized by submitting the add on as a [pull request](https://github.com/kinome/kinome_toolbox/pulls). All add ons should be submitted as part of the [plugin's folder](https://github.com/kinome/kinome_toolbox/tree/master/plugins).
+
+* &text="\<text_url\>"
+
+   Our reccomendation is to utilize the (require function)[#default-global-functions-and-packages] in your script for this purpose, however this is supported and the results will be added to the KINOME.params.strings array. This is blocking, &code will not load until this resolves.
+
+* &style="\<css_url\>"
+
+   Our reccomendation is to utilize the (require function)[#default-global-functions-and-packages] in your script for this purpose, however this is supported and the results will loaded into the system as part of `<head>`. This is non-blocking as style will only change the appearance of the page not the functionality.
 
 #### Image Parameters
 
