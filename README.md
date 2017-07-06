@@ -6,7 +6,7 @@ This toolbox has 3 distinct parts.
 
 1. [File Parsing](#server-side-file-parsing) A small bit of node code that can be utilized to automatically parse a new file into all the different components and add them to the database.
 2. [Hosting server](#monogo-with-restify) A server component made to host your own data. This is set up to run with just about any flavor of linux, it is the exact server configuration that we utilize (CentOS 7-3 and Ubuntu 16 tested).
-3. [Web Toolbox](#web-toolbox)A bulkier series of client side JavaScript scripts that create the pages for the toolbox.
+3. [Web Toolbox](#web-toolbox) A series of client side JavaScript scripts that create the pages for the toolbox.
 
 ## Getting started (server side)
 
@@ -57,7 +57,7 @@ The _id field is generated for each of these files so it is the same for 'name' 
 This generates .json and .mdb files. The only difference is that the .json is an array so it can be imported directly into the toolbox, and the .mdb is documents seperated by newlines so it can be directly imported into the mongodb database with the following commands:
 
 ``` mongoimport --db <db_name> --collection <collection_name> --file <file_for_collection_name> ```
-s
+
 ## Monogo with Restify
 
 Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
