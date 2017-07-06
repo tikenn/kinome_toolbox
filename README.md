@@ -117,10 +117,15 @@ In addition to this there are number default global functions and objects that a
 </details>
 
 <details>
-<summary>KINOME.list(<i>list_object</i>)</summary>
+<summary>KINOME.list(<i>list_string</i>)</summary>
 
 * #### KINOME.list
-   Details coming soon
+   This lists the parameters avaliable for a follow up get from KINOME.get. At this time that includes:
+  - names: a list of the barcode_array combinations present
+  - groups: a list of the groups loaded in (0, 1, 2, ...)
+  - levels: a list of the levels loaded in (name, level_1.0.0, ...)
+  - ids: a list of the unique ids loaded in
+   This will all be returned as an object if no parameters are added in, if a string matching one of the above is passed in it will return an array corresponding to the requested variable.
 
 </details>
 
