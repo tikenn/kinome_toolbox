@@ -105,48 +105,56 @@ In addition to this there are number default global functions and objects that a
 
 <details>
 <summary>KINOME.addAnalysis(<i>title</i>)</summary>
+* addAnalysis
    Details coming soon
 </details>
 
 <details>
 <summary>KINOME.error(<i>error_obj, error_message</i>)</summary>
+* error
    Details coming soon
 </details>
 
 <details>
 <summary>KINOME.formatEquation(<i>equation_str</i>)</summary>
+* formatEquation
    Details coming soon
 </details>
 
 <details>
 <summary>KINOME.enrich(<i>data_object</i>)</summary>
+* enrich
    Details coming soon
 </details>
 
 <details>
 <summary>KINOME.list(<i>list_object</i>)</summary>
+* list
    Details coming soon
 </details>
 
 <details>
 <summary>KINOME.get(<i>get_object</i>)</summary>
+* get
    Details coming soon
 </details>
 
 
 <details>
 <summary>KINOME.loadData(<i>urls</i>)</summary>
+* loadData
    Details coming soon
 </details>
 
 <details>
 <summary>KINOME.params</summary>
+* params
    Details coming soon
 </details>
 
 <details>
 <summary>KINOME.page</summary>
-
+* page
    jQuery div for the contents of the 'home page' (This is the page that shows all currently loaded in information.)
 
 </details>
