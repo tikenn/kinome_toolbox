@@ -56,7 +56,9 @@ After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one
 }());
 ```
 
-The functions above and many more are described below [Web Toolbox](#web-toolbox). 
+The KINOME based functions and many more are described below [Web Toolbox](#web-toolbox).
+
+The dataArr functions and many more are described below  [Kinome Data Objects](#kinome-data-objects).
 
 ## Getting started (server side)
 
@@ -68,7 +70,7 @@ Download the repository with:
 
 ```git clone https://github.com/kinome/kinome_toolbox.git```
 
-To get our updates you will have to issue a pull command from within the folder you downloaded the code base to.
+To get our updates you will have to issue a pull command from within the folder you downloaded the code base to periodically.
 
 ```git pull```
 
@@ -286,4 +288,4 @@ Starting from: http://toolbox.kinomecore.com/ we can add parameters as described
 
 ### Kinome Data Objects
 
-Coming soon, this will describe the objects by linking to [Swagger Hub KINOME](https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0) and talk about the enrichment functions.
+WHile this is at the bottom of this readme, it is still essential. Coming soon, this will describe the objects by linking to [Swagger Hub KINOME](https://app.swaggerhub.com/apis/adussaq/KINOME/1.0.0) and talk about the enrichment functions.

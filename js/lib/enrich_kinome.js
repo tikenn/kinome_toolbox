@@ -139,8 +139,10 @@
 
                         //Now the meta data
                         for (i = 0; i < that.run_data.length; i += 1) {
-                            if (Array.isArray(that.run_data[i].value) &&
-                                    that.run_data[i].value.length === that.cycles.length - 1) {
+                            if (
+                                Array.isArray(that.run_data[i].value) &&
+                                    that.run_data[i].value.length === that.cycles.length - 1
+                            ) {
                                 that.run_data[i].value.push(undefined);
                             }
                         }
@@ -197,8 +199,8 @@
                                 ? null
                                 : params.exposure * 1;
                         if ( //now check types
-                            !isNaN(params.value) && !isNaN(params.valid) &&
-                            !isNaN(params.cycle) && !isNaN(params.exposure) &&
+                            !Number.isNaN(params.value) && !Number.isNaN(params.valid) &&
+                            !Number.isNaN(params.cycle) && !Number.isNaN(params.exposure) &&
                             typeof params.type === 'string' && typeof params.peptide === 'string'
                         ) {
                             // console.log('made it here 3');
@@ -415,7 +417,7 @@
                     var that = this;
                     if (typeof key === 'string') {
                         key = key.toLowerCase();
-                        if (key.match(/^signal$|^background$/)) {
+                        if (key.match(/^signal$|^background$/m)) {
                             data[type][key][fit_ind][pep_ind] = value;
                             that[key] = value; //do this so the object itself is updated.
                         } else {
@@ -592,7 +594,7 @@
                                 //This is for value (background or signal pointed to something)
                 if (val_type) {
                                 //This checks for type (linear or kinetic)
-                    if (typeof params.type === 'string' && params.type.match(/^linear$|^kinetic$/)) {
+                    if (typeof params.type === 'string' && params.type.match(/^linear$|^kinetic$/m)) {
                                 //This checks for a peptide
                         if (typeof params.peptide === 'string' && peptide_object.hasOwnProperty(params.peptide)) {
                                 //now check for cycle or exposure
@@ -770,7 +772,7 @@
                 }
                 var i, listKeys = Object.keys(allLists);
                 for (i = 0; i < listKeys.length; i += 1) {
-                    if (list_str.match(new RegExp(listKeys[i], 'i')) || listKeys[i].match(new RegExp(list_str, 'i'))) {
+                    if (list_str.match(new RegExp('^' + listKeys[i].replace(/^\^/, ''), 'i')) || listKeys[i].match(new RegExp(list_str, 'i'))) {
                         return copy(allLists[listKeys[i]]);
                     }
                 }
@@ -1144,7 +1146,7 @@
 
         mult1 = function (x) {
             //for map
-            if (typeof x === 'string' && x.match(/Post\ Wash|Cycle\ Slope/i)) {
+            if (typeof x === 'string' && x.match(/Post\sWash|Cycle\sSlope/i)) {
                 return x;
             }
             return x * 1;
