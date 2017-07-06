@@ -79,11 +79,11 @@ And you have a database server set up.
 
 Every page in this enviornment will have the following standard packages loaded in:
 
-*[Google Charts](https://developers.google.com/chart/)
-*[JQuery 3](https://jquery.com/)
-*[Bootstrap 3](http://getbootstrap.com/) (Both JS and CSS)
-*[Dexie](http://dexie.org/)
-*[jqMath](http://mathscribe.com/author/jqmath.html)
+* [Google Charts](https://developers.google.com/chart/)
+* [JQuery 3](https://jquery.com/)
+* [Bootstrap 3](http://getbootstrap.com/) (Both JS and CSS)
+* [Dexie](http://dexie.org/)
+* [jqMath](http://mathscribe.com/author/jqmath.html)
 
 In addition to this there are few default global functions that are created, and a few that are on the KINOME object.
 
