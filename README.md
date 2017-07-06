@@ -85,7 +85,7 @@ Every page in this enviornment will have the following standard packages loaded 
 * [Dexie](http://dexie.org/)
 * [jqMath](http://mathscribe.com/author/jqmath.html)
 
-In addition to this there are few default global functions that are created, and a few that are on the KINOME object.
+In addition to this there are number default global functions and objects that are created.
 
 <details>
 <summary>require(<i>url</i> [,<i>type</i> [,<i>cache</i>]])</summary>
@@ -136,7 +136,9 @@ In addition to this there are few default global functions that are created, and
 
 <details>
 <summary>KINOME.loadData(<i>urls</i>)</summary>
+<div style="margin-left: 20px">
    Details coming soon
+</div>
 </details>
 
 <details>
