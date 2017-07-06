@@ -300,6 +300,11 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 * ##### data_arr.get(<i>get_object</i>)
    This can take as entry any of the parameters that return from an argumentless *data_arr.list()* call. It will iteratively call get functions on all members that match the main object filters (ie name or id) and return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this.
 
+   Each returned object has 2 functions on it: A set function that sets the value of specific parameters in the base object and a more function that gives more information about the point itself.
+
+  * set(*key*, *value*), sets the indicated key to the indicated value. Only works for 'background', 'background_valid', 'signal' and 'signal_valid'.
+  * more(), returns the image index for the point and the full meta data array for the indicate peptide.
+
 </details>
 
 <details>
@@ -337,6 +342,11 @@ This is just the meta data and peptide list for each data object loaded in. This
 * ##### name.get(<i>get_object</i>)
    This can take as entry any of the parameters that return from an argumentless *name.list()* call. It will return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
 
+   Each returned object has 2 functions on it: A set function that sets the value of specific parameters in the base object and a more function that gives more information about the point itself.
+
+  * set(*key*, *value*), sets the indicated key to the indicated value. Only works for 'background', 'background_valid', 'signal' and 'signal_valid'.
+  * more(), returns the image index for the point and the full meta data array for the indicate peptide.
+
 </details>
 
 <details>
@@ -365,11 +375,19 @@ This is just the meta data and peptide list for each data object loaded in. This
 
 
 #### Level 1
+
+Level 1 data is essentially base level data. It has not been parameterized and the only additions or alterations are based on the level 1.X.Y indications. These levels will be described in the supplement of a pending publication and in a future youtube video. (Links coming soon)
+
 <details>
 <summary>lvl1.get(<i>get_object</i>)</summary>
 
 * ##### lvl1.get(<i>get_object</i>)
    This can take as entry any of the parameters that return from an argumentless *lvl1.list()* call. It will return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+   Each returned object has 2 functions on it: A set function that sets the value of specific parameters in the base object and a more function that gives more information about the point itself.
+
+  * set(*key*, *value*), sets the indicated key to the indicated value. Only works for 'background', 'background_valid', 'signal' and 'signal_valid'.
+  * more(), returns the image index for the point and the full meta data array for the indicate peptide.
 
 </details>
 
@@ -400,6 +418,8 @@ This is just the meta data and peptide list for each data object loaded in. This
 
 #### Level 2
 
+Level 2 data is parameterized level 1 data. The slight variations on it are based on the origin level 1 data. These levels will be described in the supplement of a pending publication and in a future youtube video. (Links coming soon)
+
 <details>
 <summary>lvl2.get(<i>get_object</i>)</summary>
 
@@ -413,6 +433,14 @@ This is just the meta data and peptide list for each data object loaded in. This
 
 * ##### lvl2.list(<i>list_string</i>)
    This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>lvl2.put()</summary>
+
+* ##### lvl2.put()
+   This clone is special in that it preserves the enrich functions and the non-enumerable properties.
 
 </details>
 
