@@ -23,8 +23,23 @@ After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one
     'use strict';
 
     var dataArr = KINOME.get({level: '1.0.0'});
-    var ids = dataArr.list('id');
-    //Just get the first one.
+    var ids = dataArr.list('ids');
+    var cycles = dataArr.list('cycles');
+    var exposures = dataArr.list('exposures');
+    var peptides = dataArr.list('peptides');
+
+    //Just get the first one from all of these things
+    var onePoint = dataArr.get({
+        id: ids[0],
+        cycle: cycles[0],
+        exposure: exposures[0],
+        peptide: peptides[0]
+    });
+
+    console.log(onePoint);
+
+    var myDiv = KINOME.addAnalysis('Print One');
+    myDiv.html(JSON.stringify(onePoint, null, 2).replace(/\ /g, '&nbsp;').replace(/\n/g,'<br />'));
 
 }());
 ```
