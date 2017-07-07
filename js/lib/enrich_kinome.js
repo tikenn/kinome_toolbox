@@ -359,7 +359,7 @@
                 /*
                     This needs get get all the parameters passed in. They are:
                         //To add
-                        signal|background: number
+                        signal|background: object
                         //To find it
                         type: /linear|kinetic/
                         peptide: string

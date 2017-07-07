@@ -300,10 +300,7 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 * ##### data_arr.get(<i>get_object</i>)
    This can take as entry any of the parameters that return from an argumentless *data_arr.list()* call. It will iteratively call get functions on all members that match the main object filters (ie name or id) and return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this.
 
-   Each returned object has 2 functions on it: A set function that sets the value of specific parameters in the base object and a more function that gives more information about the point itself.
-
-  * set(*key*, *value*), sets the indicated key to the indicated value. Only works for 'background', 'background_valid', 'signal' and 'signal_valid'.
-  * more(), returns the image index for the point and the full meta data array for the indicate peptide.
+   Each returned object can have functions attached, these are specifically described in the 'get' function for each type below.
 
 </details>
 
@@ -341,11 +338,6 @@ This is just the meta data and peptide list for each data object loaded in. This
 
 * ##### name.get(<i>get_object</i>)
    This can take as entry any of the parameters that return from an argumentless *name.list()* call. It will return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
-
-   Each returned object has 2 functions on it: A set function that sets the value of specific parameters in the base object and a more function that gives more information about the point itself.
-
-  * set(*key*, *value*), sets the indicated key to the indicated value. Only works for 'background', 'background_valid', 'signal' and 'signal_valid'.
-  * more(), returns the image index for the point and the full meta data array for the indicate peptide.
 
 </details>
 
@@ -400,6 +392,33 @@ Level 1 data is essentially base level data. It has not been parameterized and t
 </details>
 
 <details>
+<summary>lvl1.list(<i>list_string</i>)</summary>
+
+* ##### lvl1.list(<i>list_string</i>)
+   This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+
+</details>
+
+<details>
+<summary>lvl1.put(<i>put_object</i>)</summary>
+
+* ##### lvl1.put(<i>put_object</i>)
+   This will add a data point to a level 1 object. It requires 6 parameters passed in as object properties. They are as follows
+```JavaScript
+        {
+            valid: "boolean, true/false",
+            value: "value to set, a number",
+            type: "either signal or background, string",
+            peptide: "peptide the value is for, string",
+            cycle: "cycle number for value, null === post wash, number or null",
+            exposure: "camera exposure time for value, null === cycle series, number or null"
+        }
+```
+   As expected this will add that value/valid combination into the object. This works regardless of if the point exists already. However if it does, this will add it in using a lvl1.get call then a pnt.set call.
+
+</details>
+
+<details>
 <summary>lvl1.clone()</summary>
 
 * ##### lvl1.clone()
@@ -426,6 +445,11 @@ Level 2 data is parameterized level 1 data. The slight variations on it are base
 * ##### lvl2.get(<i>get_object</i>)
    This can take as entry any of the parameters that return from an argumentless *lvl2.list()* call. It will return an array with all matching data points as objects. This and all data level get functions take an object with parameters pointing to either strings or arrays of strings and return an array will all matching points. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
 
+   Each returned object has 2 functions on it: A set function that sets the value of specific parameters in the base object and a more function that gives more information about the point itself.
+
+  * set(*key*, *value*), sets the indicated key to the indicated value. Only works for background and signal as these are the only point determined parameters. You must set the entire object (`{R^2, WW, [params]}` for kinetic or `{R^2, [params]}` for linear).
+  * more(), returns the image index for the point and the full meta data array for the indicate peptide.
+
 </details>
 
 <details>
@@ -437,10 +461,25 @@ Level 2 data is parameterized level 1 data. The slight variations on it are base
 </details>
 
 <details>
-<summary>lvl2.put()</summary>
+<summary>lvl2.put(<i>put_object</i>)</summary>
 
-* ##### lvl2.put()
-   This clone is special in that it preserves the enrich functions and the non-enumerable properties.
+* ##### lvl2.put(<i>put_object</i>)
+   This will add a data point to a level 2 object. It requires 4 parameters passed in as object properties. They are as follows
+```JavaScript
+        {
+            type: "required, describes type of fit, either linear or kinetic, string",
+            peptide: "required, peptide the value is for, string",            
+            
+
+            signal: "optional [either this or background required], fit object",
+            background: "optional [either this or signal required], fit object",
+
+            
+            exposure: "required if type === kinetic, otherwise ignored, camera exposure time for value, null === cycle series, number or null",
+            cycle: "required if type === linear, otherwise ignored, cycle number for value, null === post wash, number or null"
+        }
+```
+   As expected this will add that background/signal object into the main object. This works regardless of if the point exists. However if it does exist, this will add it in using a lvl2.get call then a pnt.set call.
 
 </details>
 
