@@ -10,13 +10,15 @@ This toolbox has 3 distinct parts.
 
 ## Getting started (client side)
 
-There is a lot of details possible to discuss in this, however the easiest way to get started will be to load in the data documents described in the pending publication with the following shortened url.
+There are a lot of functions and tools you can use to interact with our data. What follows is our 'hello world' example. 
+
+Start by loading in some data. The data in our pending publication can be loaded using this shortened URL.
 
 http://bit.kinomecore.com/?p1_1.0.0
 
 From here you can either use the [developer console](https://developers.google.com/web/tools/chrome-devtools/console/) or create your own script, loading it in by adding the &code="*\<script_url\>*" to the resolved url, or the url above. [More info...](toolbox-parameters)
 
-After that here is a "hello world" that gets all the lvl 1.0.0 data and logs one data point to the console and on a new analysis tab.
+After that here is the "hello world script" that gets all the lvl 1.0.0 data and logs one data point to the console and on a new analysis tab.
 
 ```JavaScript
 (function () {
