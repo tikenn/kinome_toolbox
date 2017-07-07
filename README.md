@@ -392,10 +392,10 @@ Level 1 data is essentially base level data. It has not been parameterized and t
 </details>
 
 <details>
-<summary>lvl1.list(<i>list_string</i>)</summary>
+<summary>lvl1.level_up(<i>equation_string</i>)</summary>
 
-* ##### lvl1.list(<i>list_string</i>)
-   This will create an array for the matching list string option based on all possible options for a get function. If it is not given a list string it will return an object with all possible lists. The [client side getting started](#getting-started-client-side) provides an example of this function in action on a data_arr. It works identically here, just with different options.
+* ##### lvl1.level_up(<i>equation_string</i>)
+   This creates an empty level 2 object from the level 1 object scaffolding. It does not require, but it is highly recommended to pass it the equation string used for the parameterization of kinetic curves. [Example is found here](https://github.com/kinome/kinome_toolbox/blob/master/models/cyclingEq_3p_hyperbolic.jseq), but remove the extra spaces and comments using: `eq_string.replace(/\/\/[^\n]*/g, "").replace(/\s+/g, ' ')`. Relevent metadata and other crucial information is passed over. This resultant object can then be built up using `lvl2.put({put_object})`.
 
 </details>
 
