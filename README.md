@@ -167,6 +167,14 @@ In addition to this there are number default global functions and objects that a
 </details>
 
 <details>
+<summary>save(<i>file_content</i>, <i>file_name</i>)</summary>
+
+* #### save
+   save is a simple function, the first parameter is a string with the content of the file you would like to create. The second is a string with the file name you would like to create. These will be downloaded to the users prefered downloads folder.
+
+</details>
+
+<details>
 <summary>KINOME.addAnalysis(<i>title</i>)</summary>
 
 * #### KINOME.addAnalysis
