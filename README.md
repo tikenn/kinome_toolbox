@@ -152,19 +152,10 @@ Every page in this enviornment will have the following standard packages loaded 
 In addition to this there are number default global functions and objects that are created.
 
 <details>
-<summary>require(<i>url</i> [,<i>type</i> [,<i>cache</i>]])</summary>
+<summary>require(<i>request</i> [,<i>type</i> [,<i>cache</i>]])</summary>
 
 * #### require
-   require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [JavaScript Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise). This promise will resolve when the script or other data has been loaded. If it is a text or json file, the then function will be passed the result, if it is a script or style element the then function will just be passed true.
-
-   Additionally, when require is used in a module that only defines functions (example: [Peptide Picker](https://github.com/kinome/kinome_toolbox/blob/master/plugins/peptide_picker/peptide_picker.js)) there is no need to wait for the resolve in your file. They will resolve before your function does.
-   
-   Finally require caches everything except scripts. Text and JSON default to a 30 minute cache. If the system is getting specific documents from a mongodb instance these are cached for 90 days as are all style documents. 
-   
-   As for the actual parameters:  
-  - *url*: (required) The url [string] to the actual script of interest, or a string that as defined by [require.defaults](https://github.com/kinome/kinome_toolbox/blob/master/js/client/web_namespace.js#L20). Automatic type dection assumes JavaScript unless the file ends with .txt, .css or .json or if type is overwritten by the second optional parameter. This may also be an array of strings. If you set a type with an array it will be utilized for all parts of that array.
-  - *type*: (optional) Options: 'text, txt, string' (resolves as text); 'style, css' (resolves as style sheet), 'json, data', resolves as JSON.
-  - *cache*: (optional) true/false for cacheing. If false then cache will clear and be replaced by the newest file. If true, then it will always pull from the cache when possible (with the same limits as above).
+   require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [JavaScript Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise). This documentation got too verbose for this file. Please see [require readme](./require.md) for more information and examples.
 
 </details>
 
@@ -210,7 +201,15 @@ In addition to this there are number default global functions and objects that a
 <summary>KINOME.error(<i>error_obj, error_message</i>)</summary>
 
 * #### KINOME.error
-   This will console.error the error object and the error message. Additionally it creates a dismisable error message based on the error message passed in.
+   This will console.error the error object and the error message. Additionally it creates a dismisable error message based on the error message passed in. This message may be either a string, html or jquery objects.
+
+</details>
+
+<details>
+<summary>KINOME.warn(<i>warn_message</i>)</summary>
+
+* #### KINOME.warn
+   This will console.warn the message. Additionally it creates a dismisable warning message based on the warning passed in. This message may be either a string, html or jquery objects.
 
 </details>
 
@@ -272,9 +271,9 @@ Starting from: http://toolbox.kinomecore.com/ we can add a large number of param
 
    If multiple &data=\*\[...\]\* tags are utilized then those group numbers will be indicated on the data objects loaded in and as the group number from the KINOME.list function.
 
-* &data=\*\[ *data_url1* \[, *data_url2* \[, ... \] \] \]\*
+* &data=\*\[ *data_url1* \[| *data_url2* \[| ... \] \] \]\*
 
-   (Coming Soon, do not use) This notation for *data_urls* works identically to the above expect if all URLs are from the same base then you can indicate only the end of the URL. For example: `&data=*[http://example.com/param1/?param=param1;http://example.com/param2/?param=param2;]*` is identical to `&data=*[http://example.com/param1/?param=param1,/param2/?param=param2;]*`.
+    This notation for *data_urls* works identically to the above expect if all URLs are from the same base then you can indicate only the end of the URL. For example: `&data=*[http://example.com/direc1/?param=param1;http://example.com/direc2/?param=param2;http://example.com/direc1/?param=param3]*` is identical to `&data=*[http://example.com/direc1/?param=param1|/direc2/?param=param2|?param=param3]*`.
 
 * &code="*\<script_url\>*"
 

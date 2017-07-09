@@ -15,7 +15,7 @@ as urls this works by assuming jQuery is present and that Promises exist
     var get_function_type, get_data_promise, get_style_promise, reqDone, use_cache,
             get_text_promise, require, defaults, get_script_promise, pages, add_to_db,
             KINOME = {}, pendingRequires = {}, database, cache_db, get_from_db,
-            db_open, VERBOSE_REQ;
+            db_open, VERBOSE_REQ, get_from_cached, uuid, ID, local_database, jagax;
 
     defaults = {
         name: ['set_up_table'],
@@ -85,6 +85,67 @@ as urls this works by assuming jQuery is present and that Promises exist
     cache_db = database.require_cache;
     db_open = database.open();
     VERBOSE_REQ = false;
+    ID = '_id';
+
+    //Set up the local cache_db of data
+    local_database = {
+        dexie_db: new Dexie("kinome"),
+        //these must be predefined, if changed must increment version number
+        collections: {
+            'name': '',
+            'lvl_1.0.0': '',
+            'lvl_1.0.1': '',
+            'lvl_1.1.2': '',
+            'lvl_2.0.1': '',
+            'lvl_2.1.2': ''
+        },
+        get: function (collection, id) {
+            var that = this;
+
+            //If the database has been opened, then return the collection and
+            // add the object
+            return that.collections[collection].then(function (db) {
+                if (id === undefined) {
+                    return db.toArray();
+                } else {
+                    return db.where('_id').equals(id).toArray();
+                }
+            });
+        },
+        upsert: function (collection, object) {
+            var that = this;
+
+            //If the database has been opened, then return the collection and
+            // add the object
+            return that.collections[collection].then(function (db) {
+                if (object[ID] !== undefined) {
+                    object[ID] = object[ID].toString();
+                } else {
+                    object[ID] = uuid();
+                }
+                return db.put(object).then(function () {
+                    return true;
+                });
+            });
+        }
+    };
+
+    //Set up the local data base
+    (function () {
+        var storeObj = {}, storeKeys = Object.keys(local_database.collections),
+                startProm;
+        storeKeys.map(function (key) {
+            //name and some others are protected, so we need to add something
+            storeObj['$' + key] = "_id";
+        });
+        local_database.dexie_db.version(1).stores(storeObj);
+        startProm = local_database.dexie_db.open();
+        storeKeys.map(function (collection) {
+            local_database.collections[collection] = startProm.then(function () {
+                return local_database.dexie_db['$' + collection];
+            });
+        });
+    }());
 
     use_cache = function (url, date) {
         var i, uuidRegex, databaseRegex, nameRegex, timeLimits, default_limit, now, useit, diff, match;
@@ -133,36 +194,50 @@ as urls this works by assuming jQuery is present and that Promises exist
         var waiting = [], postResolve, blocking = false;
 
         postResolve = function (loaded) {
-            return function (val) {
-                if (VERBOSE_REQ) {
-                    console.log('%c resolved: ' + loaded[1], 'background: #dff0d8');
-                }
-                loaded[0](val); // call the resolve function
+            return function () {
+                return loaded[2].then(function (val) {
+                    if (VERBOSE_REQ) {
+                        console.log('%c resolved: ' + loaded[1], 'background: #dff0d8');
+                    }
+                    if (typeof val === 'function') {
+                        loaded[0](val());
+                    } else {
+                        loaded[0](val);
+                    }
+                    return true;
+                });
             };
         };
-        return function (resolve, reject, string, prom) {
+        return function (resolve, reject, string, prom, func) {
             //Add it to the stack
-            var loaded, pArr;
+            var loaded;
             if (!blocking) {
                 if (VERBOSE_REQ) {
                     console.log('%c Blocking Scripts.', 'background: #f98493; font-weight: bold;');
                 }
                 blocking = true;
             }
-            waiting.push([resolve, string, prom]);
+            if (func) {
+                waiting.unshift([resolve, string, prom]);
+            } else {
+                waiting.push([resolve, string, prom]);
+            }
 
             //if the interval is not already running, start it
             prom.then(function () {
-                if (Object.keys(pendingRequires).length === 0) {
-                    pArr = [];
-                    while (waiting.length && Object.keys(pendingRequires).length === 0) {
+                var pChain;
+                if (Object.keys(pendingRequires).length === 0 && waiting.length) {
+                    pChain = Promise.resolve(); // start chain
+
+                    while (waiting.length) {
                         loaded = waiting.pop();
-                        pArr.push(loaded[2].then(postResolve(loaded)));
+                        pChain = pChain.then(postResolve(loaded));
                     }
-                    Promise.all(pArr).then(function () {
+
+                    pChain.then(function () {
                         blocking = false;
                         if (VERBOSE_REQ) {
-                            console.log('%c Resolved Blocking.', 'background: #dff0d8; font-weight: bold;', pArr.length);
+                            console.log('%c Resolved Blocking.', 'background: #dff0d8; font-weight: bold;');
                         }
                     }).catch(function () {
                         return; //ignore this error it is resolved elsewhere
@@ -203,6 +278,16 @@ as urls this works by assuming jQuery is present and that Promises exist
         });
     };
 
+    jagax = function (object) {
+        return new Promise(function (resolve, reject) {
+            jQuery.ajax(object).then(function (res) {
+                resolve(res);
+            }, function (err) {
+                reject(err);
+            });
+        });
+    };
+
     add_to_db = function (url, data) {
         return db_open.then(function () {
             return cache_db.put({
@@ -214,7 +299,7 @@ as urls this works by assuming jQuery is present and that Promises exist
     };
 
     require = function (input_str, type, cache) {
-        var i, url, blocking, dt_obj, ret_promise, datafunc, pArr = [], promise_pending, unique = Math.random().toString();
+        var i, url, blocking, dt_obj, func = false, ret_promise, datafunc, pArr = [], promise_pending, unique = Math.random().toString();
         /*
             type is optional, if it is not set then the file extension will be
             used. 'js' will load javascript, 'css' will load style, 'json' will
@@ -242,7 +327,11 @@ as urls this works by assuming jQuery is present and that Promises exist
 
 
         if (VERBOSE_REQ) {
-            console.log('%c Requesting: ' + input_str, 'background: #f98493');
+            if (typeof url === 'function') {
+                console.log('%c Requesting a function call', 'background: #f98493');
+            } else {
+                console.log('%c Requesting: ' + input_str, 'background: #f98493');
+            }
         }
 
         //actually get started
@@ -251,11 +340,6 @@ as urls this works by assuming jQuery is present and that Promises exist
             dt_obj = get_function_type(url, type);
             datafunc = dt_obj.func;
             blocking = dt_obj.blocking;
-
-            //Tell the system there is a new pending promise
-            if (blocking) {
-                pendingRequires[unique] = 1;
-            }
 
             //Now if we have a datafunc (nothing failed) then get going
             if (datafunc) {
@@ -276,9 +360,27 @@ as urls this works by assuming jQuery is present and that Promises exist
             promise_pending = Promise.all(pArr).then(function (res) {
                 return res;
             });
+        } else if (typeof url === 'function') {
+            //This is the only actual timeout in here, essentially we do not
+                // want this to fire immediately in case other requires are
+                // called after this. This allows require(callback) require(a)
+                // require(b) to work most of the time.
+            blocking = true;
+            func = true;
+            input_str = "function"; //for printing
+            promise_pending = new Promise(function (resolve) {
+                setTimeout(function () {
+                    resolve(url);
+                }, 200);
+            });
         } else {
             //Not a valide object
-            promise_pending = Promise.reject('Require only accepts strings or arrays.');
+            promise_pending = Promise.reject('Require only accepts strings, arrays or callback functions.');
+        }
+
+        //Tell the system there is a new pending promise
+        if (blocking) {
+            pendingRequires[unique] = 1;
         }
 
         //here we clear the promise pending list
@@ -297,7 +399,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         //finally if this is blocking then set the return to the blocking promise.
         if (blocking) {
             ret_promise = new Promise(function (resolve, reject) {
-                reqDone(resolve, reject, input_str, promise_pending);
+                reqDone(resolve, reject, input_str, promise_pending, func);
             });
         //Otherwise set it to the pending promise
         } else {
@@ -350,6 +452,32 @@ as urls this works by assuming jQuery is present and that Promises exist
         };
     };
 
+    get_from_cached = function (url) {
+        //ignores the cache param that is passed in, this grabs the data from
+        // the local cache...
+
+        //break up
+        var queries = url.split(/[?&]+/);
+        url = queries.shift();
+        var urlParts = url.split(/[\/:]+/);
+        urlParts.shift(); //get rid of local:// or local:
+
+        //get collection and id
+        var collection = urlParts.shift();
+        var id = urlParts.shift();
+
+        //for now ignore queries
+        if (queries.length) {
+            console.warn('Sorry local does not support queries at this time. You may search by collection and id only.');
+        }
+
+        //get actual data
+        return local_database.get(collection, id).then(function (d) {
+            //console.log('got from database', d, collection, id);
+            return d;
+        });
+    };
+
     get_script_promise = (function () {
         var promised = {};
         return function (url) {
@@ -357,7 +485,7 @@ as urls this works by assuming jQuery is present and that Promises exist
             if (promised[url]) {
                 prom = promised[url];
             } else {
-                prom = jQuery.ajax({
+                prom = jagax({
                     url: url,
                     dataType: 'script'
                 }).then(function () {
@@ -382,7 +510,7 @@ as urls this works by assuming jQuery is present and that Promises exist
                         return res;
                     }
                     // console.log(res, 'got from url');
-                    return jQuery.ajax({
+                    return jagax({
                         url: url,
                         dataType: 'text'
                     }).then(function (res) {
@@ -397,6 +525,13 @@ as urls this works by assuming jQuery is present and that Promises exist
     }());
 
     get_data_promise = function (url, cache) {
+        //Here is the local:// magic
+        if (url.match(/^local\:/)) {
+            return get_from_cached(url, cache).then(function (res) {
+                //Already an array at this point, no need to parse
+                return res;
+            });
+        }
         return get_text_promise(url, cache).then(function (res) {
             return JSON.parse(res);
         });
@@ -473,6 +608,33 @@ as urls this works by assuming jQuery is present and that Promises exist
         pages.show(1);
     });
 
+    uuid = function () {
+        var a, b, p;
+        a = 1;
+        b = '';
+        while (a < 37) {
+            p = a ^ 15
+                ? 8 ^ Math.random() * (
+                    a ^ 20
+                        ? 16
+                        : 4
+                )
+                : 4;
+            b += a * 51 & 52
+                ? p.toString(16)
+                : '-';
+            a += 1;
+        }
+        return b;
+    };
+
+    //store this as part of require to make it easier to find.
+    require.database = local_database;
+
+    require.store = function (collection, value) {
+        return local_database.upsert(collection, value);
+    };
+
     KINOME.addAnalysis = function (title) {
         //We need to add this to the list of avaliable, and set up a page for it.
 
@@ -519,11 +681,63 @@ as urls this works by assuming jQuery is present and that Promises exist
         //display an error message... Need to add in some more options...
         console.error(err, msg);
         if (msg !== undefined) {
-            $('#status').append(
-                '<div class="alert alert-danger alert-dismissable fade in">Error: ' + msg + '<a href="#" class="close" data-dismiss="alert"'
-                + ' aria-label="close">&times;</a></div>'
-            );
+            var alertBox = $('<div class="alert alert-danger alert-dismissable fade in"></div>');
+            var dismiss = $('<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a></div>');
+            var row = $('<div>', {
+                class: 'row'
+            });
+            var col1 = $('<div>', {
+                class: 'col col-xs-10 col-sm-11',
+                html: '<span>Error:&nbsp;</span>'
+            });
+            var col2 = $('<div>', {
+                class: 'col col-xs-2 col-sm-1'
+            });
+            col1.append(msg);
+            col2.append(dismiss);
+            row.append(col1).append(col2);
+            alertBox.append(row);
+
+            $('#status').append(alertBox);
         }
+    };
+
+    KINOME.warn = function (div) {
+        var mainDiv = $('<div style="display: table;width:100%;" class="alert alert-warning alert-dismissable fade in"></div>');
+        var thisdiv = $('<div>', {style: "display: table-cell; vertical-align: middle;", class: "row"}).appendTo(mainDiv);
+        thisdiv.append($('<div>', {
+            class: 'col col-xs-10 col-sm-11'
+        }).append(div))
+            .append($('<div>', {
+                class: 'col col-xs-2 col-sm-1'
+            }).append('<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a></div>'));
+        $('#status').append(mainDiv);
+        return mainDiv;
+    };
+
+    var alerting = false;
+    $('#KINOME-modal-div').on('hide.bs.modal', function () {
+        alerting = false;
+    });
+    $('#KINOME-modal-div').on('hidden.bs.modal', function () {
+        //If a new alert showed up while the modal was closing.
+        if (alerting) {
+            $('#KINOME-modal-div').modal('show');
+        }
+    });
+    KINOME.alert = function (msg) {
+        $('#KINOME-alert-text').empty().append(msg);
+        if (!alerting) {
+            alerting = true;
+            $('#KINOME-modal-div').modal('show');
+        }
+        //Make sure any message shows up for at least 3/4 second
+        setTimeout(function () {
+            if (!alerting) {
+                alerting = true;
+                $('#KINOME-modal-div').modal('show');
+            }
+        }, 750);
     };
 
     KINOME.get = function (get_object) {

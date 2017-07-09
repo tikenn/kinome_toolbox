@@ -149,7 +149,7 @@
                     : 0;
 
                 //Do not append for post wash
-                if (x[0].cycle !== null) {
+                if (Number.isFinite(x[0].cycle)) {
                     data.put(x[0]);
                 }
 
@@ -354,13 +354,15 @@
                 cycle: minCycle,
                 exposure: exposures[i]
             });
-            min = points.map(getMinSignal).reduce(getMin);
-            points = data.get({
-                exposure: exposures[i]
-            }); //This will get everything except post wash
-            for (j = 0; j < points.length; j += 1) {
-                points[j].set('signal', points[j].signal - min);
-                points[j].set('background', points[j].background - min);
+            if (points.length > 1) {
+                min = points.map(getMinSignal).reduce(getMin);
+                points = data.get({
+                    exposure: exposures[i]
+                }); //This will get everything except post wash
+                for (j = 0; j < points.length; j += 1) {
+                    points[j].set('signal', points[j].signal - min);
+                    points[j].set('background', points[j].background - min);
+                }
             }
         }
         return data;

@@ -2,12 +2,12 @@
 /*global KINOME*/
 //Big TO-DO: need to make sure to check for all needed things and throw a flag if
 // there is some sort of error...
-(function () {
+(function (exports) {
     'use strict';
 
     var main, split_t, parseCrossTab, objectifyMeta, objectifyData, getIndex,
             foldMeta, checkSame, mult1, mergeObjects, copy, uuid, organizeMeta,
-            checkNaN;
+            checkNaN, clean;
 
     getIndex = function (ind) {
         //maps through grabbing index
@@ -16,17 +16,28 @@
         };
     };
 
+    clean = function (str) {
+        if (typeof str === 'string') {
+            return str.replace(/^[\s"']+|[\s"']+$/g, '');
+        } else {
+            return str;
+        }
+    };
+
     uuid = function () {
-        var a, b;
+        var a, b, p;
         a = 1;
         b = '';
         while (a < 37) {
-            b += a * 51 & 52
-                ? (a ^ 15
-                    ? 8 ^ Math.random() * (a ^ 20
+            p = a ^ 15
+                ? 8 ^ Math.random() * (
+                    a ^ 20
                         ? 16
-                        : 4)
-                    : 4).toString(16)
+                        : 4
+                )
+                : 4;
+            b += a * 51 & 52
+                ? p.toString(16)
                 : '-';
             a += 1;
         }
@@ -35,14 +46,14 @@
 
     checkSame = function (a, b) {
         //reduce function
-        return (a === b || (typeof a === 'number' && typeof b === 'number' && isNaN(a) && isNaN(b)))
+        return (a === b || (typeof a === 'number' && typeof b === 'number' && Number.isNaN(a) && Number.isNaN(b)))
             ? a
             : null;
     };
 
     checkNaN = function (x) {
         //map function
-        if (typeof x === 'string' && x.match(/^NA$|^NAN$/i)) {
+        if (typeof x === 'string' && x.match(/^NA$|^NAN$/im)) {
             return NaN;
         }
         return x;
@@ -74,9 +85,10 @@
     parseCrossTab = function (crossTabArr, filename) {
         var runMetaData, indMetaData, data_and_peptides, metaArr, result, resultObj,
                 i, sample, peptideHeaderLine, peptideArr, dataArr, barcode_index,
-                row_index, name, j, names, check;
+                row_index, name, j, names, check, thisId;
 
-        runMetaData = crossTabArr.shift().join(';');
+        //join with ';' ignores blank strings
+        runMetaData = crossTabArr.shift().join(';').replace(/^[\s;]+|[\s;]+$/g, '');
         indMetaData = [];
         result = [];
         resultObj = {};
@@ -107,11 +119,13 @@
         //build this up
         for (i = 0; i < metaArr.length; i += 1) { //by image
             name = metaArr[i][barcode_index].value[0] + '_' + metaArr[i][row_index].value[0];
+            thisId = uuid();
             if (!resultObj.hasOwnProperty(name)) {
                 resultObj[name] = {
                     peptides: copy(peptideArr),
                     name: name,
-                    name_id: uuid(),
+                    name_id: thisId,
+                    '_id': thisId,
                     meta: metaArr[i],
                     data: dataArr.map(getIndex(i))
                 };
@@ -135,7 +149,7 @@
                 //     console.log(JSON.stringify(sample.meta[j]));
                 // }
                 sample.meta[j].value = foldMeta(sample.meta[j].value);
-                if (sample.meta[j].value === null || (typeof sample.meta[j].value === 'number' && isNaN(sample.meta[j].value))) {
+                if (sample.meta[j].value === null || (typeof sample.meta[j].value === 'number' && Number.isNaN(sample.meta[j].value))) {
                     //If there is no data, do not bother storing it
                     // console.log('getting rid of: ', sample.meta.splice(j, 1));
                     sample.meta.splice(j, 1);
@@ -145,11 +159,11 @@
             //add in previously determined meta data
             sample.meta.push({
                 key: 'filename',
-                value: filename
+                value: clean(filename)
             });
             sample.meta.push({
                 key: 'title line',
-                value: runMetaData
+                value: clean(runMetaData)
             });
 
             //find places with needed meta data
@@ -164,7 +178,7 @@
 
             for (j = 0; j < sample.data.length; j += 1) { //by peptide
                 check = sample.data[j].reduce(checkSame);
-                if (isNaN(check)) { // remove peptides for which there are no values
+                if (Number.isNaN(check)) { // remove peptides for which there are no values
                     sample.data.splice(j, 1);
                     sample.peptides.splice(j, 1);
                     j -= 1;
@@ -192,8 +206,8 @@
             arrMin = [];
             for (j = 0; j < keys.length; j += 1) {
                 arrMin.push({
-                    key: keys[j],
-                    value: [meta[j][i]]
+                    key: clean(keys[j]),
+                    value: clean([meta[j][i]])
                 });
             }
             arrOut.push(arrMin);
@@ -215,8 +229,8 @@
             j = 0;
             while (data[i][0]) {
                 pepObj.push({
-                    key: headerLine[j],
-                    value: data[i].shift()
+                    key: clean(headerLine[j]),
+                    value: clean(data[i].shift())
                 });
                 j += 1;
             }
@@ -238,8 +252,8 @@
             // \r is to deal with windows endline coding
 
         //split
-        signalArr = parseObject.signal.data.split(/\r*\n\r*/).map(split_t);
-        backgroundArr = parseObject.background.data.split(/\r*\n\r*/).map(split_t);
+        signalArr = parseObject.signal.data.split(/\r|\r*\n\r*/).map(split_t);
+        backgroundArr = parseObject.background.data.split(/\r|\r*\n\r*/).map(split_t);
 
         //parse
         signalObj = parseCrossTab(signalArr, parseObject.signal.filename);
@@ -334,12 +348,13 @@
 
         merge = function (signal, background) {
             var result = {}, i, j, paired = true, pairs = [], bykey, pep_ind,
-                    max_cycle, img_ind;
+                    max_cycle, img_ind, ID = '_id';
 
             //the easy stuff
             result.meta = mergeKeyValues(signal.meta, background.meta);
             result.name = signal.name;
             result.name_id = signal.name_id;
+            result[ID] = signal.name_id;
             result = organizeMeta(result);
 
             result.exposures = [];

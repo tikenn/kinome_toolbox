@@ -11,10 +11,11 @@ var fs = require('fs'),
     prompt = require('prompt'),
     myArgs = require('optimist').argv,
     colors = require('colors'),
-    ProgressBar = require('progress');
+    ProgressBar = require('progress'),
+    MongoClient = require('mongodb').MongoClient;
 
 //Functions
-var timeoutPromise, runanalyses, readFiles, parse_equation, stringify, writeFilePromise;
+var timeoutPromise, writeMongoPromise, runanalyses, readFiles, parse_equation, stringify, writeFilePromise;
 
 //model url
 var model = './models/cyclingEq_3p_hyperbolic.jseq'; //references from main
@@ -24,7 +25,7 @@ var fitCurvesWorker = './js/lib/fitCurvesWorker.js';
 var normalizeWorker = './js/lib/normalize_background_worker.js';
 
 //file out path
-var fout = "";
+var fout = "", databaseForMongo = "";
 
 //define fuctions
 (function () {
@@ -55,6 +56,40 @@ var fout = "";
             return dataObj.stringify();
         }
         return JSON.stringify(dataObj);
+    };
+
+    writeMongoPromise = function (collection, arr) {
+        var db, bad;
+        if (databaseForMongo) {
+            return new Promise(function (resolve, reject) {
+                MongoClient.connect('mongodb://localhost:27017/' + databaseForMongo, function (err, db1) {
+                    if (!err) {
+                        db = db1;
+                        //redefine this function
+                        writeMongoPromise = function (collection, arr) {
+                            if (bad) {
+                                reject('Could not connect to database');
+                            }
+                            var col = db.collection(collection);
+                            return col.insertMany(arr.map(function (dataObj) {
+                                return JSON.parse(stringify(dataObj));
+                            }));
+                        };
+                        //Call this again
+                        writeMongoPromise(collection, arr).then(function () {
+                            resolve();
+                        }).catch(function (err2) {
+                            reject(err2);
+                        });
+
+                    } else {
+                        reject('Could not connect to database');
+                        bad = true;
+                    }
+                });
+            });
+        }
+        return Promise.reject('No database provided.');
     };
 
     readFiles = function (backgroundFile, signalFile) {
@@ -115,7 +150,7 @@ var fout = "";
                             description: 'Enter article number for: ' + barcodeSpec,
                             type: 'string',
                             required: true,
-                            pattern: /^\d+$|^skip$|^ye*s*$/i,
+                            pattern: /^\d+$|^skip$|^ye*s*$/im,
                             message: 'Article numbers must be numerical. See above.'
                         };
                     }
@@ -279,8 +314,21 @@ var fout = "";
             ps[4] = writeFilePromise(data.lvl_2_0_1.map(stringify).join('\n'), 'lvl_2_0_1.mdb');
             ps[5] = writeFilePromise(data.lvl_2_1_2.map(stringify).join('\n'), 'lvl_2_1_2.mdb');
 
+            if (databaseForMongo) {
+                var psMongo = [];
+
+                psMongo[0] = writeMongoPromise('name', data.name);
+                psMongo[1] = writeMongoPromise('lvl_1_0_0', data.lvl_1_0_0);
+                psMongo[2] = writeMongoPromise('lvl_1_0_1', data.lvl_1_0_1);
+                psMongo[3] = writeMongoPromise('lvl_1_1_2', data.lvl_1_1_2);
+                psMongo[4] = writeMongoPromise('lvl_2_0_1', data.lvl_2_0_1);
+                psMongo[5] = writeMongoPromise('lvl_2_1_2', data.lvl_2_1_2);
+
+                ps.push(Promise.all(psMongo));
+            }
+
             return Promise.all(ps).catch(function (err) {
-                console.error("A file failed to writes", err);
+                console.error("A file failed to write", err);
             });
         }).then(function () {
             console.log('all done!');
@@ -296,15 +344,20 @@ var fout = "";
 
 //actually start the program
 if (myArgs.h || myArgs.help || !myArgs.b || !myArgs.s) {
-    console.log('This requires a number of parameters to run. ' +
-            'Input files: background and signal files using -b and -s flags respectively. ' +
-            'Database parameters: Specify database name using -d. ' +
-            'Finally you may give an output directory and base with -o. ' +
-            'Output files will tag on <level>.mdb.');
+    console.log(
+        'This requires a number of parameters to run. ' +
+        'Input files: background and signal files using -b and -s flags respectively. ' +
+        'Database parameters: Specify database name using -d. ' +
+        'Finally you may give an output directory and base with -o. ' +
+        'Output files will tag on <level>.mdb.'
+    );
 } else {
     readFiles(myArgs.b, myArgs.s);
     if (myArgs.o) {
         fout = myArgs.o;
+    }
+    if (myArgs.d) {
+        databaseForMongo = myArgs.d;
     }
 }
 

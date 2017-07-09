@@ -78,9 +78,13 @@
                             img.signal[x][y] = NaN;
                         }
                     }
-                    //Now that I have set this up, send it to the worker
-                    counts.total += 1;
-                    promises.push(worker.submit(img).then(after_norm));
+
+                    //Only do this if this resolved to an actual image worth of data
+                    if (img.background.length && img.signal.length) {
+                        //Now that I have set this up, send it to the worker
+                        counts.total += 1;
+                        promises.push(worker.submit(img).then(after_norm));
+                    }
                 }
             }
             return Promise.all(promises).then(function () {
@@ -122,13 +126,15 @@
                 cycle: minCycle,
                 exposure: exposures[i]
             });
-            min = points.map(getMinSignal).reduce(getMin);
-            points = data.get({
-                exposure: exposures[i]
-            }); //This will get everything except post wash
-            for (j = 0; j < points.length; j += 1) {
-                points[j].set('signal', points[j].signal - min);
-                points[j].set('background', points[j].background - min);
+            if (points.length > 1) {
+                min = points.map(getMinSignal).reduce(getMin);
+                points = data.get({
+                    exposure: exposures[i]
+                }); //This will get everything except post wash
+                for (j = 0; j < points.length; j += 1) {
+                    points[j].set('signal', points[j].signal - min);
+                    points[j].set('background', points[j].background - min);
+                }
             }
         }
         return data;

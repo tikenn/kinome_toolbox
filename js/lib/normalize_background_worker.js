@@ -431,13 +431,21 @@
             points = linearize(signal, background, peptides);
 
             //run the linear model
-            linearMod = linearfit(points.X, points.y);
+            if (points.y.length > 5) {
+                linearMod = linearfit(points.X, points.y);
 
-            //Now go ahead and transform the values
+                //Now go ahead and transform the values
+                return {
+                    data: transform(points.all, linearMod.params, minimum),
+                    params: linearMod.params,
+                    mod_R2: linearMod.R2
+                };
+            }
+            //If there is not enough data to normalize then just return a blank array.
             return {
-                data: transform(points.all, linearMod.params, minimum),
-                params: linearMod.params,
-                mod_R2: linearMod.R2
+                data: [],
+                params: [],
+                mod_R2: 0
             };
         };
     }());

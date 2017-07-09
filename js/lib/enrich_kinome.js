@@ -304,7 +304,7 @@
                 delete start.background_valid;
                 delete start.signal;
                 delete start.signal_valid;
-                delete start[ID];
+                //delete start[ID];
 
                 if (typeof equation_str !== "string") {
                     console.error("No equation string passed in, please pass in a string with the needed parts. Example: https://github.com/adussaq/kinome_toolbox/blob/master/models/cyclingEq_3p_hyperbolic.jseq");
@@ -323,15 +323,6 @@
                 };
 
                 start.level = start.level.replace(/^1/, "2");
-
-                //get original length of cycle array
-                console.warn('delete this part once updated the data struct');
-                for (i = 0; i < start.run_data.length; i += 1) {
-                    if (start.run_data[i].key.match(/^cycle$/i)) {
-                        point_count = start.run_data[i].value.length;
-                        break;
-                    }
-                }
 
                 //get rid of run data that no longer makes sense in context
                 for (i = 0; i < start.run_data.length; i += 1) {
@@ -1140,7 +1131,7 @@
                     });
                 }
             }
-            delete newcopy[ID];
+            //delete newcopy[ID];
             return exports.enrich(newcopy);
         };
 
@@ -1157,7 +1148,7 @@
             //idea here is just to round numbers to 6 decimal point then call
             // JSON.stringify.
 
-            delete that[ID];
+            //delete that[ID];
 
             var keys, objs = [that], one, i;
 

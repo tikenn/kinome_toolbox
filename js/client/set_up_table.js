@@ -9,7 +9,7 @@
 */
 
 //Body functions
-(function () {
+(function (exports) {
     'use strict';
     var $page = KINOME.page, tableWidth = 3, //number of dropdowns
             //functions
@@ -196,9 +196,9 @@
         //empty what is currently there
         $element.empty();
 
-        search = "";
+        search = "?";
         for (i = 0; i < groups.length; i += 1) {
-            search += "?data=*[";
+            search += "data=*[";
             dataGroup = {};
             for (j = 0; groups[i] && j < groups[i].length; j += 1) {
                 dataGroup[groups[i][j].url] = dataGroup[groups[i][j].url] || [];
@@ -208,11 +208,11 @@
             // console.log(links);
             for (j = 0; j < links.length; j += 1) {
                 // console.log('here in table build', groups, dataGroup, links[j]);
-                search += links[j].replace(/\/*\?[\s\S]*$|\/$/g, '').replace(/\/[^\/]+$/, '/<database>') + '?find={"name_id":{"$in":["';
+                search += links[j].replace(/\/*\?[\s\S]*$|\/$/g, '').replace(/\/[^\/]+$/, '/<database>') + '/';
                 for (k = 0; k < dataGroup[links[j]].length; k += 1) {
-                    search += dataGroup[links[j]][k] + '","';
+                    search += dataGroup[links[j]][k] + '|';
                 }
-                search = search.replace(/,"$/, ']}};');
+                search = search.replace(/\|$/, ';');
             }
             search = search.replace(/;$/, '');
             search += "]*&";
@@ -273,7 +273,9 @@
         maxGroup += 1;
 
         //fill in groups part of the page
-        buildLinks(groups, tableObject);
+        if (maxGroup > 0 && groups.length && groups[0].length) {
+            buildLinks(groups, tableObject);
+        }
 
         //build new table
         tableLength = 0;
@@ -448,4 +450,6 @@
         }
     });
 
-}());
+    KINOME.updateMainTable = buildIt;
+
+}(KINOME));

@@ -52,11 +52,13 @@
 
     exports.fit = function (dataArr, type, backvsig) {
         return new Promise(function (resolve, reject) {
+            var short = false;
             if (typeof type !== 'string' || (type !== 'linear' && type !== 'kinetic')) {
                 reject('You must pass in a type of either linear or kinetic');
+                return;
             }
             if (!Array.isArray(dataArr) || dataArr.length < 2) {
-                reject('You must pass in a data array of at least length 2.');
+                short = true;
             }
             requires.then(function () {
                 var model, p1, p2, outObj = {};
@@ -79,6 +81,24 @@
                         name: 'linear',
                         stringified: "y(e) = m · e + b"
                     };
+                }
+
+                //short
+                if (short) {
+                    outObj.signal = {
+                        R2: NaN,
+                        parameters: outObj.equation.mathParams.map(function () {
+                            return NaN;
+                        })
+                    };
+                    outObj.background = {
+                        R2: NaN,
+                        parameters: outObj.equation.mathParams.map(function () {
+                            return NaN;
+                        })
+                    };
+                    resolve(outObj);
+                    return;
                 }
 
                 //Only fit requested if asked for

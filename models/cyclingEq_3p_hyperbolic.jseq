@@ -7,7 +7,7 @@
     setInitial: function (x_vector, y_values) {
         var vi, Ym, c, yMax, x_inv = [], y_inv = [], ysum = 0, xsum = 0, x2sum = 0, y2sum = 0, xysum = 0, n;
 
-        //yMax = Math.max.apply(null, y_values);
+        yMax = Math.max.apply(null, y_values);
 
         //assume c is 27.6
         c = 27.6;
@@ -41,8 +41,8 @@
         } else {
             vi = 1 / vi;
         }
-        if (vi < 0) {
-            vi = 1;
+        if (vi < 0.5) {
+            vi = 0.5;
         }
 
 
@@ -51,10 +51,8 @@
         } else {
             Ym = 1 / Ym;
         }
-        if (Ym < -500) {
-            Ym = 500;
-        } else if (Ym < 0) {
-            Ym = 400;
+        if (Ym < 20) {
+            Ym = yMax * 1.6974;
         }
  
         return [vi, c, Ym];

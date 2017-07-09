@@ -66,6 +66,13 @@
          * @return Object The deep copy of the object
          */
         var clone = function(object) {
+            if (!object.sample || !object.sample.clone) {
+                object.sample = {
+                    clone: function () {
+                    return null;
+                    }
+                };
+            }
             return {
                 sample: object.sample.clone(),
                 peptide: object.peptide,
@@ -119,14 +126,30 @@
          * @param Object state The current state of the system
          * @param Object previousState The previous state of the system
          */
-         var fireState = function(state, previousState) {
+         var fireState = function() {
             // console.log(previousState);
+            // console.log(clone(state), clone(previousState));
             if (state.sample.name !== previousState.sample.name
                 || state.peptide !== previousState.peptide
                 || state.exposure !== previousState.exposure
                 || state.cycle !== previousState.cycle
             ) {
+                //check to see if stuff is ok. The attempt here was to hide the
+                    // ppicker if an invalid state was selected. I chose instead
+                    // to fix the coloring so it would just go black. May want
+                    // this again at some point. So do not delete.
+                // var tempState = clone(state);
+                // if (tempState.peptide === null) {
+                //     delete tempState.peptide;
+                // }
+                // if (state.sample && !state.sample.get(tempState).length) {
+                //     console.log('should hide stuff now?');
+                // } else {
+                //     console.log('showing stuff');
+                // }
                 stateFunction(clone(state));
+                setPeptideColors();
+                previousState = clone(state);
             }
          };
 
@@ -178,16 +201,27 @@
          * @param Array peptideColors An array of values between 0 and 1 inclusive that will be translated into the hsl() color space
          */
         var colorPeptides = function(peptideColors) {
-            var cssHsl;
+            var cssHsl, colorNum;
 
             for (var i = 0; i < peptideMatrix.length; i++) {
-                cssHsl = KINOME.gradient.convert(peptideColors[i]);
+                colorNum = peptideColors[i] * 1;
+                if (!Number.isFinite(colorNum)) {
+                    cssHsl = '#191919';
+                } else {
+                    colorNum = colorNum > 1
+                        ? 1
+                        : colorNum < 0
+                            ? 0
+                            : colorNum;
+
+                    cssHsl = KINOME.gradient.convert(colorNum);
+                }
                 peptideMatrix[i].changeSpotColor(cssHsl);
             }
         };
 
         var setPeptideColors = function() {
-            var peptideList;
+            var peptideList, theProm;
             if (state.sample.level.match(/^1/i)) {
                 peptideList = state.sample.get({cycle: state.cycle, exposure: state.exposure});
             } else if (state.sample.level.match(/^2/i)) {
@@ -196,7 +230,13 @@
                     linear: state.sample.get({cycle: state.cycle, exposure: state.exposure, type: 'linear'})
                 }
             }
-            colorPeptideFunc(peptideList, state).then(function(peptideColors) {
+            if (!peptideList.length) {
+                theProm = defaultColorPeptideFunc(state.sample.list('peptide'))
+            } else {
+                theProm = colorPeptideFunc(peptideList, state);
+            }
+            theProm.then(function(peptideColors) {
+                // console.log(peptideColors);
                 colorPeptides(peptideColors);
             })
             .catch(function(err) {
@@ -367,7 +407,7 @@
                 peptideString = retrievePeptideData(peptideList[i], true);
 
                 if (! peptideString.match(searchPattern)) {
-                    peptideList[i].changeSpotOpacity(0.3);
+                    peptideList[i].changeSpotOpacity(0.1);
                 
                 } else {
                     peptideList[i].changeSpotOpacity(1);
@@ -405,7 +445,7 @@
                 // A potential change in the sample's state has occurred, call the stateFunction if there truly is one to reveal the change
                 state.sample = data[currentPeptideListIndex];
                 fireState(state, previousState);
-                previousState = clone(state);
+                // previousState = clone(state);
 
                 currentPeptideList = updatePeptides(currentPeptideList, displayDiv);
             });
@@ -451,6 +491,7 @@
          * @param Function findPeptides A callback function that distinguishes peptides found in a search and takes the peptide list and a search string
          */
         var displayPeptides = function(peptideList, displayDiv) {
+
             var $peptideMatrixLabel = $('<label id="peptide-picker-label">Peptide: </label>').append(pageStructure.gradientScale).appendTo(pageStructure.peptideMatrix),
                 $peptideDisplay = $('<div id="peptide-list"></div>').appendTo(pageStructure.peptideMatrix),
                 peptideRowWidth;
@@ -560,7 +601,7 @@
             if (previousPeptideClicked && peptide.name === previousPeptideClicked.name && click) {
                 state.peptide = null;
                 fireState(state, previousState);
-                previousState = clone(state);
+                // previousState = clone(state);
 
                 displaySampleData(state.sample);
                 previousCellColor = peptide.defaultCellColor;
@@ -723,7 +764,8 @@
             // Update the state of the system due to change in sample
             state.peptide = peptide.name;
             fireState(state, previousState);
-            previousState = clone(state);
+            // previousState = clone(state);
+
 
             createCycleExposureHtmlScaffold(state.sample);
 
@@ -808,7 +850,7 @@
             // update the state and reveal if there truly is a change
             state[type] = data[dataDefault];
             fireState(state, previousState);
-            previousState = clone(state);
+            // previousState = clone(state);
 
             $slider.slider({
                 value: dataDefault,
@@ -822,7 +864,7 @@
             }).on('slideStop', function(e) {
                 state[type] = data[e.value];
                 fireState(state, previousState);
-                setPeptideColors();
+                // setPeptideColors();
                 createDataTable(state.sample, state.peptide, state.cycle, state.exposure);
             });
         };
@@ -866,6 +908,10 @@
 
             pageStructure.dataTable = $('<div>');
 
+            if (!peptide) {
+                return;
+            }
+
             // stores the object of a peptide from a sample at a specific cycle and exposure time
             var quadfecta = sample.get({peptide: peptide, cycle: cycle, exposure: exposure})[0],
                 $tableContainer = pageStructure.dataTable,
@@ -897,7 +943,13 @@
                 $tableHeaders = $('<tr><th>Measurement</th><th>Value</th></tr>').appendTo($tableHead),
                 $tableBody = $('<tbody>').appendTo($table),
                 $backgroundDataRow = $('<tr><td>' + customRowLabel.join(', ') + '</td><td>' + customRowValue.join(', ') + '</td></tr>').appendTo($tableBody),
-                $cycleDataRow = $('<tr><td>Cycle, Exposure</td><td>' + quadfecta.cycle + ', ' + quadfecta.exposure + '</td></tr>').appendTo($tableBody);
+                $cycleDataRow;
+
+                if (quadfecta) {
+                    $cycleDataRow = $('<tr><td>Cycle, Exposure</td><td>' + quadfecta.cycle + ', ' + quadfecta.exposure + '</td></tr>').appendTo($tableBody);
+                } else {
+                    $cycleDataRow = $('<tr><td>Cycle, Exposure</td><td>' + cycle + ', ' + exposure + '</td></tr>').appendTo($tableBody);
+                }
 
             $tableContainer.appendTo(pageStructure.metaDataDisplay);
         };

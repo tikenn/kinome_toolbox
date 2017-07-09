@@ -30,17 +30,43 @@
     };
 
     getDataParameters = function (url) {
-        var i, regex, match, matches = [];
+        var regex, match, matches = [];
         regex = new RegExp('data=\\*\\[([\\s\\S]+?)\\]\\*', 'g');
         match = regex.exec(url);
         while (match) {
             matches.push(match[1]);
             match = regex.exec(url);
         }
-        for (i = 0; i < matches.length; i += 1) {
-            matches[i] = matches[i].split(';');
-        }
-        return matches;
+        return matches.map(function (mat) {
+            return mat.split(';').map(function (mat2) {
+                var i, split, base, thisBase, temp_matches, prot;
+                temp_matches = mat2.split('|');
+                base = temp_matches[0];
+                base = base.replace(/\/*\?[\s\S]+$/, '');
+                base = base.split(/:\/\//);
+                prot = base[0] + '://';
+                base = base[1];
+                for (i = 1; i < temp_matches.length; i += 1) {
+                    split = temp_matches[i].replace(/\/*\?[\s\S]+$/, '').split('/');
+                    //empty the blanks
+                    while (!split[0] && split.length) {
+                        split.shift();
+                    }
+                    while (!split[split.length - 1] && split.length) {
+                        split.pop();
+                    }
+
+                    //This will be based on the length of the split arr
+                    thisBase = base.replace(new RegExp('(\/[^\/]+){' + split.length + '}$'), '');
+                    temp_matches[i] = thisBase + '/' + temp_matches[i];
+                    temp_matches[i] = prot + temp_matches[i].replace(/\/+/g, '/');
+                }
+                return temp_matches;
+
+            }).reduce(function (a, b) {
+                return a.concat(b);
+            });
+        });
     };
 
     getSTYLES = function (dataURL) {
@@ -69,13 +95,100 @@
                 solution = solution.concat(result);
             }
             return solution;
+        }).catch(function (err) {
+            KINOME.error(err, 'Failed to load at least one of the requested data sets.');
         });
     };
 
     getScript = function (codeURL) {
         return function () {
-            return require(codeURL).catch(function (err) {
-                KINOME.error(err, "Failed to load script: " + codeURL + '.');
+            var alertYes, alertNo, alertTab, promise, mainDiv, ctime,
+                    previously_loaded, load_save;
+
+            //set stuff up for previously loaded scripts
+            ctime = new Date() - 0;
+
+            load_save = function () {
+                previously_loaded.last = ctime;
+                previously_loaded.count += 1;
+
+                window.localStorage[codeURL] = JSON.stringify(previously_loaded);
+
+                return true;
+            };
+
+            if (window.Storage && window.localStorage[codeURL]) {
+                previously_loaded = JSON.parse(window.localStorage[codeURL]);
+                if (
+                    ctime - previously_loaded.last > 1000 * 60 * 60 //1 hr
+                    ||
+                    ctime - previously_loaded.first > 1000 * 60 * 60 * 24 // 1 day
+                ) {
+                    //reset it
+                    previously_loaded = {
+                        first: ctime,
+                        last: ctime,
+                        count: 0
+                    };
+                }
+            } else {
+                previously_loaded = {
+                    first: ctime,
+                    last: ctime,
+                    count: 0
+                };
+            }
+
+            //just return early if this is on the whitelist
+            if (previously_loaded.count > 2) {
+                return require(codeURL).then(load_save).catch(function (err) {
+                    KINOME.error(err, "Failed to load script: " + codeURL + '.');
+                });
+            }
+
+            promise = new Promise(function (resolve, reject) {
+                alertYes = $('<div>', {
+                    class: 'col col-md-6',
+                    style: 'margin-left:auto; margin-right:auto;'
+                }).append($('<button>', {
+                    class: 'btn btn-info',
+                    html: '<span>Trust</span>'
+                }).click(function (evt) {
+                    evt.preventDefault();
+                    mainDiv.alert('close');
+                    resolve(true);
+                }));
+
+                alertNo = $('<div>', {
+                    class: 'col col-md-6',
+                    style: 'margin-left:auto; margin-right:auto;'
+                }).append($('<button>', {
+                    class: 'btn btn-danger',
+                    html: '<span>Reject</span>'
+                }).click(function (evt) {
+                    evt.preventDefault();
+                    mainDiv.alert('close');
+                    reject('Script rejected by user.');
+                }));
+            });
+
+            alertTab = $('<div>', {
+                class: 'row',
+                html: '<div style="padding-top:1%; padding-bottom:1%" class="col col-xs-8 col-sm-10">Script tag loading is being used, for: "<a href="' + codeURL + '">' + codeURL + '</a>". This has loaded ' + previously_loaded.count + ' times previously. Please ensure this is from a trusted source.'
+            }).append($('<div>', {
+                class: 'col-xs-4 col-sm-2'
+            }).append($('<div>', {
+                class: 'row text-center'
+            }).append(alertYes)
+                .append(alertNo)));
+
+            mainDiv = KINOME.warn(alertTab);
+            return promise.then(function () {
+                return require(codeURL).then(load_save).catch(function (err) {
+                    KINOME.error(err, "Failed to load script: " + codeURL + '.');
+                });
+            }, function (err) {
+                console.error('Scirpt rejected by user', err);
             });
         };
     };
@@ -142,8 +255,10 @@
                 for (i = 0; i < code.length; i += 1) {
                     promise_chain = promise_chain.then(getScript(code[i]));
                 }
-                promise_chain.then(getScript('webpage'));
+                promise_chain.then(require('webpage'));
             });
+        }).catch(function (err) {
+            KINOME.error(err, 'Failed to load at least one of the requested data sets.');
         });
     });
 
