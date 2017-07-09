@@ -155,7 +155,7 @@ In addition to this there are number default global functions and objects that a
 <summary>require(<i>request</i> [,<i>type</i> [,<i>cache</i>]])</summary>
 
 * #### require
-   require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [JavaScript Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise). This documentation got too verbose for this file. Please see [require readme](./require.md) for more information and examples.
+   require works a lot like require in NodeJS, but instead of returning an object with properties attached, it returns a [JavaScript Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise). This documentation got too verbose for this file. Please see [require readme](https://github.com/kinome/kinome_toolbox/blob/master/require.md) for more information and examples.
 
 </details>
 

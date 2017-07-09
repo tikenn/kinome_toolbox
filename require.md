@@ -167,6 +167,8 @@ If a key is not provided, the entire collection will be returned. This is not re
 
 #### require.store('collection', data)
 
+Just as it looks, tell it the collection and the data you want to store and it will store it for you. This returns a promise and will only work with one of the above predefined collections. Additionally, if you do not provide an '_id' key then one will be created for you randomly.
+
 ### Advanced
 
-There are many advanced options for this cache. They are all attached to the require.database object. Go to your console and take a look for more information. Additionally you can look [here]() in the code.
+There are many advanced options for this cache. They are all attached to the require.database object. Go to your console and take a look for more information. Additionally you can look [here](https://github.com/kinome/kinome_toolbox/blob/master/js/client/web_namespace.js#L91) in the code.
