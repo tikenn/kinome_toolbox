@@ -18,10 +18,25 @@
 
     clean = function (str) {
         if (typeof str === 'string') {
-            return str.replace(/^[\s"']+|[\s"']+$/g, '');
+            return str.replace(/^[\s"']+|[\s"']+$/g, ''); //gets rid of leading and ending quotes and blanks
         } else {
             return str;
         }
+    };
+
+    var cleaner = function (a, b) {
+        var out = [];
+        if (Array.isArray(a)) {
+            out = out.concat(a);
+        } else if (typeof a !== 'string' || !a.match(/^\s*$/)) {
+            out.push(a);
+        }
+        if (Array.isArray(b)) {
+            out = out.concat(a);
+        } else if (typeof b !== 'string' || !b.match(/^\s*$/)) {
+            out.push(b);
+        }
+        return out;
     };
 
     uuid = function () {
@@ -141,6 +156,7 @@
         }
         names = Object.keys(resultObj);
 
+
         //Perform simplification methods
         for (i = 0; i < names.length; i += 1) {
             sample = resultObj[names[i]];
@@ -227,7 +243,7 @@
         for (i = 0; i < data.length; i += 1) {
             pepObj = [];
             j = 0;
-            while (data[i][0]) {
+            while (data[i][0] && data[i].length) {
                 pepObj.push({
                     key: clean(headerLine[j]),
                     value: clean(data[i].shift())
@@ -237,7 +253,7 @@
             obj.peptides.push(pepObj);
 
             //Now clear white space
-            while (!data[i][0]) {
+            while (!data[i][0] && data[i].length) {
                 data[i].shift();
             }
 
@@ -252,8 +268,8 @@
             // \r is to deal with windows endline coding
 
         //split
-        signalArr = parseObject.signal.data.split(/\r|\r*\n\r*/).map(split_t);
-        backgroundArr = parseObject.background.data.split(/\r|\r*\n\r*/).map(split_t);
+        signalArr = parseObject.signal.data.split(/[\r\n]+/).reduce(cleaner).map(split_t);
+        backgroundArr = parseObject.background.data.split(/[\r\n]+/).reduce(cleaner).map(split_t);
 
         //parse
         signalObj = parseCrossTab(signalArr, parseObject.signal.filename);
@@ -451,7 +467,47 @@
             if (!paired) {
                 result = false;
             }
-            return result;
+
+            //finally sort data by the peptide position, row, column
+            var order = result.peptides.map(function (x, i) {
+                return [x, i];
+            }).sort(function (a, b) {
+                var row1, row2, col1, col2;
+                a[0].map(function (x) {
+                    if (x.key.match(/spot[_\s]*row/i)) {
+                        row1 = x.value;
+                    }
+                    if (x.key.match(/spot[_\s]*col/i)) {
+                        col1 = x.value;
+                    }
+                });
+                b[0].map(function (x) {
+                    if (x.key.match(/spot[_\s]*row/i)) {
+                        row2 = x.value;
+                    }
+                    if (x.key.match(/spot[_\s]*col/i)) {
+                        col2 = x.value;
+                    }
+                });
+
+                return row1 === row2
+                    ? col1 - col2
+                    : row1 - row2;
+            });
+
+            var result2 = copy(result);
+            for (j = 0; j < order.length; j += 1) { // by peptide
+                for (img_ind = 0; img_ind < result.signal.length; img_ind += 1) {
+                    // by image
+                    result2.signal[img_ind][j] = result.signal[img_ind][order[j][1]];
+                    result2.background[img_ind][j] = result.signal[img_ind][order[j][1]];
+                    result2.signal_valid[img_ind][j] = result.signal[img_ind][order[j][1]];
+                    result2.background_valid[img_ind][j] = result.signal[img_ind][order[j][1]];
+                }
+                result2.peptides[j] = result.peptides[order[j][1]];
+            }
+
+            return result2;
         };
 
         mergeKeyValues = function (signal, background) {

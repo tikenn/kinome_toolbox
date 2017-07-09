@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    var MongoClient = require('mongodb').MongoClient, restify = require('restify'), assert = require('assert'), ObjectId = require('mongodb').ObjectID;
+    var MongoClient = require('mongodb').MongoClient, restify = require('restify'), assert = require('assert');//, ObjectId = require('mongodb').ObjectID;
 
     //Needs to impliment aggregate stuff (https://docs.mongodb.com/manual/reference/operator/aggregation/)
     //Need to impliment mapreduce stuff
@@ -148,11 +148,11 @@
             //special stuff
             console.log(query, fields);
             if (fields === -1) {
-                spec = collection.find({"_id": new ObjectId(query.id)}, {
+                spec = collection.find({"_id": query.id}, {
                     maxTimeMS: maxTimeMS
                 });
             } else {
-                spec = collection.find({"_id": new ObjectId(query.id)}, sanatize(fields), {
+                spec = collection.find({"_id": query.id}, sanatize(fields), {
                     maxTimeMS: maxTimeMS
                 });
             }
