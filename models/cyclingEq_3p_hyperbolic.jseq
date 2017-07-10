@@ -8,6 +8,10 @@
         var vi, Ym, c, yMax, x_inv = [], y_inv = [], ysum = 0, xsum = 0, x2sum = 0, y2sum = 0, xysum = 0, n;
 
         yMax = Math.max.apply(null, y_values);
+        //Only used as a back up.
+        yMax = yMax > 200 
+            ? yMax / 1.5
+            : yMax;
 
         //assume c is 25.2 (average from big group)
         c = 25.2;
