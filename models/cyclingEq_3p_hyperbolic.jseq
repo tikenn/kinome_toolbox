@@ -9,8 +9,8 @@
 
         yMax = Math.max.apply(null, y_values);
 
-        //assume c is 27.6
-        c = 27.6;
+        //assume c is 25.2 (average from big group)
+        c = 25.2;
 
         //for all possible values transform the data to linerize it.
         for (i = 0; i < x_vector.length; i += 1) {
