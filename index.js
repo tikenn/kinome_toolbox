@@ -318,11 +318,11 @@ var fout = "", databaseForMongo = "";
                 var psMongo = [];
 
                 psMongo[0] = writeMongoPromise('name', data.name);
-                psMongo[1] = writeMongoPromise('lvl_1_0_0', data.lvl_1_0_0);
-                psMongo[2] = writeMongoPromise('lvl_1_0_1', data.lvl_1_0_1);
-                psMongo[3] = writeMongoPromise('lvl_1_1_2', data.lvl_1_1_2);
-                psMongo[4] = writeMongoPromise('lvl_2_0_1', data.lvl_2_0_1);
-                psMongo[5] = writeMongoPromise('lvl_2_1_2', data.lvl_2_1_2);
+                psMongo[1] = writeMongoPromise('lvl_1.0.0', data.lvl_1_0_0);
+                psMongo[2] = writeMongoPromise('lvl_1.0.1', data.lvl_1_0_1);
+                psMongo[3] = writeMongoPromise('lvl_1.1.2', data.lvl_1_1_2);
+                psMongo[4] = writeMongoPromise('lvl_2.0.1', data.lvl_2_0_1);
+                psMongo[5] = writeMongoPromise('lvl_2.1.2', data.lvl_2_1_2);
 
                 ps.push(Promise.all(psMongo));
             }
