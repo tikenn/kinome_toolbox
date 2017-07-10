@@ -151,7 +151,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         var i, uuidRegex, databaseRegex, nameRegex, timeLimits, default_limit, now, useit, diff, match;
         uuidRegex = '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
         databaseRegex = '\\?find=\\{"name_id":(\\{"\\$in":\\[("' + uuidRegex + '",*)+\\]\\}|' +
-                '"' + uuidRegex + '")\\}';
+                '"' + uuidRegex + '")\\}|' + uuidRegex + '$';
         databaseRegex = new RegExp(databaseRegex, 'i');
         nameRegex = new RegExp(/[\s\S]+name\/*$/i);
         default_limit = 0.5 * 60 * 60 * 1000; // 1/2 hour
@@ -566,8 +566,9 @@ as urls this works by assuming jQuery is present and that Promises exist
     KINOME.page = $('#main_page');
 
     pages = [
-        [KINOME.page, $('#home_click')],
-        [$('#about_tab'), $("#about_click").parent()]
+        [$('#8283479327500567'), $('#22225356192030654')],
+        [$('#about_tab'), $("#about_click").parent()],
+        [KINOME.page, $('#5948670235572466').parent()]
     ];
 
     pages.hide = function () {
@@ -589,16 +590,23 @@ as urls this works by assuming jQuery is present and that Promises exist
             }
         });
         page[1].addClass('active');
-        if (i > 1) {
+        if (i > 2) {
             $('#menu-drop-active').addClass('active');
         }
     };
 
     //make the nav bar behave differently
-    $('.toHome').click(function (evt) {
+    $('#22225356192030654').click(function (evt) {
         evt.preventDefault();
         pages.hide();
         pages.show(0);
+
+    });
+
+    $('#5948670235572466').click(function (evt) {
+        evt.preventDefault();
+        pages.hide();
+        pages.show(2);
     });
 
     //make the nav bar behave differently
@@ -737,7 +745,7 @@ as urls this works by assuming jQuery is present and that Promises exist
                 alerting = true;
                 $('#KINOME-modal-div').modal('show');
             }
-        }, 750);
+        }, 1000);
     };
 
     KINOME.get = function (get_object) {

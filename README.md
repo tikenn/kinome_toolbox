@@ -214,6 +214,14 @@ In addition to this there are number default global functions and objects that a
 </details>
 
 <details>
+<summary>KINOME.alert(<i>alert_message</i>)</summary>
+
+* #### KINOME.alert
+   This will open a dismissible modal with the message you provide. If the modal is already open, it just updates the message. If it is closing as the message is passed in (or shortly after the message is passed in) it will re-open with the new message.
+
+</details>
+
+<details>
 <summary>KINOME.formatEquation(<i>equation_str</i>)</summary>
 
 * #### KINOME.formatEquation

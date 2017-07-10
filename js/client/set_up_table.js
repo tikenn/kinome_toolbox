@@ -24,7 +24,7 @@
             entry = names[i];
             tempObj = {url: names[i].data_origin_url, database: {}, table: {}};
             tempObj.table.name = entry.name;
-            tempObj.table.group = undefined;
+            delete tempObj.table.group;
             tempObj.table.id = entry.name_id;
             tempObj.origin_db = entry;
 
@@ -186,8 +186,23 @@
 
     buildLinks = function (groups, tableObject) {
         var i, j, k, dataGroup, search, links, $element, col1, col2, row,
-                lvls = ['name', 'lvl_1.0.0', 'lvl_1.0.1', 'lvl_1.1.2', 'lvl_2.0.1', 'lvl_2.1.2'];
+                lvls = ['name', 'lvl_1.0.0', 'lvl_1.0.1', 'lvl_1.1.2', 'lvl_2.0.1', 'lvl_2.1.2'],
+                descriptions = [];
         $element = tableObject.link_out;
+
+        // for the table of the collections these correspond to lvls above
+        descriptions = [
+            "Name is a small collection containing only meta data. It is meant to allow you to build up groups in different ways. Also when only name data is present you may load in data from your own bionavigator output.",
+            "1.0.0 is the raw data for background and signal combined. The only additional information is a flag indicating if the camera's ability to detect changes in signal was saturated.",
+            "1.0.1 is the raw data following outlier detection as described in (link will be provided once published).",
+            "1.1.2 is the raw data following background normalization as described in (link will be provided once published).",
+            '2.0.1 is the results of curve parameterization as performed on level 1.0.1 data. Non linear curves were parameterized utilizing equation 3 from <a href="https://www.ncbi.nlm.nih.gov/pubmed/27601856">Dussaq et al</a>.',
+            '2.1.2 is the results of curve parameterization as performed on level 1.1.2 data. Non linear curves were parameterized utilizing equation 3 from <a href="https://www.ncbi.nlm.nih.gov/pubmed/27601856">Dussaq et al</a>.'
+        ];
+
+        var cleanURL = function (str) {
+            return str.replace(/\/*\?[\s\S]*$|\/$|\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/*$/gm, '');
+        };
 
         //Add in something like this to the top of this list:
         // This does not account for missing databases, so if a given level
@@ -196,19 +211,21 @@
         //empty what is currently there
         $element.empty();
 
+        console.log(groups);
+
         search = "?";
         for (i = 0; i < groups.length; i += 1) {
             search += "data=*[";
             dataGroup = {};
             for (j = 0; groups[i] && j < groups[i].length; j += 1) {
-                dataGroup[groups[i][j].url] = dataGroup[groups[i][j].url] || [];
-                dataGroup[groups[i][j].url].push(groups[i][j].table.id);
+                dataGroup[cleanURL(groups[i][j].url)] = dataGroup[cleanURL(groups[i][j].url)] || [];
+                dataGroup[cleanURL(groups[i][j].url)].push(groups[i][j].table.id);
             }
             links = Object.keys(dataGroup);
             // console.log(links);
             for (j = 0; j < links.length; j += 1) {
                 // console.log('here in table build', groups, dataGroup, links[j]);
-                search += links[j].replace(/\/*\?[\s\S]*$|\/$/g, '').replace(/\/[^\/]+$/, '/<database>') + '/';
+                search += cleanURL(links[j]).replace(/\/[^\/]+$/, '/<database>') + '/';
                 for (k = 0; k < dataGroup[links[j]].length; k += 1) {
                     search += dataGroup[links[j]][k] + '|';
                 }
@@ -222,14 +239,13 @@
         if (groups.length > 0) {
             $element.append('<h1 class="page-header">Collections Possible</h1>');
             row = $('<div>', {class: 'row', style: "margin-bottom:20px;"}).appendTo($element);
-            col1 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
-            col2 = $('<ul>').appendTo($('<div>', {class: 'col col-xs-6'}).appendTo(row));
+            col1 = $('<dl>', {class: "dl-horizontal"}).appendTo($('<div>', {class: 'col col-xs-12'}).appendTo(row));
             for (i = 0; i < lvls.length; i += 1) {
-                if (i < Math.ceil(lvls.length / 2)) {
-                    col1.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
-                } else {
-                    col2.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/\"/g, "%22") + '">' + lvls[i] + '</a></li>');
-                }
+                // if (i < Math.ceil(lvls.length / 2)) {
+                col1.append('<dt><a class="lead" href="' + search.replace(/<database>/g, lvls[i]).replace(/"/g, "%22") + '">' + lvls[i] + '</a></dt>' + '<dd><p style="margin-bottom:20px;">' + descriptions[i] + '</p></dd>');
+                // } else {
+                    // col2.append('<li><a href="' + search.replace(/<database>/g, lvls[i]).replace(/"/g, "%22") + '">' + lvls[i] + '</a></li>');
+                // }
             }
         }
         // $element.text(search);
@@ -371,14 +387,16 @@
             tableIndex += 1;
         }
 
-        //add in pagination
-        tableObject.pagination.text((tableObject.page + 1) + ' / ' + Math.ceil(goodEntries / max_length));
-
         //this is hear to make sure I never go out of range
-        if (tableLength < 1) {
+        if (tableLength < 1 && tableObject.page > -1) {
             tableObject.page -= 1;
             buildTableBody(tableObject);
+        } else if (tableLength && tableObject.page < 0) {
+            tableObject.page = 0;
         }
+
+        //add in pagination
+        tableObject.pagination.text((tableObject.page + 1) + ' / ' + Math.ceil(goodEntries / max_length));
     };
 
     //Begin actual work
@@ -450,6 +468,6 @@
         }
     });
 
-    KINOME.updateMainTable = buildIt;
+    exports.updateMainTable = buildIt;
 
 }(KINOME));

@@ -500,9 +500,9 @@
                 for (img_ind = 0; img_ind < result.signal.length; img_ind += 1) {
                     // by image
                     result2.signal[img_ind][j] = result.signal[img_ind][order[j][1]];
-                    result2.background[img_ind][j] = result.signal[img_ind][order[j][1]];
-                    result2.signal_valid[img_ind][j] = result.signal[img_ind][order[j][1]];
-                    result2.background_valid[img_ind][j] = result.signal[img_ind][order[j][1]];
+                    result2.background[img_ind][j] = result.background[img_ind][order[j][1]];
+                    result2.signal_valid[img_ind][j] = result.signal_valid[img_ind][order[j][1]];
+                    result2.background_valid[img_ind][j] = result.background_valid[img_ind][order[j][1]];
                 }
                 result2.peptides[j] = result.peptides[order[j][1]];
             }
