@@ -13,14 +13,34 @@
     var main, shiftToMin, normalize_background;
 
     //Should allow this to run in both situations
-    var fitOne = require('./js/client/plugins/fit_one.js');
-    if (fitOne.hasOwnProperty('fit')) {
-        fitOne = fitOne.fit;
+    var tempFitOne = require('./js/client/plugins/fit_one.js');
+    if (tempFitOne.hasOwnProperty('fit')) {
+        tempFitOne = tempFitOne.fit;
     } else {
-        fitOne.then(function () {
-            fitOne = KINOME.fit;
+        tempFitOne.then(function () {
+            tempFitOne = KINOME.fit;
         });
     }
+
+    var fitOne = (function () {
+        var savedFits = {};
+        return function (data, type, sigVback, passback) {
+            var key = type === 'linear'
+                ? data[0].name + data[0].cycle + data[0].peptide + sigVback
+                : data[0].name + data[0].exposure + data[0].peptide + sigVback;
+            // var saved = true;
+            if (!savedFits[key]) {
+                // saved = false;
+                savedFits[key] = tempFitOne(data, type, sigVback);
+            }
+            // console.log(passback * 1, saved, key, Math.random());
+            return savedFits[key].then(function (res) {
+                // console.log(passback * 1, saved, key, Math.random());
+                res.passback = passback;
+                return res;
+            });
+        };
+    }());
 
     var getFits = function (data, cycle, exposure, peptide, sigVback) {
         var i, good, promises = [];
@@ -31,14 +51,17 @@
         // console.log('getting fit', cycle, exposure, forLinear, forNonLinear, peptide);
         // console.log('geting fit', cycle, exposure, forLinear, forNonLinear);
 
+        // Promise.resolve(NaN);
+        // return;
+
         //check to see if linear is worth it
         good = 0;
         for (i = 0; i < forLinear.length; i += 1) {
             good += forLinear[i][sigVback + '_valid'] * 1;
         }
-        if (good > 2) {
+        if (good > 1) {
             promises[0] = fitOne(forLinear, 'linear', sigVback, exposure).then(function (res) {
-                console.log(cycle, exposure, 'linear', res, res.equation.func([res.passback], res[sigVback].parameters));
+                // console.log(cycle, exposure, 'linear', res, res.equation.func([res.passback], res[sigVback].parameters));
                 return {
                     R2: res[sigVback].R2,
                     val: res.equation.func([res.passback], res[sigVback].parameters, res.equation.func([res.passback], res[sigVback].parameters))
@@ -53,17 +76,21 @@
         for (i = 0; i < forNonLinear.length; i += 1) {
             good += forNonLinear[i][sigVback + '_valid'] * 1;
         }
-        if (good > 3) {
+
+        if (good > 5) {
             promises[1] = fitOne(forNonLinear, 'kinetic', sigVback, cycle).then(function (res) {
-                console.log(cycle, exposure, 'kinetic', res, res.equation.func([res.passback], res[sigVback].parameters));
+                // console.log(cycle, exposure, 'kinetic', res, res.equation.func([res.passback], res[sigVback].parameters));
                 return {
                     R2: res[sigVback].R2,
-                    val: res.equation.func([res.passback], res[sigVback].parameters)
+                    val: res.equation.func([res.passback], res[sigVback].parameters),
+                    passback: res.passback,
+                    peptide: peptide
                 };
             });
 
         } else {
-            promises[1] = Promise.resolve({R2: 0, val: 0});
+            // console.log(forNonLinear, good, exposure);
+            promises[1] = Promise.resolve({R2: 0, val: 0, peptide: peptide, cycle: cycle, exposure: exposure});
         }
 
         return Promise.all(promises).then(function (res) {
@@ -81,9 +108,11 @@
 
             //If there was no good data then return NaN
             if (totalR2 > 0) {
-                return sol / totalR2;
+                sol = sol / totalR2;
             }
-            // console.log('did not use', res)
+            if (sol && sol < 5500 && sol > 0) {
+                return sol;
+            }
             return NaN;
         });
     };
@@ -126,13 +155,16 @@
 
             after_norm = function (res) {
                 var l = 0, one;
+                // console.log(res);
                 for (l = 0; l < res.backgrounds.length; l += 1) {
                     one = data.get({
                         cycle: res.cycle,
                         exposure: res.exposure,
                         peptide: res.backgrounds[l].peptide
                     })[0];
-                    one.set('background', res.backgrounds[l].background);
+                    if (one.background_valid) {
+                        one.set('background', res.backgrounds[l].background);
+                    }
                 }
                 counts.done += 1;
                 return;
@@ -209,7 +241,7 @@
                 mini = Math.min(mini, x.background);
             }
             if (x.signal_valid) {
-                Math.min(mini, x.signal);
+                mini = Math.min(mini, x.signal);
             }
             return mini;
         };
@@ -234,6 +266,7 @@
             });
             if (points.length > 1) {
                 min = points.map(getMinSignal).reduce(getMin);
+                // console.log(min, exposures[i]);
                 points = data.get({
                     exposure: exposures[i]
                 }); //This will get everything except post wash

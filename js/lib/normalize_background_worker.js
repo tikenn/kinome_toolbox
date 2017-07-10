@@ -438,14 +438,14 @@
                 return {
                     data: transform(points.all, linearMod.params, minimum),
                     params: linearMod.params,
-                    mod_R2: linearMod.R2
+                    R2: linearMod.R2
                 };
             }
             //If there is not enough data to normalize then just return a blank array.
             return {
                 data: [],
                 params: [],
-                mod_R2: 0
+                R2: 0
             };
         };
     }());
