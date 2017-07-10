@@ -24,9 +24,11 @@
 
     var getFits = function (data, cycle, exposure, peptide, sigVback) {
         var i, good, promises = [];
+
         var forLinear = data.get({cycle: cycle, peptide: peptide});
         var forNonLinear = data.get({exposure: exposure, peptide: peptide});
 
+        // console.log('getting fit', cycle, exposure, forLinear, forNonLinear, peptide);
         // console.log('geting fit', cycle, exposure, forLinear, forNonLinear);
 
         //check to see if linear is worth it
@@ -35,10 +37,11 @@
             good += forLinear[i][sigVback + '_valid'] * 1;
         }
         if (good > 2) {
-            promises[0] = fitOne(data, 'linear', sigVback).then(function (res) {
+            promises[0] = fitOne(forLinear, 'linear', sigVback, exposure).then(function (res) {
+                console.log(cycle, exposure, 'linear', res, res.equation.func([res.passback], res[sigVback].parameters));
                 return {
                     R2: res[sigVback].R2,
-                    val: res.equation.func([exposure], res[sigVback].parameters)
+                    val: res.equation.func([res.passback], res[sigVback].parameters, res.equation.func([res.passback], res[sigVback].parameters))
                 };
             });
         } else {
@@ -51,12 +54,14 @@
             good += forNonLinear[i][sigVback + '_valid'] * 1;
         }
         if (good > 3) {
-            promises[1] = fitOne(data, 'linear', sigVback).then(function (res) {
+            promises[1] = fitOne(forNonLinear, 'kinetic', sigVback, cycle).then(function (res) {
+                console.log(cycle, exposure, 'kinetic', res, res.equation.func([res.passback], res[sigVback].parameters));
                 return {
                     R2: res[sigVback].R2,
-                    val: res.equation.func([cycle], res[sigVback].parameters)
+                    val: res.equation.func([res.passback], res[sigVback].parameters)
                 };
             });
+
         } else {
             promises[1] = Promise.resolve({R2: 0, val: 0});
         }
@@ -65,11 +70,11 @@
             var sol = 0, totalR2 = 0;
 
             //weighted average
-            if (res[0].R2 > 0.8) {
+            if (res[0].R2 > 0.8 && !Number.isNaN(res[0].val)) {
                 sol += res[0].val * res[0].R2;
                 totalR2 += res[0].R2;
             }
-            if (res[1].R2 > 0.8) {
+            if (res[1].R2 > 0.8 && !Number.isNaN(res[1].val)) {
                 sol += res[1].val * res[1].R2;
                 totalR2 += res[1].R2;
             }
@@ -78,6 +83,7 @@
             if (totalR2 > 0) {
                 return sol / totalR2;
             }
+            // console.log('did not use', res)
             return NaN;
         });
     };
@@ -111,7 +117,7 @@
             */
 
             var peptides, cycle, exposure, after_norm, i, j, k,
-                    promises = [], fitsPromObj = {}, thisProm, img_obj_proms;
+                    promises = [], thisProm, img_obj_proms;
 
             var data = data_in.clone();
             data.level = '1.1.2';
@@ -170,14 +176,14 @@
 
                         //If the background is not valid
                         if (!peptides[k].background_valid) {
-                            thisProm[1] = fitsPromObj[cycle[i] + exposure[j] + peptides[k].peptide + 'background'] || getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'background');
+                            thisProm[1] = getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'background');
                         } else {
                             thisProm[1] = Promise.resolve(peptides[k].background);
                         }
 
                         //If the signal is not valid
                         if (!peptides[k].background_valid) {
-                            thisProm[2] = fitsPromObj[cycle[i] + exposure[j] + peptides[k].peptide + 'signal'] || getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'signal');
+                            thisProm[2] = getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'signal');
                         } else {
                             thisProm[2] = Promise.resolve(peptides[k].signal);
                         }

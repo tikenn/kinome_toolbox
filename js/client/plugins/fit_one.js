@@ -50,7 +50,7 @@
         return;
     });
 
-    exports.fit = function (dataArr, type, backvsig) {
+    exports.fit = function (dataArr, type, backvsig, passback) {
         return new Promise(function (resolve, reject) {
             var short = false;
             if (typeof type !== 'string' || (type !== 'linear' && type !== 'kinetic')) {
@@ -132,6 +132,7 @@
                     if (Array.isArray(res[1])) {
                         outObj.background = res[1][1];
                     }
+                    outObj.passback = passback;
                     resolve(outObj);
                 });
             });
