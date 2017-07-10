@@ -12,23 +12,108 @@
     // variable declarations
     var main, shiftToMin, normalize_background;
 
+    //Should allow this to run in both situations
+    var fitOne = require('./js/client/plugins/fit_one.js');
+    if (fitOne.hasOwnProperty('fit')) {
+        fitOne = fitOne.fit;
+    } else {
+        fitOne.then(function () {
+            fitOne = KINOME.fit;
+        });
+    }
+
+    var getFits = function (data, cycle, exposure, peptide, sigVback) {
+        var i, good, promises = [];
+        var forLinear = data.get({cycle: cycle, peptide: peptide});
+        var forNonLinear = data.get({exposure: exposure, peptide: peptide});
+
+        // console.log('geting fit', cycle, exposure, forLinear, forNonLinear);
+
+        //check to see if linear is worth it
+        good = 0;
+        for (i = 0; i < forLinear.length; i += 1) {
+            good += forLinear[i][sigVback + '_valid'] * 1;
+        }
+        if (good > 2) {
+            promises[0] = fitOne(data, 'linear', sigVback).then(function (res) {
+                return {
+                    R2: res[sigVback].R2,
+                    val: res.equation.func([exposure], res[sigVback].parameters)
+                };
+            });
+        } else {
+            promises[0] = Promise.resolve({R2: 0, val: 0});
+        }
+
+        //check to see if non-linear is worth it
+        good = 0;
+        for (i = 0; i < forNonLinear.length; i += 1) {
+            good += forNonLinear[i][sigVback + '_valid'] * 1;
+        }
+        if (good > 3) {
+            promises[1] = fitOne(data, 'linear', sigVback).then(function (res) {
+                return {
+                    R2: res[sigVback].R2,
+                    val: res.equation.func([cycle], res[sigVback].parameters)
+                };
+            });
+        } else {
+            promises[1] = Promise.resolve({R2: 0, val: 0});
+        }
+
+        return Promise.all(promises).then(function (res) {
+            var sol = 0, totalR2 = 0;
+
+            //weighted average
+            if (res[0].R2 > 0.8) {
+                sol += res[0].val * res[0].R2;
+                totalR2 += res[0].R2;
+            }
+            if (res[1].R2 > 0.8) {
+                sol += res[1].val * res[1].R2;
+                totalR2 += res[1].R2;
+            }
+
+            //If there was no good data then return NaN
+            if (totalR2 > 0) {
+                return sol / totalR2;
+            }
+            return NaN;
+        });
+    };
+
+    var postFits = function (data) {
+        var xP, yP, peptide = data[0], background = data[1], signal = data[2];
+        xP = peptide.spot_row - 1;
+        yP = peptide.spot_col - 1;
+        return {
+            x: xP,
+            y: yP,
+            signal: signal,
+            background: background,
+            name: peptide.peptide,
+            cycle: peptide.cycle,
+            exposure: peptide.exposure
+        };
+    };
+
     normalize_background = function (worker, counts) {
-        return function (data) {
-            if (!data.get || typeof data.get !== 'function') {
+        return function (data_in) {
+            if (!data_in.get || typeof data_in.get !== 'function') {
                 throw "Data object does not have get function attached. Use get_kinome.js to add this on.";
             }
 
-            if (data.level !== "1.0.1") {
-                throw "This is designed only for level 1.0.1 data. You passed in level: " + data.level;
+            if (data_in.level !== "1.0.1") {
+                throw "This is designed only for level 1.0.1 data. You passed in level: " + data_in.level;
             }
             /*
                 idea here is to generate two arrays based on, then send them to the worker.
             */
 
-            var peptides, cycle, exposure, after_norm, i, j, k, img, x, y,
-                    promises = [];
+            var peptides, cycle, exposure, after_norm, i, j, k,
+                    promises = [], fitsPromObj = {}, thisProm, img_obj_proms;
 
-            data = data.clone();
+            var data = data_in.clone();
             data.level = '1.1.2';
             cycle = data.list('cycles');
             exposure = data.list('exposures');
@@ -47,44 +132,59 @@
                 return;
             };
 
+            var parse_img = function (res_arr) {
+                var img = {
+                    background: [],
+                    signal: [],
+                    name: []
+                };
+                res_arr.map(function (obj) {
+                    img.background[obj.x] = img.background[obj.x] || [];
+                    img.signal[obj.x] = img.signal[obj.x] || [];
+                    img.name[obj.x] = img.name[obj.x] || [];
+                    img.cycle = obj.cycle;
+                    img.exposure = obj.exposure;
+
+                    img.background[obj.x][obj.y] = obj.background;
+                    img.signal[obj.x][obj.y] = obj.signal;
+                    img.name[obj.x][obj.y] = obj.name;
+                });
+                // console.log(res_arr, img);
+                return img;
+            };
+
+            var normBackground = function (img) {
+                if (img.background.length && img.background[0].length) {
+                    counts.total += 1;
+                    return worker.submit(img).then(after_norm);
+                }
+            };
+
             for (i = 0; i < cycle.length; i += 1) {
                 for (j = 0; j < exposure.length; j += 1) {
                     peptides = data.get({cycle: cycle[i], exposure: exposure[j]});
-                    img = {
-                        background: [],
-                        signal: [],
-                        name: [],
-                        cycle: cycle[i],
-                        exposure: exposure[j]
-                    };
+                    img_obj_proms = [];
                     for (k = 0; k < peptides.length; k += 1) {
-                        x = peptides[k].spot_row - 1;
-                        y = peptides[k].spot_col - 1;
-                        img.background[x] = img.background[x] || [];
-                        img.signal[x] = img.signal[x] || [];
-                        img.name[x] = img.name[x] || [];
-                        img.name[x][y] = peptides[k].peptide;
-                        if (peptides[k].background_valid) {
-                            //if background is valid, keep going
-                            img.background[x][y] = peptides[k].background;
-                            if (peptides[k].signal_valid) {
-                                img.signal[x][y] = peptides[k].signal;
-                            } else {
-                                img.signal[x][y] = NaN;
-                                //Other option is to set this to 10x background. Works well for high signal spots... Not so well for lower signal. Although this is already shifted, which may help.
-                            }
-                        } else {
-                            img.background[x][y] = NaN;
-                            img.signal[x][y] = NaN;
-                        }
-                    }
+                        //Build the promise information
+                        thisProm = [Promise.resolve(peptides[k])];
 
-                    //Only do this if this resolved to an actual image worth of data
-                    if (img.background.length && img.signal.length) {
-                        //Now that I have set this up, send it to the worker
-                        counts.total += 1;
-                        promises.push(worker.submit(img).then(after_norm));
+                        //If the background is not valid
+                        if (!peptides[k].background_valid) {
+                            thisProm[1] = fitsPromObj[cycle[i] + exposure[j] + peptides[k].peptide + 'background'] || getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'background');
+                        } else {
+                            thisProm[1] = Promise.resolve(peptides[k].background);
+                        }
+
+                        //If the signal is not valid
+                        if (!peptides[k].background_valid) {
+                            thisProm[2] = fitsPromObj[cycle[i] + exposure[j] + peptides[k].peptide + 'signal'] || getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'signal');
+                        } else {
+                            thisProm[2] = Promise.resolve(peptides[k].signal);
+                        }
+
+                        img_obj_proms.push(Promise.all(thisProm).then(postFits));
                     }
+                    promises.push(Promise.all(img_obj_proms).then(parse_img).then(normBackground));
                 }
             }
             return Promise.all(promises).then(function () {

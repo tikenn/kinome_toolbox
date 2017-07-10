@@ -138,6 +138,8 @@
         });
     };
 
-
-    return [get_models];
-}(KINOME));
+}(
+    ("undefined" !== typeof module && module.exports)
+        ? module.exports
+        : KINOME
+));
