@@ -1,0 +1,11 @@
+{
+  "name": "amd_ww",
+  "version": "1.0.0",
+  "description": "web workers queue system",
+  "main": "amd_ww.3.1.0.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

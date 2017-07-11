@@ -11,8 +11,7 @@
     //There are better ways of doing this, but to get it node ready quickly...
     if ("undefined" !== typeof module && module.exports) {
         //in node
-        console.log('in node...');
-        var amd_ww = require('../../../lib/amd_ww.3.1.0.min.js').amd_ww;
+        var amd_ww = require('amd_ww').amd_ww;
         var fs = require('fs');
         requires = new Promise(function (resolve, reject) {
             fs.readFile(equationURL, 'utf8', function (err3, equation) {

@@ -28,7 +28,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         //library functions
         peptide_picker: './plugins/peptide_picker/peptide_picker.js',
         shiftToMin: './js/web_main.js',
-        amd_ww: './js/lib/amd_ww.3.1.0.min.js',
+        amd_ww: './js/lib/amd_ww/amd_ww.3.1.0.min.js',
         enrich_kinome: './js/lib/enrich_kinome.js',
         outlier: './js/lib/quality_filtration.min.js',
         normalize_background: './js/lib/background_normalization.js',
@@ -44,7 +44,7 @@ as urls this works by assuming jQuery is present and that Promises exist
         'equation-picker': './js/client/plugins/equation_picker.js',
 
         //plugins - math
-        fit: './js/client/plugins/fit_one.js',
+        fit: './js/client/plugins/fit_one/fit_one.js',
         hcluster: './plugins/heat_map/hcluster.js',
         gradient: './plugins/gradient/gradient.js',
 

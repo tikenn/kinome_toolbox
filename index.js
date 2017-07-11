@@ -3,7 +3,7 @@ var parser = require('./js/lib/parse_kinome_and_background.js'),
     add_get = require('./js/lib/enrich_kinome.js').enrich,
     filter = require('./js/lib/quality_filtration.js').filter,
     normalize = require('./js/lib/background_normalization.js').normalize_background,
-    amd_ww = require('./js/lib/amd_ww.3.1.0.js').amd_ww, //This requires webworker-threads
+    amd_ww = require('amd_ww').amd_ww, //This requires webworker-threads
     parameterize = require('./js/lib/parameterize_curves.js').parameterize;
 
 //Requirements

@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/adussaq/kinome_toolbox#readme",
   "dependencies": {
+    "amd_ww": "file:js/lib/amd_ww",
     "colors": "^1.1.2",
     "fit": "file:js/client/plugins/fit_one",
     "fs": "0.0.1-security",
