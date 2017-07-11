@@ -350,6 +350,9 @@ This is an enriched array containing some number of enriched KINOME objects. Whi
 </details>
 
 
+The following are all specific entries in the data_arr above. Essentially if the first object in a data_arr (`data_arr[0]`) is of type 'Name' then it will have the functions described below on it. Additionally it will have a properperty `data_arr[0].level === 'name'`.
+
+
 #### Name
 
 This is just the meta data and peptide list for each data object loaded in. This data exists for quick load and for the building of down the line analytic groups. It has the following functions attached:
@@ -458,7 +461,7 @@ Level 1 data is essentially base level data. It has not been parameterized and t
 
 #### Level 2
 
-Level 2 data is parameterized level 1 data. The slight variations on it are based on the origin level 1 data. These levels will be described in the supplement of a pending publication and in a future youtube video. (Links coming soon)
+Level 2 data is parameterized level 1 data.  The slight variations on it are based on the origin level 1 data. These levels will be described in a future youtube video. (Links coming soon)
 
 <details>
 <summary>lvl2.get(<i>get_object</i>)</summary>
