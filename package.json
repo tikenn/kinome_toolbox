@@ -26,13 +26,13 @@
   "homepage": "https://github.com/adussaq/kinome_toolbox#readme",
   "dependencies": {
     "colors": "^1.1.2",
+    "fit": "file:js/client/plugins/fit_one",
     "fs": "0.0.1-security",
     "mongodb": "^2.2.29",
     "optimist": "^0.6.1",
     "progress": "^2.0.0",
     "prompt": "^1.0.0",
     "restify": "^4.3.1",
-    "webworker-threads": "^0.7.11",
-    "fit" : "file:./js/client/plugins/fit_one.js"
+    "webworker-threads": "^0.7.11"
   }
 }

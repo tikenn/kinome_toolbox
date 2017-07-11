@@ -7,8 +7,27 @@
     fitCurvesWorker = "./js/lib/fitCurvesWorker.min.js";
     equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
 
-    requires = [require(equationURL, 'text'), require('amd_ww')];
-    requires = Promise.all(requires);
+
+    //There are better ways of doing this, but to get it node ready quickly...
+    if ("undefined" !== typeof module && module.exports) {
+        //in node
+        console.log('in node...');
+        var amd_ww = require('../../../lib/amd_ww.3.1.0.min.js').amd_ww;
+        var fs = require('fs');
+        requires = new Promise(function (resolve, reject) {
+            fs.readFile(equationURL, 'utf8', function (err3, equation) {
+                if (err3) {
+                    reject('failed to get equation');
+                }
+                resolve([equation]);
+            });
+        });
+    } else {
+        //in browser
+        requires = [require(equationURL, 'text'), require('amd_ww')];
+        requires = Promise.all(requires);
+    }
+
 
 
     get_models = function (array, cycVexp, equation) {
@@ -48,6 +67,8 @@
             num_workers: 4
         });
         return;
+    }).catch(function (err) {
+        console.error(err);
     });
 
     exports.fit = function (dataArr, type, backvsig, passback) {
@@ -136,6 +157,8 @@
                     resolve(outObj);
                 });
             });
+        }).catch(function (err) {
+            console.error(err);
         });
     };
 
