@@ -126,13 +126,14 @@
          * @param Object state The current state of the system
          * @param Object previousState The previous state of the system
          */
-         var fireState = function() {
+         var fireState = function(stateIGNORE, previousStateIGNORE, force) {
             // console.log(previousState);
             // console.log(clone(state), clone(previousState));
             if (state.sample.name !== previousState.sample.name
                 || state.peptide !== previousState.peptide
                 || state.exposure !== previousState.exposure
                 || state.cycle !== previousState.cycle
+                || force
             ) {
                 //check to see if stuff is ok. The attempt here was to hide the
                     // ppicker if an invalid state was selected. I chose instead
@@ -299,7 +300,7 @@
         main.change = function(customStateFunction) {
             if (typeof customStateFunction === 'function') {
                 stateFunction = customStateFunction;
-                fireState(clone(state), {sample: {name: null}});
+                fireState(clone(state), {sample: {name: null}}, true);//force the fire
             } else {
                 console.error('The change function of peptide picker expects a function');
             }

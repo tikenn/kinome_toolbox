@@ -76,6 +76,7 @@
 
         //peptide picker response
         pep_picked = function (state_object) {
+            // console.log(state_object);
             var pnts = {kinetic: [], linear: []}, i, j, group, addToPnts;
 
 
