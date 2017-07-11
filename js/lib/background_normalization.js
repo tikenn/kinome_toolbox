@@ -25,19 +25,26 @@
     var fitOne = (function () {
         var savedFits = {};
         return function (data, type, sigVback, passback) {
-            var key = type === 'linear'
-                ? data[0].name + data[0].cycle + data[0].peptide + sigVback
-                : data[0].name + data[0].exposure + data[0].peptide + sigVback;
-            // var saved = true;
-            if (!savedFits[key]) {
-                // saved = false;
-                savedFits[key] = tempFitOne(data, type, sigVback);
-            }
-            // console.log(passback * 1, saved, key, Math.random());
-            return savedFits[key].then(function (res) {
-                // console.log(passback * 1, saved, key, Math.random());
-                res.passback = passback;
-                return res;
+
+            return new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    var key = type === 'linear'
+                        ? data[0].name + data[0].cycle + data[0].peptide + sigVback
+                        : data[0].name + data[0].exposure + data[0].peptide + sigVback;
+                    // var saved = true;
+                    if (!savedFits[key]) {
+                        // saved = false;
+                        savedFits[key] = tempFitOne(data, type, sigVback);
+                    }
+                    // console.log(passback * 1, saved, key, Math.random());
+                    savedFits[key].then(function (res) {
+                        // console.log(passback * 1, saved, key, Math.random());
+                        res.passback = passback;
+                        resolve(res);
+                    }).catch(function (err) {
+                        reject(err);
+                    });
+                }, 250);
             });
         };
     }());
@@ -167,6 +174,7 @@
                     }
                 }
                 counts.done += 1;
+                counts.done = Math.floor(counts.done);
                 return;
             };
 
@@ -186,6 +194,7 @@
                     img.background[obj.x][obj.y] = obj.background;
                     img.signal[obj.x][obj.y] = obj.signal;
                     img.name[obj.x][obj.y] = obj.name;
+                    // counts.done += 2;
                 });
                 // console.log(res_arr, img);
                 return img;
@@ -193,7 +202,8 @@
 
             var normBackground = function (img) {
                 if (img.background.length && img.background[0].length) {
-                    counts.total += 1;
+                    // counts.total += 1;
+                    // counts.total = Math.floor(counts.total);
                     return worker.submit(img).then(after_norm);
                 }
             };
@@ -207,6 +217,7 @@
                         thisProm = [Promise.resolve(peptides[k])];
 
                         //If the background is not valid
+                        // counts.total += 1;
                         if (!peptides[k].background_valid) {
                             thisProm[1] = getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'background');
                         } else {
@@ -214,6 +225,7 @@
                         }
 
                         //If the signal is not valid
+                        // counts.total += 1;
                         if (!peptides[k].background_valid) {
                             thisProm[2] = getFits(data_in, cycle[i], exposure[j], peptides[k].peptide, 'signal');
                         } else {
@@ -221,6 +233,9 @@
                         }
 
                         img_obj_proms.push(Promise.all(thisProm).then(postFits));
+                    }
+                    if (img_obj_proms.length) {
+                        counts.total += 1;
                     }
                     promises.push(Promise.all(img_obj_proms).then(parse_img).then(normBackground));
                 }
@@ -315,11 +330,6 @@
                 reject({message: "Background normalization failed:", error: err});
             });
 
-            if (input_params.hasOwnProperty("update") && typeof input_params.update === 'function') {
-                input_params.update(counts);
-            }
-
-
             // linearPromise.then(function (final_data) {
             backgroundPromise.then(function (final_data) {
                 final_data = final_data.map(shiftToMin); //takes it from 1.1.1 to 1.1.2
@@ -328,6 +338,9 @@
                 reject(err);
             });
 
+            if (input_params.hasOwnProperty("update") && typeof input_params.update === 'function') {
+                input_params.update(counts);
+            }
         });
     };
 

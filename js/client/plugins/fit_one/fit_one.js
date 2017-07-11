@@ -1,8 +1,8 @@
-/*global KINOME, amd_ww*/
+/*global KINOME, window, amd_ww*/
 (function (exports) {
     'use strict';
 
-    var get_models, eq_string, worker, fitCurvesWorker, equationURL, requires;
+    var get_models, eq_string, worker, fitCurvesWorker, equationURL, amd_ww2, requires;
 
     fitCurvesWorker = "./js/lib/fitCurvesWorker.min.js";
     equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
@@ -10,8 +10,7 @@
 
     //There are better ways of doing this, but to get it node ready quickly...
     if ("undefined" !== typeof module && module.exports) {
-        //in node
-        var amd_ww = require('amd_ww').amd_ww;
+        amd_ww2 = require('amd_ww').amd_ww;
         var fs = require('fs');
         requires = new Promise(function (resolve, reject) {
             fs.readFile(equationURL, 'utf8', function (err3, equation) {
@@ -23,6 +22,7 @@
         });
     } else {
         //in browser
+        console.log('in browser');
         requires = [require(equationURL, 'text'), require('amd_ww')];
         requires = Promise.all(requires);
     }
@@ -60,8 +60,11 @@
     };
 
     requires.then(function (res) {
+        if (typeof window !== 'undefined' && window.amd_ww) {
+            amd_ww2 = window.amd_ww;
+        }
         eq_string = res[0].replace(/\/\/[^\n]*/g, "").replace(/\s+/g, ' ');
-        worker = amd_ww.start({
+        worker = amd_ww2.start({
             filename: fitCurvesWorker,
             num_workers: 4
         });

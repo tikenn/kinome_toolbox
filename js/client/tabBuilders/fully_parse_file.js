@@ -10,7 +10,7 @@
     require('./js/lib/enrich_kinome.js');
     require('./js/lib/quality_filtration.js');
     require('./js/lib/background_normalization.js');
-    require('./js/lib/amd_ww.3.1.0.js');
+    require('amd_ww');
     require('./js/lib/parameterize_curves.js');
     require('level_1_display');
     require('set_up_table');
