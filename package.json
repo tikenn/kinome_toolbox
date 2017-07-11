@@ -33,6 +33,6 @@
     "prompt": "^1.0.0",
     "restify": "^4.3.1",
     "webworker-threads": "^0.7.11",
-    "fit" : "./js/client/plugins/fit_one.js"
+    "fit" : "file:./js/client/plugins/fit_one.js"
   }
 }
