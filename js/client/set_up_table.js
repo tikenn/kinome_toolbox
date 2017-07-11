@@ -211,7 +211,7 @@
         //empty what is currently there
         $element.empty();
 
-        console.log(groups);
+        // console.log(groups);
 
         search = "?";
         for (i = 0; i < groups.length; i += 1) {

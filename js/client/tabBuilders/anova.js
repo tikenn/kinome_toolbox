@@ -80,7 +80,7 @@
         pep_picked = function (state_object) {
             var pnts = {kinetic: [], linear: []}, j, group, addToPnts;
 
-            pep_picker.setColorFunc(color_it);
+            // console.log('here', pep_picker);
 
 
             addToPnts = function (peptide, thisInd, grp) {
@@ -204,7 +204,7 @@
 
                 }
                 oneft = f_stat(oneANOVA);
-                if (!isNaN(oneft)) {
+                if (!Number.isNaN(oneft)) {
                     minF = Math.min(minF, oneft);
                     maxF = Math.max(maxF, oneft);
                 }
@@ -218,7 +218,8 @@
             // console.log(f_tests, 'yeppers');
             return Promise.resolve(f_tests.map(function (t) {
                 // t = t[0];
-                if (isNaN(t)) {
+                // console.log(t);
+                if (Number.isNaN(t)) {
                     return 0;
                 }
                 return (t - minF) / (maxF - minF);

@@ -5,16 +5,20 @@
         The point of this is to run the quality filtration package. We will
         see how it goes.
     */
-    var DIV, buildPage, requires, fitCurvesWorker, equationURL, startFits, displayData, non_linear_model;
+    var DIV, buildPage, fitCurvesWorker, equationURL, startFits, displayData, non_linear_model;
 
     fitCurvesWorker = "./js/lib/fitCurvesWorker.min.js";
     equationURL = "./models/cyclingEq_3p_hyperbolic.jseq";
 
-    requires = [require(equationURL, 'text'), require('amd_ww'), require('enrich_kinome'), require('outlier')];
+    var eqProm = require(equationURL, 'text');
+    require('amd_ww');
+    require('enrich_kinome');
+    require('outlier');
+    require('level_1_display');
 
-    buildPage = function (req_arr) {
-        non_linear_model = req_arr[0].replace(/\/\/[^\n]*/g, "").replace(/\s+/g, ' ');
-        DIV.append('<div>This script fits all of the level 1.0.0 curves, linear first, to detect outliers. If applicable it will add in cycle slopes to fit for the non-linear fits. If not then that will be skipped. This can take several minutes to run and is not designed for more than 40 samples at a time (For that please use the command line interface). Once you start the fitting, two loading bars will appear. When they are complete you will be able to see what points have been removed, look at the fits and link to the appropriate images.<div>');
+    buildPage = function (equation) {
+        non_linear_model = equation.replace(/\/\/[^\n]*/g, "").replace(/\s+/g, ' ');
+        DIV.append('<div>This script fits all of the level 1.0.0 curves, linear first, to detect outliers. If applicable it will add in cycle slopes to fit for the non-linear fits. If not then that will be skipped. This can take several minutes to run and is not designed for more than 40 samples at a time (For that please use the command line interface). Once you start the fitting, two loading bars will appear. When they are complete you will be able to see what points have been removed, look at the fits with link to the appropriate images. The resultant array will be colored by the number of outliers per spot.<div>');
         $('<button>', {style: "margin: 15px;", class: "btn btn-primary btn-lg", text: "Begin Fits."}).click(startFits).appendTo($('<div>', {class: 'text-center'}).appendTo(DIV));
     };
 
@@ -71,18 +75,53 @@
         // $page_build.img_picker = $('<div>', {class: 'row'});
         // $page_build.samp_picker = $('<input>', {class: 'form-control'});
         // $
+        var lvl1Disp = KINOME.levelOneDisplay(outlier_removed);
 
-        return [outlier_removed];
+        lvl1Disp.setColorFunc(function (peptides, state) {
+            var i, j, max = -Infinity, obj, min = Infinity, kineticD, linearD, count, values = [];
+            for (i = 0; i < peptides.length; i += 1) {
+                count = 0;
+                // console.log(peptides[i]);
+                kineticD = state.sample.get({peptide: peptides[i].peptide, exposure: peptides[i].exposure});
+                linearD = state.sample.get({peptide: peptides[i].peptide, cycle: peptides[i].cycle});
+                for (j = 0; j < kineticD.length; j += 1) {
+                    obj = kineticD[j];
+                    if (obj.hasOwnProperty("signal_valid") && !obj.signal_valid) {
+                        count += 1;
+                    }
+                    if (obj.hasOwnProperty("background_valid") && !obj.background_valid) {
+                        count += 1;
+                    }
+                }
+                for (j = 0; j < linearD.length; j += 1) {
+                    obj = linearD[j];
+                    if (obj.hasOwnProperty("signal_valid") && !obj.signal_valid) {
+                        count += 1;
+                    }
+                    if (obj.hasOwnProperty("background_valid") && !obj.background_valid) {
+                        count += 1;
+                    }
+                }
+                max = Math.max(max, count);
+                min = Math.min(min, count);
+                values.push(count);
+            }
+            return Promise.resolve(values.map(function (x) {
+                return (x - min) / (max - min);
+            }));
+
+        });
+
+        DIV.append(lvl1Disp);
+
     };
 
     //Finally get things started
-    (function () {
+    DIV = KINOME.addAnalysis('Find Outliers');
+    require(function () {
         //Actually set up page elements
-        DIV = KINOME.addAnalysis('Find Outliers');
-
-        //Now require scripts then get going.
-        Promise.all(requires).then(buildPage);
-    }());
+        eqProm.then(buildPage);
+    });
 
     return exports;
 }(

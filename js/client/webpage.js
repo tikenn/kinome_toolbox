@@ -13,7 +13,7 @@
         KINOME.loadData('http://dbi.kinomecore.com:8000/db/kinome/name').then(function () {
             return KINOME.loadData('local://name');
         }).then(function () {
-            return require('set_up_table');
+            return require('name');
         });
     } else {
         //load UI scripts that correspond to types

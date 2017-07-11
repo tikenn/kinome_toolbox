@@ -307,7 +307,7 @@
             return Promise.resolve(colorScale);
         };
 
-        pageStructure.superDiv = $('<div>')
+        pageStructure.superDiv = $('<div>');
         pageStructure.peptidePicker = $('<div></div>').appendTo(pageStructure.superDiv);
         pageStructure.row = $('<div class="row"></div>').appendTo(pageStructure.superDiv);
         pageStructure.signalCol = $('<div id="signal-col" class="col-sm-6"></div>').appendTo(pageStructure.row);
@@ -323,6 +323,9 @@
         pp.change(buildGraphs);
         pp.setColorFunc(colorPeptides);
         pageStructure.peptidePicker.append(pp.div);
+
+        var toReturn = pageStructure.superDiv;
+        toReturn.setColorFunc = pp.setColorFunc;
 
         return pageStructure.superDiv;
     };

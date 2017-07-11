@@ -22,7 +22,6 @@
         });
     } else {
         //in browser
-        console.log('in browser');
         requires = [require(equationURL, 'text'), require('amd_ww')];
         requires = Promise.all(requires);
     }
