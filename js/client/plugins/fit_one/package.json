@@ -1,6 +1,6 @@
 {
   "name": "fit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "fit one curve",
   "main": "fit_one.js",
   "scripts": {
