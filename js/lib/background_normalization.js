@@ -24,14 +24,21 @@
 
     var fitOne = (function () {
         var savedFits = {};
-        return function (data, type, sigVback, passback) {
-            var key = type === 'linear'
-                ? data[0].name + data[0].cycle + data[0].peptide + sigVback
-                : data[0].name + data[0].exposure + data[0].peptide + sigVback;
+        return function (dataObj, spec, peptide, type, sigVback, passback) {
+            var key = dataObj.name + type + spec + peptide + sigVback, thisD, thisG;
             // var saved = true;
             if (!savedFits[key]) {
                 // saved = false;
-                savedFits[key] = tempFitOne(data, type, sigVback).then(function (res) {
+                thisG = {
+                    peptide: peptide
+                };
+                if (type === 'linear') {
+                    thisG.cycle = spec;
+                } else {
+                    thisG.exposure = spec;
+                }
+                thisD = dataObj.get(thisG);
+                savedFits[key] = tempFitOne(thisD, type, sigVback).then(function (res) {
                     //remember minimum stuff
                     var thisRes = {};
                     thisRes[sigVback] = {
@@ -43,6 +50,7 @@
                     };
                     return thisRes;
                 });
+                thisD = [];
             }
             // console.log(passback * 1, saved, key, Math.random());
             return savedFits[key].then(function (res) {
@@ -52,13 +60,15 @@
         };
     }());
 
-    var getFits = function (forLinear, forNonLinear, peptideObj, sigVback) {
+    var getFits = function (data, peptideObj, sigVback) {
         var i,
             good,
             promises = [],
             cycle = peptideObj.cycle,
             peptide = peptideObj.peptide,
-            exposure = peptideObj.exposure;
+            exposure = peptideObj.exposure,
+            forLinear = data.get({cycle: cycle, peptide: peptide}),
+            forNonLinear;
 
         // console.log('getting fit', cycle, exposure, forLinear, forNonLinear, peptide);
         // console.log('geting fit', cycle, exposure, forLinear, forNonLinear);
@@ -71,8 +81,11 @@
         for (i = 0; i < forLinear.length; i += 1) {
             good += forLinear[i][sigVback + '_valid'] * 1;
         }
+        //Empty, no longer needed
+        forLinear = [];
+
         if (good > 1) {
-            promises[0] = fitOne(forLinear, 'linear', sigVback, exposure).then(function (res) {
+            promises[0] = fitOne(data, exposure, peptide, 'linear', sigVback, exposure).then(function (res) {
                 // console.log(cycle, exposure, 'linear', res, res.equation.func([res.passback], res[sigVback].parameters));
                 return {
                     R2: res[sigVback].R2,
@@ -82,17 +95,17 @@
         } else {
             promises[0] = Promise.resolve({R2: 0, val: 0});
         }
-        //Empty, no longer needed
-        forLinear = [];
 
         //check to see if non-linear is worth it
         good = 0;
+        forNonLinear = data.get({exposure: exposure, peptide: peptide});
         for (i = 0; i < forNonLinear.length; i += 1) {
             good += forNonLinear[i][sigVback + '_valid'] * 1;
         }
-
+        //Empty, no longer needed
+        forNonLinear = [];
         if (good > 5) {
-            promises[1] = fitOne(forNonLinear, 'kinetic', sigVback, cycle).then(function (res) {
+            promises[1] = fitOne(data, exposure, peptide, 'kinetic', sigVback, cycle).then(function (res) {
                 // console.log(cycle, exposure, 'kinetic', res, res.equation.func([res.passback], res[sigVback].parameters));
                 return {
                     R2: res[sigVback].R2,
@@ -105,8 +118,6 @@
             // console.log(forNonLinear, good, exposure);
             promises[1] = Promise.resolve({R2: 0, val: 0, peptide: peptide, cycle: cycle, exposure: exposure});
         }
-        //Empty, no longer needed
-        forNonLinear = [];
 
         return Promise.all(promises).then(function (res) {
             var sol = 0, totalR2 = 0;
@@ -228,8 +239,7 @@
                         // counts.total += 1;
                         if (!peptides[k].background_valid) {
                             thisProm[1] = getFits(
-                                data_in.get({cycle: peptides[k].cycle, peptide: peptides[k].peptide}),
-                                data_in.get({exposure: peptides[k].exposure, peptide: peptides[k].peptide}),
+                                data_in,
                                 peptides[k],
                                 'background'
                             );
@@ -241,8 +251,7 @@
                         // counts.total += 1;
                         if (!peptides[k].signal_valid) {
                             thisProm[2] = getFits(
-                                data_in.get({cycle: peptides[k].cycle, peptide: peptides[k].peptide}),
-                                data_in.get({exposure: peptides[k].exposure, peptide: peptides[k].peptide}),
+                                data_in,
                                 peptides[k],
                                 'signal'
                             );
@@ -253,7 +262,6 @@
                         img_obj_proms.push(Promise.all(thisProm).then(postFits));
                     }
                     if (img_obj_proms.length) {
-                        console.log("Starting one pic analysis");
                         counts.total += 1;
                     }
                     promises.push(Promise.all(img_obj_proms).then(parse_img).then(normBackground));
