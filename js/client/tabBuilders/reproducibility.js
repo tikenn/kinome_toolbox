@@ -75,7 +75,21 @@
         equation = {kinetic: retSigDBack, linear: retSigDBack};
 
         //peptide picker response
+        //to give the page time to load this will wait to fire.
+        var pep_picked2, fired = false;
         pep_picked = function (state_object) {
+            if (!fired) { //only fire once in first 2000 ms, should use last state object passed in
+                fired = true;
+                setTimeout(function () {
+                    pep_picked = pep_picked2;
+                    pep_picked(state_object);
+                }, 2000);
+            }
+        };
+
+
+        pep_picked2 = function (state_object) {
+
             // console.log(state_object);
             var pnts = {kinetic: [], linear: []}, i, j, group, addToPnts;
 
