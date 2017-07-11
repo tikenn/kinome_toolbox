@@ -25,48 +25,37 @@
     var fitOne = (function () {
         var savedFits = {};
         return function (dataObj, spec, peptide, type, sigVback, passback) {
-            var bodyFunc = function () {
-                var key = dataObj.name + type + spec + peptide + sigVback, thisD, thisG;
-                // var saved = true;
-                if (!savedFits[key]) {
-                    // saved = false;
-                    thisG = {
-                        peptide: peptide
-                    };
-                    if (type === 'linear') {
-                        thisG.cycle = spec;
-                    } else {
-                        thisG.exposure = spec;
-                    }
-                    thisD = dataObj.get(thisG);
-                    savedFits[key] = tempFitOne(thisD, type, sigVback).then(function (res) {
-                        //remember minimum stuff
-                        var thisRes = {};
-                        thisRes[sigVback] = {
-                            R2: res[sigVback].R2,
-                            parameters: res[sigVback].parameters
-                        };
-                        thisRes.equation = {
-                            func: res.equation.func
-                        };
-                        return thisRes;
-                    });
-                    thisD = [];
+            var key = dataObj.name + type + spec + peptide + sigVback, thisD, thisG;
+            // var saved = true;
+            if (!savedFits[key]) {
+                // saved = false;
+                thisG = {
+                    peptide: peptide
+                };
+                if (type === 'linear') {
+                    thisG.cycle = spec;
+                } else {
+                    thisG.exposure = spec;
                 }
-                // console.log(passback * 1, saved, key, Math.random());
-                return savedFits[key].then(function (res) {
-                    res.passback = passback;
-                    return res;
+                thisD = dataObj.get(thisG);
+                savedFits[key] = tempFitOne(thisD, type, sigVback).then(function (res) {
+                    //remember minimum stuff
+                    var thisRes = {};
+                    thisRes[sigVback] = {
+                        R2: res[sigVback].R2,
+                        parameters: res[sigVback].parameters
+                    };
+                    thisRes.equation = {
+                        func: res.equation.func
+                    };
+                    return thisRes;
                 });
-            };
-            return new Promise(function (resolve, reject) {
-                setTimeout(function () {
-                    bodyFunc().then(function (x) {
-                        resolve(x);
-                    }, function (err) {
-                        reject(err);
-                    });
-                }, 2000);
+                thisD = [];
+            }
+            // console.log(passback * 1, saved, key, Math.random());
+            return savedFits[key].then(function (res) {
+                res.passback = passback;
+                return res;
             });
         };
     }());
