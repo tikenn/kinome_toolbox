@@ -13,7 +13,7 @@
     var main, shiftToMin, normalize_background;
 
     //Should allow this to run in both situations
-    var tempFitOne = require('./js/client/plugins/fit_one.js');
+    var tempFitOne = require('fit');
     if (tempFitOne.hasOwnProperty('fit')) {
         tempFitOne = tempFitOne.fit;
     } else {
