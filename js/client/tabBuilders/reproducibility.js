@@ -6,7 +6,7 @@
     require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
-        var peps, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
+        var peps, build_columns, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet, pep_picker,
                 my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, limit, useAllGroups = false, buildTooltip,
                 thisState, limits = {linear: {}, kinetic: {}}, currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase, collapse;
 
@@ -36,8 +36,10 @@
             return object.background.parameters[my_state_obj[type].param];
         };
         retSigDBack = function (object, type) {
-            return Math.log(object.signal.parameters[my_state_obj[type].param] /
-                    object.background.parameters[my_state_obj[type].param]) / Math.log(2);
+            return Math.log(
+                object.signal.parameters[my_state_obj[type].param] /
+                object.background.parameters[my_state_obj[type].param]
+            ) / Math.log(2);
         };
         retSigMBack = function (object, type) {
             //this is the hard one...
@@ -75,20 +77,7 @@
         equation = {kinetic: retSigDBack, linear: retSigDBack};
 
         //peptide picker response
-        //to give the page time to load this will wait to fire.
-        var pep_picked2, fired = false;
         pep_picked = function (state_object) {
-            if (!fired) { //only fire once in first 2000 ms, should use last state object passed in
-                fired = true;
-                setTimeout(function () {
-                    pep_picked = pep_picked2;
-                    pep_picked(state_object);
-                }, 2000);
-            }
-        };
-
-
-        pep_picked2 = function (state_object) {
 
             // console.log(state_object);
             var pnts = {kinetic: [], linear: []}, i, j, group, addToPnts;
@@ -221,8 +210,8 @@
                 $.each($('text'), function (index, label) {
                     var labelText = $(label).text();
                     if (labelText.match(/_|\^/)) {
-                        labelText = labelText.replace(/_([^\{])|_\{([^\}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="sub">$1$2</tspan>');
-                        labelText = labelText.replace(/\^([^\{])|\^\{([^\}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="super">$1$2</tspan>');
+                        labelText = labelText.replace(/_([^{])|_\{([^}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="sub">$1$2</tspan>');
+                        labelText = labelText.replace(/\^([^{])|\^\{([^}]*)\}/g, '<tspan style="font-size: smaller;" baseline-shift="super">$1$2</tspan>');
                         $(label).html(labelText);
                     }
                     return index; //shut up jslint
@@ -239,7 +228,7 @@
             for (i = 0; i < arr.length; i += 1) {
                 arrOut[i] = [];
                 for (j = 0; j < arr[i].length && arrOut[i].length < 2; j += 1) {
-                    if (typeof arr[i][j] === 'number' && !isNaN(arr[i][j])) {
+                    if (typeof arr[i][j] === 'number' && !Number.isNaN(arr[i][j])) {
                         arrOut[i].push(arr[i][j]);
                     }
                 }
@@ -445,14 +434,17 @@
 
 
         //add parts to the div
-        var pep_picker = KINOME.peptidePicker(DATA);
+        pep_picker = KINOME.peptidePicker(DATA);
         $page_obj.div
             .append($page_obj.title)
             .append(pep_picker.div)
             .append($page_obj.groupHeading)
             .append($page_obj.figures);
 
-        pep_picker.change(pep_picked);
+        setTimeout(function () {
+            pep_picker.change(pep_picked);
+        }, 2000);
+
 
         //finally add on resize function, this makes sure that the figures
         // remain the correct size.
@@ -498,8 +490,8 @@
                 dataIn[i][0] = parseFloat(dataIn[i][0]);
                 dataIn[i][1] = parseFloat(dataIn[i][1]);
                 if (
-                    typeof dataIn[i][0] === 'number' && !isNaN(dataIn[i][0]) &&
-                    typeof dataIn[i][1] === 'number' && !isNaN(dataIn[i][1]) &&
+                    typeof dataIn[i][0] === 'number' && !Number.isNaN(dataIn[i][0]) &&
+                    typeof dataIn[i][1] === 'number' && !Number.isNaN(dataIn[i][1]) &&
                     isFinite(dataIn[i][0]) && isFinite(dataIn[i][1])
                 ) {
                     data.push([dataIn[i][0], dataIn[i][1]]);
@@ -514,8 +506,10 @@
             var n = data.length;
 
             var num = pSum - (sums[0] * sums[1] / n);
-            var den = Math.sqrt((sqrSums[0] - sums[0] * sums[0] / n) *
-                    (sqrSums[1] - sums[1] * sums[1] / n));
+            var den = Math.sqrt(
+                (sqrSums[0] - sums[0] * sums[0] / n) *
+                (sqrSums[1] - sums[1] * sums[1] / n)
+            );
 
             if (den === 0) {
                 return 0;
