@@ -104,7 +104,7 @@ Prints help options which are:
 | -b | (Required.) Link to the background crosstab file as exported from bionavigator. When exporting, select to export all possible meta data on both peptides and samples. |
 | -s | (Required.) Link to the signals crosstab file as exported from bionavigator. When exporting, select to export all possible meta data on both peptides and samples. |
 | -o | (Highly recommended) Base location and file name to create all the mongodb and json files that are created by the series of command prompts. This is recommended because without it all files are created in the current working directory. |
-| -d | (Coming Soon!) Database name to upsert all documents into a mongodb. |
+| -d | Database name to upsert all documents into a mongodb. |
 
 This script expects that you have exported your bionavigator crosstab files seperately as median signal and median background. Both of these files are required for parsing to take place. This toolbox does not accept median signal - background combination files.
 
@@ -113,6 +113,10 @@ The _id field for mongo is generated for each of these files so it is the same f
 This generates .json and .mdb files. The only difference is that the .json is an array so it can be imported directly into the toolbox, and the .mdb is documents seperated by newlines so it can be directly imported into the mongodb database with the following commands:
 
 ``` mongoimport --db <db_name> --collection <collection_name> --file <file_for_collection_name> ```
+
+With older versions of node the Promise system is not well garbage collected. This can cause memory issues. To fix this run node with more memory:
+
+`node --max-old-space-size=4096 index.js -...`
 
 ## Monogo with Restify
 
