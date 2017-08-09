@@ -59,11 +59,11 @@
 
     grabDbName = function (request, response) {
         var myDbName = request.params.db_name, query, fields, sort,
-                collectionName = request.params.collection_name,
-                url = 'mongodb://localhost:27017/' + myDbName;
+                collectionName = request.params.collection_name, url;
 
         //Deal with the objects
         myDbName = myDbName || 'kinome';
+        url = 'mongodb://localhost:27017/' + myDbName;
         console.log('db name:', myDbName);
         request.query.find = request.query.find || "{}";
         request.query.fields = request.query.fields || "-1";
@@ -125,12 +125,11 @@
     grabDocument = function (request, response) {
         var myDbName = request.params.db_name, fields,
                 collectionName = request.params.collection_name,
-                query = {id: decodeURIComponent(request.params.doc_id)},
-                url = 'mongodb://localhost:27017/' + myDbName;
+                query = {id: decodeURIComponent(request.params.doc_id)}, url;
 
         //Deal with the objects
         myDbName = myDbName || 'kinome';
-        console.log('db name:', myDbName);
+        url = 'mongodb://localhost:27017/' + myDbName;
         request.query.fields = request.query.fields || "-1";
         request.query.fields = decodeURIComponent(request.query.fields);
 
