@@ -64,6 +64,7 @@
 
         //Deal with the objects
         myDbName = myDbName || 'kinome';
+        console.log('db name:', myDbName);
         request.query.find = request.query.find || "{}";
         request.query.fields = request.query.fields || "-1";
         request.query.sort = request.query.sort || "[]";
@@ -129,6 +130,7 @@
 
         //Deal with the objects
         myDbName = myDbName || 'kinome';
+        console.log('db name:', myDbName);
         request.query.fields = request.query.fields || "-1";
         request.query.fields = decodeURIComponent(request.query.fields);
 
