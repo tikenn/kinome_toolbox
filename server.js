@@ -63,6 +63,7 @@
                 url = 'mongodb://localhost:27017/' + myDbName;
 
         //Deal with the objects
+        myDbName = myDbName || 'kinome';
         request.query.find = request.query.find || "{}";
         request.query.fields = request.query.fields || "-1";
         request.query.sort = request.query.sort || "[]";
