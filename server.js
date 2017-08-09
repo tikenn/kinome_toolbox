@@ -183,11 +183,11 @@
     //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
 
     /*the following is for the internal db (accesible as a registered UAB user only)*/
-    // server1.get("/db/:db_name/:collection_name", grabDbName);
-    // server1.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
-    // server1.listen(8000, function () {
-    //     console.log('%s listening at %s', server1.name, server1.url);
-    // });
+    server1.get("/db/:db_name/:collection_name", grabDbName);
+    server1.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
+    server1.listen(8000, function () {
+        console.log('%s listening at %s', server1.name, server1.url);
+    });
 
 
     var server2 = restify.createServer({
