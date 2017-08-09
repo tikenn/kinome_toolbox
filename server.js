@@ -183,30 +183,30 @@
     //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
 
     /*the following is for the internal db (accesible as a registered UAB user only)*/
-    server1.get("/db/:db_name/:collection_name", grabDbName);
-    server1.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
-    server1.listen(8000, function () {
-        console.log('%s listening at %s', server1.name, server1.url);
-    });
-
-
-    // var server2 = restify.createServer({
-    //     accept: ['application/json', 'image/tif', 'image/png']
+    // server1.get("/db/:db_name/:collection_name", grabDbName);
+    // server1.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
+    // server1.listen(8000, function () {
+    //     console.log('%s listening at %s', server1.name, server1.url);
     // });
-    // server2.use(restify.queryParser());
-    // server2.use(restify.CORS({}));
 
-    // server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
-    //     directory: "./server_imgs"
-    // }));
+
+    var server2 = restify.createServer({
+        accept: ['application/json', 'image/tif', 'image/png']
+    });
+    server2.use(restify.queryParser());
+    server2.use(restify.CORS({}));
+
+    server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
+        directory: "./server_imgs"
+    }));
 
 
 
     /*The following is for the external db*/
-    server1.get("/1.0.0/:collection_name", grabDbName);
-    server1.get("/1.0.0/:collection_name/:doc_id", grabDocument);
-    server1.listen(8080, function () {
-        console.log('%s listening at %s', server1.name, server1.url);
+    server2.get("/1.0.0/:collection_name", grabDbName);
+    server2.get("/1.0.0/:collection_name/:doc_id", grabDocument);
+    server2.listen(8080, function () {
+        console.log('%s listening at %s', server2.name, server2.url);
     });
 
 }());
