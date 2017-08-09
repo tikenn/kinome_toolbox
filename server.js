@@ -190,23 +190,23 @@
     });
 
 
-    var server2 = restify.createServer({
-        accept: ['application/json', 'image/tif', 'image/png']
-    });
-    server2.use(restify.queryParser());
-    server2.use(restify.CORS({}));
+    // var server2 = restify.createServer({
+    //     accept: ['application/json', 'image/tif', 'image/png']
+    // });
+    // server2.use(restify.queryParser());
+    // server2.use(restify.CORS({}));
 
-    server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
-        directory: "./server_imgs"
-    }));
+    // server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
+    //     directory: "./server_imgs"
+    // }));
 
 
 
     /*The following is for the external db*/
-    server2.get("/db/1.0.0/:collection_name", grabDbName);
-    server2.get("/db/1.0.0/:collection_name/:doc_id", grabDocument);
-    server2.listen(8080, function () {
-        console.log('%s listening at %s', server2.name, server2.url);
+    server1.get("/1.0.0/:collection_name", grabDbName);
+    server1.get("/1.0.0/:collection_name/:doc_id", grabDocument);
+    server1.listen(8080, function () {
+        console.log('%s listening at %s', server1.name, server1.url);
     });
 
 }());
