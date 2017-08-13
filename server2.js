@@ -202,7 +202,7 @@
     server2.use(restify.CORS({}));
 
     server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
-        directory: "./server_imgs"
+        directory: "/var/www"
     }));
 
 

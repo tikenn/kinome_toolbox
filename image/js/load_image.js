@@ -7,7 +7,7 @@
     //http://localhost:7000/kinome_toolbox/image/?img=%22631308613_W1_F1_T200_P154_I1313_A30.tif%22
 
     var spread, getParameter, gethsl, getrgb,
-            baseURL = 'http://138.26.31.155:8000/img/kinome/';
+            baseURL = 'http://db.kinomecore.com/img/kinome/';
 
     spread = function (imData) {
         //capture lightness array
