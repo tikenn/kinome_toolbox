@@ -165,7 +165,11 @@
                 console.log('Found docs');
                 //console.log("Found the following records", docs);
                 //Only return the first object
-                response.send(docs[0]);
+                if (docs[0]) {
+                    response.send(docs[0]);
+                } else {
+                    response.send(undefined);
+                }
             });
         });
     };
