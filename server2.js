@@ -55,12 +55,14 @@
         return query;
     };
 
+
+
     grabDbName = function (request, response) {
         var myDbName = request.params.db_name, query, fields, sort,
                 collectionName = request.params.collection_name, url;
 
         //Deal with the objects
-        // myDbName = myDbName || 'kinome';
+        myDbName = 'kinome';
         url = 'mongodb://localhost:27017/' + myDbName;
         console.log('db name:', myDbName);
         request.query.find = request.query.find || "{}";
@@ -126,7 +128,7 @@
                 query = {id: decodeURIComponent(request.params.doc_id)}, url;
 
         //Deal with the objects
-        // myDbName = myDbName || 'kinome';
+        myDbName = 'kinome';
         url = 'mongodb://localhost:27017/' + myDbName;
         request.query.fields = request.query.fields || "-1";
         request.query.fields = decodeURIComponent(request.query.fields);
@@ -169,43 +171,43 @@
     };
 
     //sets up the server stuff
-    var server1 = restify.createServer({
-        accept: ['application/json', 'image/tif', 'image/png']
-    });
-    server1.use(restify.queryParser());
-    server1.use(restify.CORS({}));
-
-    server1.get(/\/img\/kinome\/?.*/, restify.serveStatic({
-        directory: "/var/www"
-    }));
-
-    //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
-
-    /*the following is for the internal db (accesible as a registered UAB user only)*/
-    server1.get("/db/:db_name/:collection_name", grabDbName);
-    server1.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
-    server1.listen(8000, function () {
-        console.log('%s listening at %s', server1.name, server1.url);
-    });
-
-
-    // var server2 = restify.createServer({
+    // var server1 = restify.createServer({
     //     accept: ['application/json', 'image/tif', 'image/png']
     // });
-    // server2.use(restify.queryParser());
-    // server2.use(restify.CORS({}));
+    // server1.use(restify.queryParser());
+    // server1.use(restify.CORS({}));
 
-    // server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
-    //     directory: "./server_imgs"
+    // server1.get(/\/img\/kinome\/?.*/, restify.serveStatic({
+    //     directory: "/var/www"
     // }));
 
+    // //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
 
-
-    // /*The following is for the external db*/
-    // server2.get("/1.0.0/:collection_name", grabDbName);
-    // server2.get("/1.0.0/:collection_name/:doc_id", grabDocument);
-    // server2.listen(8080, function () {
-    //     console.log('%s listening at %s', server2.name, server2.url);
+    // /*the following is for the internal db (accesible as a registered UAB user only)*/
+    // server1.get("/db/:db_name/:collection_name", grabDbName);
+    // server1.get("/db/:db_name/:collection_name/:doc_id", grabDocument);
+    // server1.listen(8000, function () {
+    //     console.log('%s listening at %s', server1.name, server1.url);
     // });
+
+
+    var server2 = restify.createServer({
+        accept: ['application/json', 'image/tif', 'image/png']
+    });
+    server2.use(restify.queryParser());
+    server2.use(restify.CORS({}));
+
+    server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
+        directory: "./server_imgs"
+    }));
+
+
+
+    /*The following is for the external db*/
+    server2.get("/1.0.0/:collection_name", grabDbName);
+    server2.get("/1.0.0/:collection_name/:doc_id", grabDocument);
+    server2.listen(8080, function () {
+        console.log('%s listening at %s', server2.name, server2.url);
+    });
 
 }());
