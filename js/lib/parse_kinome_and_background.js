@@ -383,7 +383,15 @@
 
             bykey = function (a, b) {
                 //sort function
-                return a.key - b.key;
+                var keyA = a.key.toUpperCase();
+                var keyB = b.key.toUpperCase();
+                if (keyA < keyB) {
+                    return -1;
+                }
+                if (keyA > keyB) {
+                    return 1;
+                }
+                return 0;
             };
 
             //now the more complicated stuff, make sure all the lengths are
