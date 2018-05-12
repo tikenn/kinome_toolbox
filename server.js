@@ -174,13 +174,16 @@
 
     //sets up the server stuff
     var server1 = restify.createServer({
-        accept: ['application/json', 'image/tif', 'image/png']
+        accept: ['application/json', 'image/tif', 'image/png', 'text/plain']
     });
     server1.use(restify.queryParser());
     server1.use(restify.CORS({}));
 
     server1.get(/\/img\/kinome\/?.*/, restify.serveStatic({
         directory: "/var/www"
+    }));
+    server1.get(/\/file\/?.*/, restify.serveStatic({
+        directory: "/var/www/global_files"
     }));
 
     //http://138.26.31.155:8000/img/kinome/631308613_W1_F1_T200_P154_I1313_A30.tif
