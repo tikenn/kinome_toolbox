@@ -204,6 +204,9 @@
     server2.get(/\/img\/kinome\/?.*/, restify.serveStatic({
         directory: "/var/www"
     }));
+    server2.get(/\/file\/?.*/, restify.serveStatic({
+        directory: "/var/www/global_files"
+    }));
 
 
 
