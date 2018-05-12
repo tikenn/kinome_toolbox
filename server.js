@@ -182,7 +182,7 @@
     server1.get(/\/img\/kinome\/?.*/, restify.serveStatic({
         directory: "/var/www"
     }));
-    server1.get(/\/file\/affymetrix\/?.*/, restify.serveStatic({
+    server1.get(/\/file\/?.*/, restify.serveStatic({
         directory: "/var/www/global_files"
     }));
 
