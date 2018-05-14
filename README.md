@@ -48,7 +48,7 @@ After that here is the "hello world script" that gets all the lvl 1.0.0 data and
     //create div
     var myDiv = KINOME.addAnalysis('Print One');
 
-    //pretty print the object to the div (this clears all functions)
+    //pretty print the object to the div minus functions
     myDiv.html(
         JSON.stringify(onePoint, null, 2)
             .replace(/\ /g, '&nbsp;')
