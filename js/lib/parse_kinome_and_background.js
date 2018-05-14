@@ -592,7 +592,7 @@
             "instrument_type", "instrument_unit", "image_timestamp",
             "lamp_power", "lamp_refrence_power", "pamchip_location", "array",
             "runData", "gridid", "grid_type", 'article_number', 'exposure_time',
-            'cycle', 'title_line', 'filename'
+            'cycle', 'title_line', 'filename', 'cubeid'
         ];
         runDataKeys = runDataKeys.map(function (x) {
             return new RegExp('^' + x + '$', 'i');
