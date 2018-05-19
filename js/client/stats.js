@@ -3,6 +3,16 @@ var STATS = {};
 (function (exports) {
     'use strict';
 
+    exports.matrix = {};
+
+    exports.matrix.transpose = function (arr) {
+        return arr[0].map(function (col, c) {
+            return arr.map(function (row) {
+                return row[c];
+            });
+        });
+    };
+
     exports.corr = {};
 
     exports.corr.pearson = (function () {
