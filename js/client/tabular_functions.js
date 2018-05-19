@@ -215,7 +215,7 @@ var TABULAR = {};
 
                 return exports.enrich({
                     data: retArr,
-                    header: heads,
+                    header: ret_head_label,
                     row_labels: ret_row_label,
                     row_label_name: rowLabLab
                 });
