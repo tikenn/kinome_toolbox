@@ -3,6 +3,40 @@ var STATS = {};
 (function (exports) {
     'use strict';
 
+    exports.anova = (function () {
+        var add = function (a, b) {
+            return a + b;
+        };
+        var mean = function (arr) {
+            return arr.reduce(add) / arr.length;
+        };
+        var sse = function (arr, avg) {
+            var i, sum = 0;
+            avg = avg || mean(arr);
+            for (i = 0; i < arr.length; i += 1) {
+                sum += Math.pow(arr[i] - avg, 2);
+            }
+            return sum;
+        };
+        var concatArrs = function (a, b) {
+            return a.concat(b);
+        };
+        return function (arrs) {
+            var i, totalSampleSize = 0, bgv = 0, wgv = 0, indMean, overallMean = mean(arrs.reduce(concatArrs));
+            for (i = 0; i < arrs.length; i += 1) {
+                indMean = mean(arrs[i]);
+                bgv += arrs[i].length * Math.pow(indMean - overallMean, 2);
+                wgv += sse(arrs[i], indMean);
+                totalSampleSize += arrs[i].length;
+            }
+
+            bgv /= (arrs.length - 1);
+            wgv /= (totalSampleSize - arrs.length);
+
+            return bgv / wgv;
+        };
+    }());
+
     exports.matrix = {};
 
     exports.matrix.transpose = function (arr) {
