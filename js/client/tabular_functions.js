@@ -103,7 +103,8 @@ var TABULAR = {};
             get = function (get_param, simple) {
                 // Possible parameters: Header label vs number; Column label vs number
                 var rows, heads, i, j, retArr = [], row_by_ind = false,
-                        head_by_ind = false, temp_row, ret_row_label = [];
+                        head_by_ind = false, temp_row, ret_row_label,
+                        ret_head_label;
 
                 //deal with header input
                 get_param = get_param || {};
@@ -177,6 +178,7 @@ var TABULAR = {};
                 }
 
                 ret_row_label = [];
+                ret_head_label = [];
                 for (i = 0; i < rows.length; i += 1) {
                     //grab the rows of interest
                     retArr[i] = [];
@@ -191,8 +193,10 @@ var TABULAR = {};
                     for (j = 0; j < heads.length; j += 1) {
                         if (head_by_ind) {
                             retArr[i].push(temp_row[heads[j]]);
+                            ret_head_label[j] = header[heads[j]];
                         } else {
                             retArr[i].push(temp_row[headerObj[heads[j]]]);
+                            ret_head_label[j] = heads[j];
                         }
                     }
                 }
@@ -212,7 +216,8 @@ var TABULAR = {};
                 return exports.enrich({
                     data: retArr,
                     header: heads,
-                    row_labels: ret_row_label
+                    row_labels: ret_row_label,
+                    row_label_name: rowLabLab
                 });
             };
 
