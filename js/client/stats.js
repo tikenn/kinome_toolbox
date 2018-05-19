@@ -3,6 +3,10 @@ var STATS = {};
 (function (exports) {
     'use strict';
 
+    exports.sum = function (a, b) {
+        return a + b;
+    };
+
     exports.anova = (function () {
         var add = function (a, b) {
             return a + b;
