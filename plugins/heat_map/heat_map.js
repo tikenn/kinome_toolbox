@@ -4,7 +4,7 @@
  * Licensed under the MIT License (http://opensource.org/licenses/MIT)
  **
  * Calls all peptides from a given sample using a provided cycle and exposure
- * Colors those peptides using 
+ * Colors those peptides using
  **
  * Dependencies:
  *  * peptide picker
@@ -75,16 +75,28 @@
 
 
         retSignal = function (object, type) {
+            if (!object) {
+                return NaN;
+            }
             return object.signal.parameters[my_state_obj[type].param];
         };
         retBack = function (object, type) {
+            if (!object) {
+                return NaN;
+            }
             return object.background.parameters[my_state_obj[type].param];
         };
         retSigDBack = function (object, type) {
+            if (!object) {
+                return NaN;
+            }
             return Math.log(object.signal.parameters[my_state_obj[type].param] /
                     object.background.parameters[my_state_obj[type].param]) / Math.log(2);
         };
         retSigMBack = function (object, type) {
+            if (!object) {
+                return NaN;
+            }
             //this is the hard one...
             var all, i, key2, get_obj, min, allVals = [];
             if (type === 'kinetic') {

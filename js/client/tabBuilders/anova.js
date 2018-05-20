@@ -204,6 +204,7 @@
 
                 }
                 oneft = f_stat(oneANOVA);
+                console.log(oneft);
                 if (!Number.isNaN(oneft)) {
                     minF = Math.min(minF, oneft);
                     maxF = Math.max(maxF, oneft);
@@ -298,7 +299,17 @@
                 return a.concat(b);
             };
             return function (arrs) {
-                var i, totalSampleSize = 0, bgv = 0, wgv = 0, indMean, overallMean = mean(arrs.reduce(concatArrs));
+                var newArr = [], i, totalSampleSize = 0, bgv = 0, wgv = 0, indMean, overallMean = mean(arrs.reduce(concatArrs));
+                // Get rid of empty array spots (special for for this module)
+                for (i = 0; i < arrs.length; i += 1) {
+                    if (arrs[i].length > 1) {
+                        newArr.push(arrs[i]);
+                    }
+                }
+                arrs = newArr;
+                if (arrs.length < 2 || arrs[0].length < 2 || arrs[1].length < 2) {
+                    return NaN;
+                }
                 for (i = 0; i < arrs.length; i += 1) {
                     indMean = mean(arrs[i]);
                     bgv += arrs[i].length * Math.pow(indMean - overallMean, 2);
