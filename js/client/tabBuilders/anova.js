@@ -204,7 +204,6 @@
 
                 }
                 oneft = f_stat(oneANOVA);
-                console.log(oneft);
                 if (!Number.isNaN(oneft)) {
                     minF = Math.min(minF, oneft);
                     maxF = Math.max(maxF, oneft);

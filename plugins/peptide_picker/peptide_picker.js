@@ -231,7 +231,7 @@
                     linear: state.sample.get({cycle: state.cycle, exposure: state.exposure, type: 'linear'})
                 }
             }
-            if (!peptideList.length && (!(peptideList.kinetic && peptideList.kinetic.length) ||!(peptideList.linear && peptideList.linear.length))) {
+            if (!peptideList.length && (!(peptideList.kinetic && peptideList.kinetic.length) &&!(peptideList.linear && peptideList.linear.length))) {
                 theProm = defaultColorPeptideFunc(state.sample.list('peptide'))
             } else {
                 theProm = colorPeptideFunc(peptideList, state);
