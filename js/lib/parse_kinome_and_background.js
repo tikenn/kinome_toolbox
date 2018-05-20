@@ -164,7 +164,9 @@
                 // if (j === 6 && i === 0) {
                 //     console.log(JSON.stringify(sample.meta[j]));
                 // }
-                sample.meta[j].value = foldMeta(sample.meta[j].value);
+                if (!sample.meta[j].key.match(/^(exposure\stime|cycle)$/i)) {
+                    sample.meta[j].value = foldMeta(sample.meta[j].value);
+                }
                 if (sample.meta[j].value === null || (typeof sample.meta[j].value === 'number' && Number.isNaN(sample.meta[j].value))) {
                     //If there is no data, do not bother storing it
                     // console.log('getting rid of: ', sample.meta.splice(j, 1));
