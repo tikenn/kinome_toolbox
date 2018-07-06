@@ -43,7 +43,7 @@
             }
     */
 
-    equation_selector = function (DATA, picker) {
+    equation_selector = function (DATA, picker, ret0) {
 
         //This has a lot of state objects.... Should combine, but this was easier at first
         var equation_state, my_state_obj = {}, color_it_on, currentEQnum, thisState,
@@ -73,10 +73,14 @@
                     object.background.parameters[my_state_obj[type].param]
                 ) / Math.log(2);
             };
+
             retSigMBack = function (object, type, baseCe) {
                 //this is the hard one...
                 var min = get_ce(type, baseCe);
                 if (object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] < min) {
+                    if (ret0) {
+                        return 0;
+                    }
                     return NaN;
                 } else {
                     return Math.log(100 * (object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] - (min) + 1)) / Math.log(2);
@@ -86,7 +90,6 @@
             get_ce = function (type, baseCe) {
                 var all, i, key2, get_obj, min, allVals = [];
                 if (type === 'kinetic') {
-
                     key2 = baseCe !== undefined
                         ? baseCe
                         : thisState.exposure;
@@ -114,6 +117,7 @@
                     minimums[type][my_state_obj[type].param][key2] = min;
                     // console.log(all, get_obj, min);
                 }
+                console.log(min);
                 return min;
             };
 
@@ -137,7 +141,7 @@
             console.error("The equation selector requires a picker plugin object with a change function be passed in along with data.");
             return;
         }
-        console.warn('The equation selector plugin overwrites the picker plugin change function. Any change function already set or color change function already set will be removed.');
+        console.warn('The equation selector plugin deletes the picker plugin change function. Any change function already set or color change function already set will be removed.');
         if (picker.setColorFunc) {
             chainSetColorFunc = picker.setColorFunc;
             delete picker.setColorFunc;

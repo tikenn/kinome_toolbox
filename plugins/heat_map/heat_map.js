@@ -23,37 +23,20 @@
             require('img-picker'),
             require('gradient'),
             require('hcluster'),
-            require('d3')
+            require('d3'),
+            require('equation-picker')
         ];
+
+    var calculateValues;
 
     require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
-        var build_columns,
-            $page_obj = {},
-            equation,
-            minimums = {
-                linear: {},
-                kinetic: {}
-            },
-            retSignal,
-            retBack,
-            getOneDataSet,
+        var $page_obj = {},
             my_state_obj = {},
-            retSigDBack,
-            retSigMBack,
             pep_picked,
             thisState,
-            limits = {
-                linear: {},
-                kinetic: {}
-            },
-            currentEQnum = {
-                linear: 2,
-                kinetic: 2
-            },
-            makeOneChart,
-            uppercase,
+            eqPicker,
             imgPicker;
 
         $page_obj.div = $div;
@@ -67,6 +50,8 @@
             //I have to assume for this that this is consistent across data presented.
             params: DATA[0].kinetic.equation.mathParams
         };
+        my_state_obj.filter = false;
+        my_state_obj.filterVal = 5.0;
 
         $page_obj.width = $('<div>', {class: 'col col-sm-6 col-xs-12'});
         $page_obj.width.appendTo($('<div>', {class: 'row'})
@@ -74,79 +59,16 @@
                 .appendTo('body')));
 
 
-        retSignal = function (object, type) {
-            if (!object) {
-                return NaN;
-            }
-            return object.signal.parameters[my_state_obj[type].param];
-        };
-        retBack = function (object, type) {
-            if (!object) {
-                return NaN;
-            }
-            return object.background.parameters[my_state_obj[type].param];
-        };
-        retSigDBack = function (object, type) {
-            if (!object) {
-                return NaN;
-            }
-            return Math.log(object.signal.parameters[my_state_obj[type].param] /
-                    object.background.parameters[my_state_obj[type].param]) / Math.log(2);
-        };
-        retSigMBack = function (object, type) {
-            if (!object) {
-                return NaN;
-            }
-            //this is the hard one...
-            var all, i, key2, get_obj, min, allVals = [];
-            if (type === 'kinetic') {
-                key2 = object.exposure;
-                get_obj = {type: type, exposure: object.exposure};
-            } else {
-                key2 = object.cycle;
-                get_obj = {type: type, cycle: object.cycle};
-            }
-            minimums[type][my_state_obj[type].param] = minimums[type][my_state_obj[type].param] || {};
-            if (minimums[type][my_state_obj[type].param][key2] !== undefined) {
-                min = minimums[type][my_state_obj[type].param][key2];
-            } else {
-                all = DATA.get(get_obj);
-                // console.log(all);
-                for (i = 0; i < all.length; i += 1) {
-                    allVals.push(all[i].signal.parameters[my_state_obj[type].param] - all[i].background.parameters[my_state_obj[type].param]);
-                }
-                allVals = allVals.sort(function (a, b) {
-                    return a - b;
-                });
-                min = allVals[Math.floor(allVals.length / 20) - 1];
-                minimums[type][my_state_obj[type].param][key2] = min;
-                // console.log(all, get_obj, min);
-            }
-            if (object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] < min) {
-                return 0;
-            } else {
-                return Math.log(object.signal.parameters[my_state_obj[type].param] - object.background.parameters[my_state_obj[type].param] - (min) + 1) / Math.log(2);
-            }
-        };
-        //initialize
-        equation = {kinetic: retSigDBack, linear: retSigDBack};
-
-        uppercase = function (str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
-        };
-
         //peptide picker response
         pep_picked = function (state_object) {
             thisState = state_object;
 
-            // console.log(state_object);
+            console.log(state_object);
 
             var linearValues,
                 kineticValues,
                 linearHeatMapValues,
-                kineticHeatMapValues,
-                linearHeatMap,
-                kineticHeatMap;
+                kineticHeatMapValues;
 
             if ($page_obj && $page_obj.heatMaps) {
                 $page_obj.linearHeatMap.empty();
@@ -154,8 +76,8 @@
             }
 
             // get initial values
-            linearValues = calculateValues(DATA, equation, 'linear', state_object);
-            kineticValues = calculateValues(DATA, equation, 'kinetic', state_object);
+            linearValues = calculateValues(DATA, state_object.eq.linear.eval, 'linear', state_object, my_state_obj.filter, my_state_obj.filterVal);
+            kineticValues = calculateValues(DATA, state_object.eq.kinetic.eval, 'kinetic', state_object, my_state_obj.filter, my_state_obj.filterVal);
 
             linearHeatMapValues = normalizeValues(straightenItValue(clusterSamples(linearValues)));
             kineticHeatMapValues = normalizeValues(straightenItValue(clusterSamples(kineticValues)));
@@ -185,113 +107,16 @@
         $page_obj.linear = {};
         $page_obj.kinetic = {};
 
-        //Now build each side
-        build_columns = function (type) {
-            var part = $page_obj[type], i;
-
-            part.col = $('<div>', {class: 'col col-xs-12 col-sm-6'});
-            part.title = $('<h3>' + uppercase(type) + ' Options</h3>');
-            //equation displays
-            part.equationTitle = $('<h4>Model Parameterized</h4>');
-            part.equation = $('<div>', {
-                style: "min-height: 40px;display: table;"
-            }).append($('<div>', {
-                style: 'display: table-cell;vertical-align:middle;'
-            }).append(
-                M.sToMathE(DATA[0][type].equation.mathType)
-            ));
-
-            //parameter picker
-            part.parameterTitle = $('<h4>Parameter Viewing</h4>');
-            part.parameterPicker = $('<select>', {style: 'vertical-align: middle', class: 'form-control'});
-            //Background Correction
-            part.backCorrTitle = $('<h4>Background Correction</h4>');
-            part.backCorrPicker = $('<select>', {style: 'vertical-align: middle', class: 'form-control'});
-            part.backCorrSelected = $('<div>', {style: 'margin-top:15px;', class: 'text-center'});
-            //Finally the figures themselves
-            part.fig = $('<div>');
-            //And the place for correlation
-            part.f_val = $('<p>', {class: "text-center lead"});
-
-            //add in all the parts in order
-            part.col
-                .append(part.title)
-                .append(part.equationTitle)
-                .append(part.equation)
-                .append(part.parameterTitle)
-                .append(part.parameterPicker)
-                .append(part.backCorrTitle)
-                .append(part.backCorrPicker)
-                .append(part.backCorrSelected)
-                .append(part.fig)
-                .append(part.f_val);
-
-            //Add in the menu options for the parameter
-            for (i = 0; i < my_state_obj[type].params.length; i += 1) {
-                part.parameterPicker.append(
-                    '<option value="' + i + '">' +
-                    my_state_obj[type].params[i] + "</option>"
-                );
-            }
-            part.parameterPicker.change(function (evt) {
-                var selected = evt.target.value;
-                my_state_obj[type].param = selected;
-                pep_picked(thisState);
-            });
-
-            //Now add in menu options for the correction picker
-            part.backCorrPicker.append(
-                '<option value="0">Signal</option>' +
-                '<option value="1">Background</option>' +
-                '<option selected value="2">log_2(s/b)</option>' +
-                '<option value="3">log_2(100(s - b + c_e))</option>'
-            ).change(function (evt) {
-                var selected = evt.target.value, key2, ce;
-                currentEQnum[type] = selected;
-                switch (selected) {
-                case "0":
-                    part.backCorrSelected.html('signal');
-                    equation[type] = retSignal;
-                    break;
-                case "1":
-                    part.backCorrSelected.html('background');
-                    equation[type] = retBack;
-                    break;
-                case "2":
-                    part.backCorrSelected.html(M.sToMathE("log_2({signal}/{background})"));
-                    equation[type] = retSigDBack;
-                    break;
-                case "3":
-                    part.backCorrSelected.html(M.sToMathE("log_2{100(signal-background+c_e)}"));
-                    equation[type] = retSigMBack;
-                    break;
-                }
-                pep_picked(thisState);
-                if (selected === "3") {
-                    key2 = type === 'kinetic'
-                        ? thisState.exposure
-                        : thisState.cycle;
-                    ce = 1 - minimums[type][my_state_obj[type].param][key2];
-                    // console.log(ce);
-                    part.backCorrSelected.append(",&nbsp;&nbsp;").append(
-                        M.sToMathE("c_e=" + ce.toFixed(4))
-                    );
-                }
-            });
-
-            //default for equation viewed
-            part.backCorrSelected.html(M.sToMathE("log_2({signal}/{background})"));
-        };
-
         // Add in the components that create the image picker
         imgPicker = KINOME.imagePicker(DATA);
+        eqPicker = KINOME.equationPicker(DATA, imgPicker, true);
+
         imgPicker.div.appendTo($div);
-        imgPicker.change(pep_picked);
+        eqPicker.div.appendTo($div);
+        eqPicker.change(pep_picked);
         imgPicker.disableSample();
 
         // Create the parameter options
-        build_columns('linear');
-        build_columns('kinetic');
         $page_obj.figures
             .append($page_obj.linear.col)
             .append($page_obj.kinetic.col);
@@ -346,8 +171,8 @@
      * @param Object state The current state of the machine indicating cycle, exposure, and equations
      * @return Array The matrix containing all corrected parameters for all peptides across all samples
      */
-    var calculateValues = function(data, equation, type, state) {
-        var values = [],
+    calculateValues = function(data, equation, type, state, filter, filterVal) {
+        var i, j, k, values = [], thisVal, anovas = [], outValues = [], thisF, pepCount = -1, sampCount = 0,
             peptides = data.list('peptides'),
             getObject = {
                 type: type
@@ -359,17 +184,57 @@
             getObject.exposure = state.exposure;
         }
 
-        for (var i = 0; i < data.length; i++) {
-            values[i] = [];
-            for (var j = 0; j < peptides.length; j++) {
+        for (i = 0; i < data.length; i += 1) {
+            if (filter === 'anova') {
+                values[data[i].group] = values[data[i].group] || [];
+                values[data[i].group].push([]);
+                thisVal = values[data[i].group][values[data[i].group].length - 1];
+            } else {
+                values[i] = [];
+                thisVal = values[i];
+            }
+            for (j = 0; j < peptides.length; j += 1) {
                 getObject.peptides = peptides[j];
                 // console.log(equation, equation[type], data[i].get(getObject), getObject, data);
-                values[i].push(equation[type](data[i].get(getObject)[0], type));
+                thisVal.push(equation(data[i].get(getObject)[0]));
                 // values[i].push(Math.random());
             }
         }
 
-        return values;
+        if (filter === 'anova') {
+            outValues = [];
+            for (k = 0; k < values[0][0].length; k += 1) { // by peptide
+                anovas = [];
+                sampCount = 0;
+                for (i = 0; i < values.length; i += 1) { // By group
+                    anovas[i] = [];
+                    for (j = 0; j < values[i].length; j += 1) { // By sample
+                        outValues[sampCount] = outValues[sampCount] || [];
+                        anovas[i].push(values[i][j][k]);
+                        sampCount += 1;
+                    }
+                }
+                //calculate f_stat
+                thisF = f_stat(anovas);
+                if (thisF > filterVal) {
+                    pepCount += 1;
+                    sampCount = 0;
+                    for (i = 0; i < values.length; i += 1) { // By group
+                        for (j = 0; j < values[i].length; j += 1) { // By sample
+                            outValues[sampCount][pepCount] = values[i][j][k];
+                            sampCount += 1;
+                        }
+                    }
+                }            
+            }
+            
+            //Actually filter the values
+
+        } else {
+            outValues = values;
+        }
+        console.log(outValues);
+        return outValues;
     };
 
     var matrix_transpose = function (M) {
@@ -411,13 +276,13 @@
      * @return Array The matrix containing all corrected parameters for all peptides across all samples
      */
     var normalizeValues = function(values) {
-        var max = -Infinity,
+        var i, j, max = -Infinity,
             min = Infinity;
 
-        for (var i = 0; i < values.length; i++) {
+        for (i = 0; i < values.length; i += 1) {
             // find max
-            for (var j = 0; j < values[i].length; j++) {
-                if (! isNaN(values[i][j])) {
+            for (j = 0; j < values[i].length; j += 1) {
+                if (!Number.isNaN(values[i][j])) {
                     max = Math.max(values[i][j], max);
                     min = Math.min(values[i][j], min);
                 }
@@ -425,8 +290,8 @@
         }
 
         // divide all values by max to normalize
-        for (var i = 0; i < values.length; i++) {
-            for (var j = 0; j < values[i].length; j++) {
+        for (i = 0; i < values.length; i += 1) {
+            for (j = 0; j < values[i].length; j += 1) {
                 values[i][j] = (values[i][j] - min) / (max - min);
             }
         }
@@ -458,7 +323,7 @@
         var width = widthDiv.width(),
             height = 180;
 
-        var cluster = d3.layout.cluster()
+        cluster = d3.layout.cluster()
             .size([width - 10, height - 70]);
 
         var svg = d3.select($treeDiv[0]).append("svg")
@@ -507,7 +372,7 @@
     };
 
     var createHeatMap = function(values, widthDiv) {
-        var canvas = document.createElement('canvas'),
+        var i, j, canvas = document.createElement('canvas'),
             ctx,
             numRows = values[0].length,
             numCols = values.length,
@@ -520,8 +385,8 @@
 
         ctx = canvas.getContext('2d');
 
-        for (var i = 0; i < values.length; i++) {
-            for (var j = 0; j < values[i].length; j++) {
+        for (i = 0; i < values.length; i += 1) {
+            for (j = 0; j < values[i].length; j += 1) {
                 ctx.fillStyle = KINOME.gradient.convert(values[i][j]);
                 ctx.fillRect(i * colScale, j * rowScale, colScale, rowScale);
             }
@@ -530,9 +395,52 @@
         return $(canvas);
     };
 
+    var f_stat = (function () {
+        var add = function (a, b) {
+            return a + b;
+        };
+        var mean = function (arr) {
+            return arr.reduce(add) / arr.length;
+        };
+        var sse = function (arr, avg) {
+            var i, sum = 0;
+            avg = avg || mean(arr);
+            for (i = 0; i < arr.length; i += 1) {
+                sum += Math.pow(arr[i] - avg, 2);
+            }
+            return sum;
+        };
+        var concatArrs = function (a, b) {
+            return a.concat(b);
+        };
+        return function (arrs) {
+            var newArr = [], i, totalSampleSize = 0, bgv = 0, wgv = 0, indMean, overallMean = mean(arrs.reduce(concatArrs));
+            // Get rid of empty array spots (special for for this module)
+            for (i = 0; i < arrs.length; i += 1) {
+                if (arrs[i].length > 1) {
+                    newArr.push(arrs[i]);
+                }
+            }
+            arrs = newArr;
+            if (arrs.length < 2 || arrs[0].length < 2 || arrs[1].length < 2) {
+                return NaN;
+            }
+            for (i = 0; i < arrs.length; i += 1) {
+                indMean = mean(arrs[i]);
+                bgv += arrs[i].length * Math.pow(indMean - overallMean, 2);
+                wgv += sse(arrs[i], indMean);
+                totalSampleSize += arrs[i].length;
+            }
+
+            bgv /= (arrs.length - 1);
+            wgv /= (totalSampleSize - arrs.length);
+
+            return bgv / wgv;
+        };
+    }());
+
     //get stuff building
     (function () {
-        
         Promise.all(requires).then(function () {
             var $div = KINOME.addAnalysis('Heat Map');
             buildFigures($div, KINOME.get({level: '^2'}));
