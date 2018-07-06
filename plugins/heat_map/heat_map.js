@@ -41,17 +41,8 @@
 
         $page_obj.div = $div;
         //defaults
-        my_state_obj.linear = {
-            param: 0,
-            params: DATA[0].linear.equation.mathParams
-        };
-        my_state_obj.kinetic = {
-            param: 0,
-            //I have to assume for this that this is consistent across data presented.
-            params: DATA[0].kinetic.equation.mathParams
-        };
         my_state_obj.filter = false;
-        my_state_obj.filterVal = 5.0;
+        my_state_obj.filterVal = 10;
 
         $page_obj.width = $('<div>', {class: 'col col-sm-6 col-xs-12'});
         $page_obj.width.appendTo($('<div>', {class: 'row'})
@@ -62,8 +53,6 @@
         //peptide picker response
         pep_picked = function (state_object) {
             thisState = state_object;
-
-            console.log(state_object);
 
             var linearValues,
                 kineticValues,
@@ -216,6 +205,8 @@
                 }
                 //calculate f_stat
                 thisF = f_stat(anovas);
+
+                //store the data
                 if (thisF > filterVal) {
                     pepCount += 1;
                     sampCount = 0;
@@ -225,15 +216,26 @@
                             sampCount += 1;
                         }
                     }
-                }            
+                }
             }
-            
-            //Actually filter the values
-
+        } else if (filter === 'variance') {
+            for (j = 0; j < values[0].length; j += 1) { // By peptide
+                anovas = [];
+                for (i = 0; i < values.length; i += 1) { // By sample
+                    outValues[i] = outValues[i] || [];
+                    anovas.push(values[i][j]);
+                }
+                if (f_stat.variance(anovas) > filterVal) {
+                    pepCount += 1;
+                    for (i = 0; i < values.length; i += 1) { // By sample
+                        outValues[i][pepCount] = values[i][j];
+                    }
+                }
+            }
         } else {
             outValues = values;
         }
-        console.log(outValues);
+        //console.log('my out vals', outValues);
         return outValues;
     };
 
@@ -413,7 +415,7 @@
         var concatArrs = function (a, b) {
             return a.concat(b);
         };
-        return function (arrs) {
+        var main = function (arrs) {
             var newArr = [], i, totalSampleSize = 0, bgv = 0, wgv = 0, indMean, overallMean = mean(arrs.reduce(concatArrs));
             // Get rid of empty array spots (special for for this module)
             for (i = 0; i < arrs.length; i += 1) {
@@ -437,6 +439,12 @@
 
             return bgv / wgv;
         };
+
+        main.variance = function (arr) {
+            return sse(arr) / (arr.length - 1);
+        };
+
+        return main;
     }());
 
     //get stuff building
