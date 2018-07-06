@@ -6,9 +6,11 @@
     require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
+        console.log(DATA);
         var f_stat, build_columns, pep_picker, color_it, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
                 my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, buildTooltip,
-                thisState, color_it_on = 'linear', currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase;
+                thisState, color_it_on = 'linear', currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase,
+                create_data_download_button, format_anova_data;
 
         $page_obj.div = $div;
         //defaults
@@ -184,6 +186,7 @@
         };
 
         color_it = function (pointsList, state) {
+            console.log('pointsList', pointsList);
             var ii, jj, kk, groups = DATA.list('groups'), oneft, minF = Infinity, maxF = -Infinity, oneANOVA, oneGet, oneGrp, f_tests = [];
             // console.log(pointsList);
             for (jj = 0; jj < pointsList[color_it_on].length; jj += 1) {
@@ -211,6 +214,10 @@
                 // f_tests.push([oneft, pointsList[color_it_on][jj].peptide]);
                 f_tests.push(oneft);
             }
+
+            // console.log('f_tests', f_tests);
+            // console.log('oneANOVA', oneANOVA);
+            // console.log('oneft', oneft);
             // console.log(JSON.parse(JSON.stringify(f_tests)).sort(function (a, b) {
             //     return b[0] - a[0];
             // }));
@@ -227,6 +234,7 @@
         };
 
         makeOneChart = function (pnts, type) {
+            console.log('pnts', pnts);
             var dataTable = google.visualization.arrayToDataTable(pnts.chart);
             var options = {
                 title: 'Reproducibility - ' + uppercase(type),
@@ -267,12 +275,20 @@
             // console.log(xys_kin);
             if (xys_kin.chart.length > 1) {
                 makeOneChart(xys_kin, 'kinetic');
+                /**
+                 * Create data download button
+                 */
+                // create_data_download_button($page_obj.kinetic.download_data, 'kinetic');
             }
 
             //get points for linear
             xys_lin = getOneDataSet(pnts, 'linear', 'cycle', groups);
             if (xys_lin.chart.length > 1) {
                 makeOneChart(xys_lin, 'linear');
+                /**
+                 * Create data download button
+                 */
+                // create_data_download_button($page_obj.linear.download_data,'linear');
             }
 
             return;
@@ -402,6 +418,7 @@
             part.backCorrSelected = $('<div>', {style: 'margin-top:15px;', class: 'text-center'});
             //Finally the figures themselves
             part.fig = $('<div>');
+            part.download_data = $('<div>', {style: 'padding: 20px'});
             //And the place for correlation
             part.f_val = $('<p>', {class: "text-center lead"});
 
@@ -416,7 +433,8 @@
                 .append(part.backCorrPicker)
                 .append(part.backCorrSelected)
                 .append(part.fig)
-                .append(part.f_val);
+                .append(part.f_val)
+                .append(part.download_data);
 
             //Add in the menu options for the parameter
             for (i = 0; i < my_state_obj[type].params.length; i += 1) {
@@ -474,6 +492,30 @@
             //default for equation viewed
             part.backCorrSelected.html(M.sToMathE("log_2({signal}/{background})"));
         };
+
+        create_data_download_button = function (div, type) {
+            var download_button;
+
+            download_button = $('<button>', {class: 'btn btn-default center-block'});
+            download_button.html('Download ' + uppercase(type) + ' Data');
+
+            div.append(download_button);
+
+            return div;
+        };
+
+        /**
+         * Pulls from the data used to generate the graph
+         * Original data format heavily dependent on the type of data
+         */
+        // format_anova_data = function (data, type) {
+        //     var formatted_data, i;
+
+        //     for (i = 0; i < data.length; i += 1) {
+        //         for (j = 0; )
+        //     }
+            
+        // }
 
         build_columns('linear');
         build_columns('kinetic');
