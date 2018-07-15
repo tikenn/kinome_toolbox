@@ -6,11 +6,11 @@
     require("bs_toggle-css", 'style');
 
     buildFigures = function ($div, DATA) {
-        console.log(DATA);
+        //console.log(DATA);
         var f_stat, build_columns, pep_picker, color_it, $page_obj = {}, equation, minimums = {linear: {}, kinetic: {}}, retSignal, retBack, getOneDataSet,
                 my_state_obj = {}, retSigDBack, retSigMBack, pep_picked, make_reprofigures, buildTooltip,
                 thisState, color_it_on = 'linear', currentEQnum = {linear: 2, kinetic: 2}, makeOneChart, uppercase,
-                create_data_download_button, format_anova_data;
+                create_data_download_button, get_all_fstats;
 
         $page_obj.div = $div;
         //defaults
@@ -185,8 +185,39 @@
             return {chart: out, stats: outSimple};
         };
 
+        get_all_fstats = function (state, type) {
+            var ii, jj, kk, groups = DATA.list('groups'), tempVal, anova_obj, oneft, peptides, oneANOVA, oneGet, oneGrp, f_tests = [];
+            // console.log(pointsList);
+            peptides = DATA.list('peptides');
+            for (jj = 0; jj < peptides.length; jj += 1) {
+                oneANOVA = [];
+                anova_obj = {};
+                for (ii = 0; ii < groups.length; ii += 1) {
+                    oneGet = DATA.get({
+                        peptide: peptides[jj],
+                        exposure: state.exposure,
+                        cycle: state.cycle,
+                        type: type,
+                        group: groups[ii]
+                    });
+                    oneGrp = [];
+                    anova_obj[ii] = {};
+                    for (kk = 0; kk < oneGet.length; kk += 1) {
+                        tempVal = equation[type](oneGet[kk], type);
+                        anova_obj[ii][oneGet[kk].name] = tempVal;
+                        oneGrp.push(tempVal);
+                    }
+                    oneANOVA.push(oneGrp);
+
+                }
+                oneft = f_stat(oneANOVA);
+                f_tests.push([peptides[jj], oneft, anova_obj]);
+            }
+            return f_tests;
+        };
+
         color_it = function (pointsList, state) {
-            console.log('pointsList', pointsList);
+            //console.log('pointsList', pointsList);
             var ii, jj, kk, groups = DATA.list('groups'), oneft, minF = Infinity, maxF = -Infinity, oneANOVA, oneGet, oneGrp, f_tests = [];
             // console.log(pointsList);
             for (jj = 0; jj < pointsList[color_it_on].length; jj += 1) {
@@ -234,7 +265,7 @@
         };
 
         makeOneChart = function (pnts, type) {
-            console.log('pnts', pnts);
+           // console.log('pnts', pnts);
             var dataTable = google.visualization.arrayToDataTable(pnts.chart);
             var options = {
                 title: 'Reproducibility - ' + uppercase(type),
@@ -278,7 +309,7 @@
                 /**
                  * Create data download button
                  */
-                // create_data_download_button($page_obj.kinetic.download_data, 'kinetic');
+                create_data_download_button($page_obj.kinetic.download_data, 'kinetic', get_all_fstats, thisState);
             }
 
             //get points for linear
@@ -288,7 +319,7 @@
                 /**
                  * Create data download button
                  */
-                // create_data_download_button($page_obj.linear.download_data,'linear');
+                create_data_download_button($page_obj.linear.download_data, 'linear', get_all_fstats, thisState);
             }
 
             return;
@@ -493,11 +524,51 @@
             part.backCorrSelected.html(M.sToMathE("log_2({signal}/{background})"));
         };
 
-        create_data_download_button = function (div, type) {
+        create_data_download_button = function (div, type, get_data, state) {
             var download_button;
 
-            download_button = $('<button>', {class: 'btn btn-default center-block'});
-            download_button.html('Download ' + uppercase(type) + ' Data');
+            div.empty();
+
+            download_button = $('<button>', {class: 'btn btn-default btn-large center-block'}).on('click', function () {
+                var data = get_data(state, type), key, now, ii, jj, kk, groupList, sampleList, strArr = [];
+
+                groupList = Object.keys(data[0][2]);
+                sampleList = [];
+                for (jj = 0; jj < groupList.length; jj += 1) {
+                    sampleList[jj] = Object.keys(data[0][2][groupList[jj]]);
+                }
+
+                // make header
+                strArr.push(["Peptide", "F-statistic"]);
+                for (jj = 0; jj < groupList.length; jj += 1) {
+                    for (kk = 0; kk < sampleList[jj].length; kk += 1) {
+                        strArr[0].push("Group " + groupList[jj] + ": " + sampleList[jj][kk]);
+                    }
+                }
+                strArr[0] = strArr[0].join('\t');
+
+                //make body
+                //console.log(data, sampleList, groupList);
+                for (ii = 0; ii < data.length; ii += 1) {
+                    strArr[ii + 1] = [data[ii][0], data[ii][1]];
+                    for (jj = 0; jj < groupList.length; jj += 1) {
+                        for (kk = 0; kk < sampleList[jj].length; kk += 1) {
+                            strArr[ii + 1].push(data[ii][2][groupList[jj]][sampleList[jj][kk]]);
+                        }
+                    }
+                    strArr[ii + 1] = strArr[ii + 1].join('\t');
+                }
+                //console.log(strArr);
+                key = type === "linear"
+                    ? state.exposure + 'ms'
+                    : 'cycle_' + state.cycle;
+
+                now = new Date();
+
+                save(strArr.join("\n"), 'f_stats_' + type + "_" + key + "_" + now.toLocaleDateString().replace(/[^\w\d]+/g, "_") + "_" + now.toLocaleTimeString().replace(/[^\w\d]+/g, "_") + '.txt');
+
+            });
+            download_button.html('Download All ' + uppercase(type) + ' Data and F-statistics');
 
             div.append(download_button);
 
