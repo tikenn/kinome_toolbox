@@ -132,7 +132,7 @@
 
         //filters
         $page_obj.filterHolder = $('<div>', {'class': 'row'});
-        $page_obj.filterSwitches = $('<div>', {'class': 'col-sm-6'}).append('<h4 class="page-header">Choose Pre-Clustering Filter</h4>');
+        $page_obj.filterSwitches = $('<div>', {'class': 'col-sm-6', style: 'margin-top:10px'}).append('<h4 class="page-header">Choose Pre-Clustering Filter</h4>');
         $('<div>', {'class': 'btn-group', 'data-toggle': 'buttons'})
             .append($('<label>', {'class': 'btn btn-default btn-lg active', text: 'None'})
                 .append($('<input>', {'type': 'radio', 'name': 'options', 'autocomplete': 'off'}))
@@ -157,7 +157,7 @@
                 }))
             .appendTo($page_obj.filterSwitches);
 
-        $page_obj.filterBar = $('<div>', {'class': 'col-sm-6'});
+        $page_obj.filterBar = $('<div>', {'class': 'col-sm-6', style: 'margin-top:10px'});
         $page_obj.filterHolder
             .append($page_obj.filterSwitches)
             .append($page_obj.filterBar);
