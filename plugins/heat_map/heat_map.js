@@ -24,25 +24,41 @@
             require('gradient'),
             require('hcluster'),
             require('d3'),
-            require('equation-picker')
+            require('equation-picker'),
+            require('bs_slider-js')
         ];
 
-    var calculateValues;
+    var calculateValues, waitForFinalEvent;
 
     require("bs_toggle-css", 'style');
+    require('bs_slider-css');
+
+    waitForFinalEvent = (function () {
+        var timers = {};
+        return function (callback, ms, uniqueId) {
+            if (!uniqueId) {
+                uniqueId = "Don't call this twice without a uniqueId";
+            }
+
+            if (timers[uniqueId]) {
+                clearTimeout(timers[uniqueId]);
+            }
+            timers[uniqueId] = setTimeout(callback, ms);
+        };
+    }());
 
     buildFigures = function ($div, DATA) {
         var $page_obj = {},
             my_state_obj = {},
-            pep_picked,
             thisState,
             eqPicker,
+            pep_picked,
             imgPicker;
 
         $page_obj.div = $div;
         //defaults
-        my_state_obj.filter = false;
-        my_state_obj.filterVal = 10;
+        my_state_obj.filter = "none";
+        my_state_obj.filterVal = -1;
 
         $page_obj.width = $('<div>', {class: 'col col-sm-6 col-xs-12'});
         $page_obj.width.appendTo($('<div>', {class: 'row'})
@@ -54,38 +70,42 @@
         pep_picked = function (state_object) {
             thisState = state_object;
 
-            var linearValues,
-                kineticValues,
-                linearHeatMapValues,
-                kineticHeatMapValues;
+            //wait for event end so page does not redraw more than needed.
+            waitForFinalEvent(function () {
+                var linearValues,
+                    kineticValues,
+                    linearHeatMapValues,
+                    kineticHeatMapValues;
 
-            if ($page_obj && $page_obj.heatMaps) {
-                $page_obj.linearHeatMap.empty();
-                $page_obj.kineticHeatMap.empty();
-            }
+                if ($page_obj && $page_obj.heatMaps) {
+                    $page_obj.linearHeatMap.empty();
+                    $page_obj.kineticHeatMap.empty();
+                    $page_obj.filterBar.empty();
+                }
 
-            // get initial values
-            linearValues = calculateValues(DATA, state_object.eq.linear.eval, 'linear', state_object, my_state_obj.filter, my_state_obj.filterVal);
-            kineticValues = calculateValues(DATA, state_object.eq.kinetic.eval, 'kinetic', state_object, my_state_obj.filter, my_state_obj.filterVal);
+                buildSlider(DATA, my_state_obj, state_object, $page_obj.filterBar, pep_picked);
 
-            linearHeatMapValues = normalizeValues(straightenItValue(clusterSamples(linearValues)));
-            kineticHeatMapValues = normalizeValues(straightenItValue(clusterSamples(kineticValues)));
+                // get initial values
+                linearValues = calculateValues(DATA, state_object.eq.linear.eval, 'linear', state_object, my_state_obj.filter, my_state_obj.filterVal);
+                kineticValues = calculateValues(DATA, state_object.eq.kinetic.eval, 'kinetic', state_object, my_state_obj.filter, my_state_obj.filterVal);
 
-            // console.log(linearValues, kineticValues);
-            // console.log('pep picked');
+                linearHeatMapValues = normalizeValues(straightenItValue(clusterSamples(linearValues)));
+                kineticHeatMapValues = normalizeValues(straightenItValue(clusterSamples(kineticValues)));
 
-            if ($page_obj.dummyHeatMap !== undefined) {
-                // console.log(DATA);
-                $('<h3>Linear Heat Map</h3>').appendTo($page_obj.linearHeatMap);
-                createTree(linearHeatMapValues, DATA, $page_obj.dummyHeatMap).css({'margin-bottom': '10px'}).appendTo($page_obj.linearHeatMap);
-                createHeatMap(linearHeatMapValues, $page_obj.dummyHeatMap).css({'width': '100%'}).appendTo($page_obj.linearHeatMap);
+                // console.log(linearValues, kineticValues);
+                // console.log('pep picked');
 
-                $('<h3>Kinetic Heat Map</h3>').appendTo($page_obj.kineticHeatMap);
-                createTree(kineticHeatMapValues, DATA, $page_obj.dummyHeatMap).css({'margin-bottom': '10px'}).appendTo($page_obj.kineticHeatMap);
-                createHeatMap(kineticHeatMapValues, $page_obj.dummyHeatMap).css({'width': '100%'}).appendTo($page_obj.kineticHeatMap);
-            }
+                if ($page_obj.dummyHeatMap !== undefined) {
+                    // console.log(DATA);
+                    $('<h3>Linear Heat Map</h3>').appendTo($page_obj.linearHeatMap);
+                    createTree(linearHeatMapValues, DATA, $page_obj.dummyHeatMap).css({'margin-bottom': '10px'}).appendTo($page_obj.linearHeatMap);
+                    createHeatMap(linearHeatMapValues, $page_obj.dummyHeatMap).css({'width': '100%'}).appendTo($page_obj.linearHeatMap);
 
-            // console.log(state_object, equation, my_state_obj, currentEQnum);
+                    $('<h3>Kinetic Heat Map</h3>').appendTo($page_obj.kineticHeatMap);
+                    createTree(kineticHeatMapValues, DATA, $page_obj.dummyHeatMap).css({'margin-bottom': '10px'}).appendTo($page_obj.kineticHeatMap);
+                    createHeatMap(kineticHeatMapValues, $page_obj.dummyHeatMap).css({'width': '100%'}).appendTo($page_obj.kineticHeatMap);
+                }
+            }, 100, 'pepPicker');
         };
 
         /*                          //
@@ -110,6 +130,38 @@
             .append($page_obj.linear.col)
             .append($page_obj.kinetic.col);
 
+        //filters
+        $page_obj.filterHolder = $('<div>', {'class': 'row'});
+        $page_obj.filterSwitches = $('<div>', {'class': 'col-sm-6'}).append('<h4 class="page-header">Choose Pre-Clustering Filter</h4>');
+        $('<div>', {'class': 'btn-group', 'data-toggle': 'buttons'})
+            .append($('<label>', {'class': 'btn btn-default btn-lg active', text: 'None'})
+                .append($('<input>', {'type': 'radio', 'name': 'options', 'autocomplete': 'off'}))
+                .on('click', function () {
+                    my_state_obj.filter = "none";
+                    my_state_obj.filterVal = 0;
+                    pep_picked(thisState);
+                }))
+            .append($('<label>', {'class': 'btn btn-default btn-lg', text: 'F-statistic'})
+                .append($('<input>', {'type': 'radio', 'name': 'options', 'autocomplete': 'off'}))
+                .on('click', function () {
+                    my_state_obj.filter = "anova";
+                    my_state_obj.filterVal = -1;
+                    pep_picked(thisState);
+                }))
+            .append($('<label>', {'class': 'btn btn-default btn-lg', text: 'Variance'})
+                .append($('<input>', {'type': 'radio', 'name': 'options', 'autocomplete': 'off'}))
+                .on('click', function () {
+                    my_state_obj.filter = "variance";
+                    my_state_obj.filterVal = -1;
+                    pep_picked(thisState);
+                }))
+            .appendTo($page_obj.filterSwitches);
+
+        $page_obj.filterBar = $('<div>', {'class': 'col-sm-6'});
+        $page_obj.filterHolder
+            .append($page_obj.filterSwitches)
+            .append($page_obj.filterBar);
+
         // Heat Map locations
         $page_obj.heatMaps = $('<div>', {'class': 'row'});
         $page_obj.linearHeatMap = $('<div>', {'class': 'col-sm-6'}).appendTo($page_obj.heatMaps);
@@ -121,6 +173,7 @@
 
         // add everything to the main page divs
         $page_obj.div
+            .append($page_obj.filterHolder)
             .append($page_obj.title)
             // .append($page_obj.groupHeading)
             .append($page_obj.figures)
@@ -132,19 +185,6 @@
 
         //finally add on resize function, this makes sure that the figures
         // remain the correct size.
-        var waitForFinalEvent = (function () {
-            var timers = {};
-            return function (callback, ms, uniqueId) {
-                if (!uniqueId) {
-                    uniqueId = "Don't call this twice without a uniqueId";
-                }
-
-                if (timers[uniqueId]) {
-                    clearTimeout(timers[uniqueId]);
-                }
-                timers[uniqueId] = setTimeout(callback, ms);
-            };
-        }());
         window.addEventListener("resize", function () {
             waitForFinalEvent(function () {
                 pep_picked(thisState);
@@ -160,9 +200,9 @@
      * @param Object state The current state of the machine indicating cycle, exposure, and equations
      * @return Array The matrix containing all corrected parameters for all peptides across all samples
      */
-    calculateValues = function(data, equation, type, state, filter, filterVal) {
+    calculateValues = function(data, equation, type, state, filter, filterVal, retFilterArr) {
         var i, j, k, values = [], thisVal, anovas = [], outValues = [], thisF, pepCount = -1, sampCount = 0,
-            peptides = data.list('peptides'),
+            peptides = data.list('peptides'), filterArr = [],
             getObject = {
                 type: type
             };
@@ -205,6 +245,7 @@
                 }
                 //calculate f_stat
                 thisF = f_stat(anovas);
+                filterArr.push(thisF);
 
                 //store the data
                 if (thisF > filterVal) {
@@ -225,7 +266,9 @@
                     outValues[i] = outValues[i] || [];
                     anovas.push(values[i][j]);
                 }
-                if (f_stat.variance(anovas) > filterVal) {
+                thisF = f_stat.variance(anovas);
+                filterArr.push(thisF);
+                if (thisF > filterVal) {
                     pepCount += 1;
                     for (i = 0; i < values.length; i += 1) { // By sample
                         outValues[i][pepCount] = values[i][j];
@@ -235,8 +278,102 @@
         } else {
             outValues = values;
         }
+
+        //This is here for the build slider function to determine min/max vals
+        if (retFilterArr) {
+            return filterArr;
+        }
+
         //console.log('my out vals', outValues);
         return outValues;
+    };
+
+    var revNumSort = function (a, b) {
+        return b - a;
+    };
+
+    var buildSlider = function (data, filter_state, picker_state, location, pep_picked) {
+
+        //create a header
+        $('<h4 class="page-header">' + (
+            filter_state.filter === 'anova'
+                ? 'Minimum Included F-statistic'
+                : filter_state.filter === 'variance'
+                    ? 'Minimum Included Variance'
+                    : 'Select a filter'
+        ) + '</h4>').appendTo(location);
+
+        var $sliderDiv = $('<div id="filter-slider" class="sliders"></div>').appendTo(location),
+            $slider = $('<input type="text" />'),
+            filterVals,
+            max,
+            formatter,
+            changer;
+
+        formatter = function (val) {
+            return val;
+        };
+        changer = function (val) {
+            return val;
+        };
+
+
+        // save the state of the slider
+        $slider.appendTo($sliderDiv);
+
+        if (filter_state.filter === 'anova' || filter_state.filter === 'variance') {
+
+            //Calculate max values
+            filterVals = calculateValues(data, picker_state.eq.linear.eval, 'linear', picker_state, filter_state.filter, filter_state.filterVal, true);
+            filterVals = filterVals.concat(calculateValues(data, picker_state.eq.linear.eval, 'linear', picker_state, filter_state.filter, filter_state.filterVal, true)).sort(revNumSort);
+
+            //get max and adjust as needed
+            max = filterVals[Math.floor(filterVals.length * 0.05)];
+            if (max < 25) {
+                formatter = function (val) {
+                    var thisVal = val / 25 * max;
+                    thisVal = thisVal.toPrecision(3);
+                    return thisVal * 1;
+                };
+                changer = function (val) {
+                    return val * 25 / max;
+                };
+            }
+
+            if ((!filter_state.filterVal && filter_state.filterVal !== 0) || filter_state.filterVal < 0 || filter_state.filterVal > max) {
+                filter_state.filterVal = max / 25 * 2;
+            }
+
+            $slider.slider({
+                value: changer(filter_state.filterVal),
+                min: 0,
+                max: changer(max),
+                tooltip_position: 'bottom',
+                tooltip: 'always',
+                formatter: formatter
+            }).on('slideStop', function (e) {
+                if (e.value !== changer(filter_state.filterVal)) {
+                    filter_state.filterVal = formatter(e.value);
+                    pep_picked(picker_state);
+                }
+            });
+        } else {
+            $slider.slider({
+                value: 1,
+                min: 0,
+                max: 2,
+                tooltip_position: 'bottom',
+                tooltip: 'always',
+                enabled: false,
+                formatter: function () {
+                    return "N/A";
+                }
+            });
+        }
+    };
+
+    var capitalize = function(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     };
 
     var matrix_transpose = function (M) {
@@ -378,7 +515,9 @@
             ctx,
             numRows = values[0].length,
             numCols = values.length,
-            rowScale = 4,
+            rowScale = numRows < 80 
+                ? 4 * 80 / numRows
+                : 4,
             colScale;
 
         canvas.width = widthDiv.width();
