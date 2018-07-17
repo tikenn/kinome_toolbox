@@ -66,8 +66,6 @@ The dataArr functions and many more are described below  [Kinome Data Objects](#
 
 Skip to [Web Toolbox](#web-toolbox) if you are just interested in using the client side developer tools.
 
-(Coming soon: Docker).
-
 Download the repository with:
 
 ```git clone https://github.com/kinome/kinome_toolbox.git```
@@ -88,6 +86,19 @@ Once those dependencies are met, you need to build the npm modules. Navigate to 
 
 This will download all the local repositories that are needed for a working server and for the server side parsing. Unfortunately these are not currently seperable.
 
+In summary the steps are:
+
+1) Download NodeJS/NPM (The programming language)
+2) Download and start Mongo (The database)
+3) Download Forever/pm2 (Programs designed to keep a server running continuously)
+4) Git clone this repository (Above)
+5) Navigate to the directory you just created where server.js sits.
+6) ```npm install``` to install all the required packages
+7) forever start server.js
+
+From there you can see the [below](#Server-Side-File-Parsing) on how to add files to your own database. The toolbox will be running at localhost:8000. You can utilize your server settings to port this to outside traffic.
+
+Just be sure to occasionally do a ```git pull``` to add any updates to the toolbox, and if you make any improvements or add any features please submit them as a pull request.
 
 ## Server Side File Parsing
 
