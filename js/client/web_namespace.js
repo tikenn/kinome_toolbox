@@ -18,7 +18,7 @@ as urls this works by assuming jQuery is present and that Promises exist
             db_open, VERBOSE_REQ, get_from_cached, uuid, ID, local_database, jagax;
 
     defaults = {
-        name: ['set_up_table', 'fully_parse'],
+        name: ['set_up_table', 'fully_parse', '../../../plugins/sample_lookup.js'],
         '1.0.0': ['set_up_table', 'outlier_tab', 'level_1_build'],
         '1.0.1': ['set_up_table', 'level_1_build', 'normalize_background_tab'],
         '1.1.2': ['set_up_table', 'level_1_build'],
@@ -822,6 +822,8 @@ as urls this works by assuming jQuery is present and that Promises exist
                         ? groups
                         : [];
     };
+
+
 }(
     ("undefined" !== typeof module && module.exports)
         ? module.exports
