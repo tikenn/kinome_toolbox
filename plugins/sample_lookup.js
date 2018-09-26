@@ -604,7 +604,7 @@
             console.log(data);
             if (data.length > 0) {
                 element.html(element.html() + 
-                    ' <a href="http://mischiefmanaged.tk/?data=*[http://db.kinomecore.com/1.0.0/lvl_1.1.2?find=' +
+                    ' <a href="/?data=*[http://db.kinomecore.com/1.0.0/lvl_1.1.2?find=' +
                     encodeURIComponent('{"sample_data":{"$elemMatch":{"value":"' + kinomeName + '"}}}') +
                     ']*">Search Kinome Database</a>');
             }
